@@ -216,7 +216,7 @@ postulate
     → saf (EM∙ A (suc n))
 
 postulate
-  -- n+1 connected cover
+  -- n+3 (or n+1, depending on the convention) connected cover
   _⦉_⦊ : (X : Pointed ℓ) → ℕ → Pointed ℓ
   1ConnCovEq : (X : Pointed ℓ) (scX : isConnected 3 (typ X))
     → X ≡ (X ⦉ 0 ⦊)
