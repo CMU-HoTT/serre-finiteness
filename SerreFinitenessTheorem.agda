@@ -1,5 +1,3 @@
-{-# OPTIONS --without-K #-}
-
 module SerreFinitenessTheorem where
 
 open import Cubical.Data.Nat

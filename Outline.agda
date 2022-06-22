@@ -1,5 +1,3 @@
-{-# OPTIONS --without-K #-}
-
 module Outline where
 
 open import Cubical.Algebra.AbGroup
