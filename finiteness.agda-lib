@@ -1,0 +1,4 @@
+name: serre-finiteness
+include: .
+depend: cubical
+flags: --cubical --no-import-sorts --allow-unsolved-metas

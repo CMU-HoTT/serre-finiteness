@@ -1,0 +1,39 @@
+{-# OPTIONS --without-K #-}
+
+module SerreFinitenessTheorem where
+
+open import Cubical.Data.Nat
+open import Cubical.Data.Nat.Order
+open import Cubical.Foundations.Everything
+open import Cubical.Homotopy.Connected
+
+
+private
+  variable
+    ℓ : Level
+
+open import Outline hiding (saf→isFPπ; saf→saf⦉-⦊; _⦉_⦊; 1ConnCovEq;
+                            Conn→ConnConnCov; ConnCovIsConn; πConnCov;
+                            ⦉-⦊EMFibSeq)
+open import ConnectedCover
+
+{-toCheck : (X : Pointed ℓ) (n : ℕ) → saf (X ⦉ (2 + n) ⦊) → isFP (πAb (suc n) (X ⦉ (2 + n) ⦊))
+toCheck X n safX⦉⦊ = saf→Conn→isFPπ (X ⦉ (2 + n) ⦊) safX⦉⦊ (suc n) (ConnCovIsConn X (2 + n))-}
+postulate
+  silly : (n : ℕ) → n ≥ n
+
+isFPId : (X : Pointed ℓ) (n : ℕ) → isFP (πAb (suc n) (X ⦉ n ⦊)) ≡  isFP (πAb (suc n) X)
+isFPId X n = λ i → isFP (πConnCov X n n (silly n) i)
+
+interleaved mutual
+  saf→isFPπ : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ)
+    → isFP (πAb n X)
+  saf→saf⦉-⦊ : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ)
+    → saf (X ⦉ n ⦊)
+  saf→isFPπ X safX scX 0 = saf→isFPBottomπ X safX 0 scX
+  saf→saf⦉-⦊ X safX scX 0 = transport (λ i → saf (0ConnCovEq X scX i)) safX
+  saf→isFPπ X safX scX (suc n) = transport (isFPId X n) (saf→Conn→isFPπ (X ⦉ n ⦊) (saf→saf⦉-⦊ X safX scX n) (suc n) (ConnCovIsConn X n))
+  saf→saf⦉-⦊ X safX scX (suc n) = safTotal (⦉-⦊EMFibSeq X n) (Conn→ConnConnCov X 3 n scX) (saf→saf⦉-⦊ X safX scX n) (isFP→safEM (πAb n X) (saf→isFPπ X safX scX n) n)
+   {-safTotal (⦉-⦊EMFibSeq X n) (Conn→ConnConnCov X 3 (suc n) scX) (saf→saf⦉-⦊ X safX scX n) (isFP→safEM (πAb n X) (saf→isFPπ X safX scX n) n)-}
+   
+
