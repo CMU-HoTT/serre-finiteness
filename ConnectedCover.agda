@@ -23,7 +23,7 @@ postulate
   Conn→ConnConnCov : (X : Pointed ℓ) (m n : ℕ)
     → isConnected m (typ X) → isConnected m (typ (X ⦉ n ⦊))
   ConnCovIsConn : (X : Pointed ℓ) (n : ℕ)
-    → isConnected (3 + n) (typ (X ⦉ n ⦊))
+    → isConnected (4 + n) (typ (X ⦉ n ⦊))
   πConnCov : (X : Pointed ℓ) (n k : ℕ) → k ≥ n
     → (πAb (suc k) (X ⦉ n ⦊)) ≡ (πAb (suc k) X)
   ⦉-⦊EMFibSeq : (X : Pointed ℓ) (n : ℕ)

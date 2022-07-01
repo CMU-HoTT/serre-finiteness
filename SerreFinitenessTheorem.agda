@@ -28,7 +28,7 @@ interleaved mutual
   saf→isFPπ X safX scX 0 = saf→isFPBottomπ X safX 0 scX
   saf→saf⦉-⦊ X safX scX 0 = transport (λ i → saf (1ConnCovEq X scX i)) safX
   saf→isFPπ X safX scX (suc n) =
-    transport (isFPId X n) (saf→Conn→isFPπ
+    transport (isFPId X n) (saf→isFPBottomπ
                               (X ⦉ n ⦊)
                               (saf→saf⦉-⦊ X safX scX n)
                               (suc n)
