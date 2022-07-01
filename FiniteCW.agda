@@ -2,7 +2,9 @@ module FiniteCW where
 
 open import Cubical.Foundations.Everything
 
+open import Cubical.Data.Fin
 open import Cubical.Data.Nat
+open import Cubical.Data.NatMinusOne
 open import Cubical.HITs.PropositionalTruncation
 open import Cubical.HITs.Sn
 open import Cubical.HITs.Pushout
@@ -16,19 +18,38 @@ private
   variable
     ℓ : Level
 
--- finite CW complexes
-postulate
+abstract
+  record AttachedSkeleton n (Skel : Type₀) (Real : Skel → Type₀) : Type₀ where
+    field
+      skel : Skel
+      numCells : ℕ
+      attaching : Fin numCells → S (ℕ→ℕ₋₁ n) → Real skel
+
+  IndexedFinCW : ℕ → Type₀
+  decodeIndexedFinCW : {n : ℕ} → IndexedFinCW n → Type₀
+
+  IndexedFinCW 0 = ℕ
+  IndexedFinCW (suc n) = AttachedSkeleton n (IndexedFinCW n) decodeIndexedFinCW
+
+  decodeIndexedFinCW {n = 0} cells = Fin cells
+  decodeIndexedFinCW {n = suc n} skel = Pushout (uncurry (skel .AttachedSkeleton.attaching)) fst
+
   -- The type of "finite CW complex structures".
   -- We need to expose this separately from `isFinCW`
   -- if we want to define e.g. `nFinite n X` as a *small* proposition.
   -- (Possibly we don't really care.)
-  FinCW : (ℓ : Level) → Type ℓ
-  decodeFinCW : FinCW ℓ → Type ℓ
+  FinCW : Type₀
+  FinCW = Σ ℕ IndexedFinCW
 
+  decodeFinCW : FinCW → Type₀
+  decodeFinCW c = decodeIndexedFinCW (snd c)
+
+-- finite CW complexes
+postulate
   isFinCW : Type ℓ → Type ℓ
   isFinCW-isProp : {X : Type ℓ} → isProp (isFinCW X)
 
-  isFinCW-def : {X : Type ℓ} → isFinCW X ≃ ∥ Σ[ C ∈ FinCW ℓ ] X ≡ decodeFinCW C ∥₁
+  isFinCW-def : {X : Type ℓ} → isFinCW X ≃ ∥ Σ[ C ∈ FinCW ] X ≡ Lift {j = ℓ} (decodeFinCW C) ∥₁
 
   -- closure under pushouts, products, etc.
 
@@ -57,4 +78,3 @@ postulate
 
   mapFromNSkel : (X : Type ℓ) (hX : isFinCW X) (n : HLevel)
     → ∥ Σ[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (X → Y) ] isConnectedFun n f ∥₁
-
