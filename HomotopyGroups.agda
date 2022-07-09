@@ -3,7 +3,10 @@ module HomotopyGroups where
 open import Cubical.Foundations.Everything
 
 open import Cubical.Algebra.AbGroup
+open import Cubical.Algebra.AbGroup.Instances.Unit
 open import Cubical.Data.Nat
+open import Cubical.Data.Nat.Order
+open import Cubical.HITs.Truncation
 open import Cubical.Homotopy.Group.Base
 
 private
@@ -18,4 +21,14 @@ postulate
 -- πAb n A = πₙ₊₂(A), as an abelian group
 πAb : (n : ℕ) (A : Pointed ℓ) → AbGroup ℓ
 πAb n A = Group→AbGroup (πGr (1 + n) A) (πGr-comm n A)
+
+postulate
+  -- Abelian homotopy groups of truncated spaces
+  πAbOfHLevelTrunc : (X : Pointed ℓ) (n k : ℕ) → k ≥ n
+    → AbGroupEquiv {ℓ} {ℓ} (πAb k (hLevelTrunc∙ (3 + n) X)) UnitAbGroup
+
+  πAbOfHLevelTrunc' : (X : Pointed ℓ) (n k : ℕ) → k ≥ n
+    → AbGroupEquiv {ℓ} {ℓ} (πAb (suc k) (hLevelTrunc∙ (3 + n) X)) UnitAbGroup
+
+
 

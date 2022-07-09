@@ -27,6 +27,3 @@ postulate
     (n : ℕ) (cX : isConnected (3 + n) (typ X))
     → isFP (πAb n X)
 
-  {-saf→Conn→isFPπ : (X : Pointed ℓ) (hX : saf X)
-    (n : ℕ) (cX : isConnected (suc (suc n)) (typ X))
-    → isFP (πAb n X)-} --mistake
