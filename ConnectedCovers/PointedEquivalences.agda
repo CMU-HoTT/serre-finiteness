@@ -7,9 +7,9 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
 open import Cubical.HITs.Truncation
 
-open import FibCofibSeq
-
 open import ConnectedCovers.TruncationLevelFacts
+
+open import FiberOrCofiberSequences.Base
 
 private
   variable

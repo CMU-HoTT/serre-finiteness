@@ -8,9 +8,10 @@ open import Cubical.Homotopy.Connected
 
 open import FiniteCW
 open import PointedHITs
-open import FibCofibSeq
 open import FPAbGroup
 open import HomotopyGroups
+
+open import FiberOrCofiberSequences.Base
 
 private
   variable

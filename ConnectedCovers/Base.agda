@@ -11,10 +11,11 @@ open import Cubical.Homotopy.Connected
 open import Cubical.Relation.Nullary.Base
 
 open import HomotopyGroups
-open import FibCofibSeq
 
 open import ConnectedCovers.PointedEquivalences
 open import ConnectedCovers.TruncationLevelFacts
+
+open import FiberOrCofiberSequences.Base
 
 private
   variable

@@ -3,19 +3,16 @@ module FiniteCW where
 open import Cubical.Foundations.Everything
 
 open import Cubical.Data.Nat
-open import Cubical.HITs.PropositionalTruncation
-open import Cubical.HITs.Sn
-open import Cubical.HITs.Pushout
+open import Cubical.Data.Unit
 open import Cubical.HITs.Join
+open import Cubical.HITs.PropositionalTruncation
+open import Cubical.HITs.Pushout
+open import Cubical.HITs.Sn
 open import Cubical.Homotopy.Connected
-
-open import FPAbGroup
-open import HomotopyGroups
 
 private
   variable
     ℓ : Level
-
 -- finite CW complexes
 postulate
   -- The type of "finite CW complex structures".
@@ -57,4 +54,3 @@ postulate
 
   mapFromNSkel : (X : Type ℓ) (hX : isFinCW X) (n : HLevel)
     → ∥ Σ[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (X → Y) ] isConnectedFun n f ∥₁
-

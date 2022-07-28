@@ -9,8 +9,9 @@ open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.Loopspace
 
 open import SAF
-open import FibCofibSeq
 open import FPAbGroup
+
+open import FiberOrCofiberSequences.Base
 
 private
   variable

@@ -13,12 +13,15 @@ open import Cubical.HITs.Truncation
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.Loopspace
 
-open import FibCofibSeq
 open import HomotopyGroups
 
 open import ConnectedCovers.Base
 open import ConnectedCovers.K-G-n-facts
 open import ConnectedCovers.TruncationLevelFacts
+
+open import FiberOrCofiberSequences.Base
+open import FiberOrCofiberSequences.LongExactSequence
+open import FiberOrCofiberSequences.PuppeLemma
 
 private
   variable
@@ -27,11 +30,10 @@ private
 πConnCov : (X : Pointed ℓ) (n k : ℕ) → k ≥ n
   → AbGroupEquiv (πAb k (X ⦉ (suc n) ⦊)) (πAb k X)
 πConnCov X n k hnk =
-  ExactSequenceIsomorphism (X ⦉ (suc n) ⦊) X (hLevelTrunc∙ (3 + n) X) k
+  ExactSequenceEquiv (X ⦉ (suc n) ⦊) X (hLevelTrunc∙ (3 + n) X) k
   ( AlternativeFiberSeq X n)
   ( πAbOfHLevelTrunc' X n k hnk)
   ( πAbOfHLevelTrunc X n k hnk)
-
 
 πConnCovEq : (X : Pointed ℓ) (n k : ℕ) → k ≥ n
   → (πAb k (X ⦉ (suc n) ⦊)) ≡ (πAb k X)
