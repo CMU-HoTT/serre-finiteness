@@ -54,171 +54,181 @@ ConnCovIsConn X zero = truncIsConnected X 2 (trunc {X = X} 2 (pt X))
 ConnCovIsConn X (suc n) =
   truncIsConnected (X ⦉ n ⦊) (3 + n) (trunc {X = X ⦉ n ⦊} (3 + n) (pt (X ⦉ n ⦊)))
 
--- despite some planning, this is still a mess!
 ConnCovEqFiber : (X : Pointed ℓ) (n : ℕ) →
   (X ⦉ n ⦊) ≡ (fiber∙ {A = X} (trunc∙ (2 + n)))
 ConnCovEqFiber X zero = ConnCovEqFiberZero X
 ConnCovEqFiber X (suc n) = ConnCovEqFiberConnCov X n ∙
   ua∙' (fiber∙ (trunc∙ (3 + n))) (fiber∙ (trunc∙ (3 + n)))
   (fiber∙ (trunc∙ (3 + n))
- ≃∙⟨ ΣFamBaseChange (X ⦉ n ⦊) (fiber∙ {A = X} (trunc∙ (2 + n)))
-     ( hLevelTrunc∙ (3 + n)) ( λ A → trunc∙ (3 + n))
-     ( au∙ (X ⦉ n ⦊) (fiber∙ {A = X} (trunc∙ (2 + n)))
-     ( ConnCovEqFiber X n)) ⟩
+ ≃∙⟨
+     ΣFamBaseChange
+     ( hLevelTrunc∙ (3 + n))
+     ( λ A → trunc∙ (3 + n))
+     ( au∙ (X ⦉ n ⦊) (fiber∙ {A = X} (trunc∙ (2 + n))) ( ConnCovEqFiber X n))
+   ⟩
   (Σ (typ (fiber∙ {A = X} (trunc∙ (2 + n))))
-  (truncFam (3 + n) {A* = fiber∙ {A = X} (trunc∙ (2 + n))}) ,
-  (pt X , refl) , refl)
- ≃∙⟨ ΣAssoc∙ X (λ x → trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X))
-     (λ x p →
-     trunc {X = fiber∙ {A = X} (trunc∙ (2 + n))} (3 + n) (x , p)
-     ≡ trunc {X = fiber∙ {A = X} (trunc∙ (2 + n))} (3 + n) (pt X , refl))
-     refl refl ⟩
+  (truncFam
+   ( 3 + n)
+   { A* = fiber∙ {A = X} (trunc∙ (2 + n))})
+  , (pt X , refl) , refl)
+ ≃∙⟨ 
+     ΣAssoc∙ refl refl
+   ⟩
   (Σ (typ X) (λ x →
   Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-   trunc {X = fiber∙ {A = X} (trunc∙ (2 + n))} (3 + n) (x , p)
-   ≡ trunc {X = fiber∙ {A = X} (trunc∙ (2 + n))} (3 + n) (pt X , refl))) ,
+   trunc
+   { X = fiber∙ {A = X} (trunc∙ (2 + n))}
+   ( 3 + n)
+   ( x , p)
+  ≡ trunc
+    { X = fiber∙ {A = X} (trunc∙ (2 + n))}
+    ( 3 + n)
+    ( pt X , refl))) ,
    pt X , refl , refl
- ≃∙⟨ ΣPtdFibEq X
-     (λ x → Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-             trunc {X = fiber∙ {A = X} (trunc∙ (2 + n))} (3 + n) (x , p)
-           ≡ trunc {X = fiber∙ {A = X} (trunc∙ (2 + n))} (3 + n) (pt X , refl))
-     (λ x → Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-             hLevelTrunc (2 + n) ((x , p) ≡ (pt X , refl)))
-     (refl , refl) (refl , ∣ refl ∣ₕ)
-     (λ x →
-       Σ-cong-equiv-snd (λ p → isoToEquiv (PathIdTruncIso (2 + n))))
-     (ΣPathP (refl , (cong ∣_∣ (transportRefl refl)))) ⟩
-  (Σ (typ X) (λ x →
-  Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-  hLevelTrunc (2 + n) ((x , p)
-                     ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)})))) ,
-  (pt X , refl ,
-  trunc {X = ((pt X , refl) ≡ (pt X , refl)) , refl} (2 + n) refl)
- ≃∙⟨ ΣPtdFibEq X
-     (λ x → Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-     hLevelTrunc (2 + n)
-     ((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)})))
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-     hLevelTrunc (2 + n)
-     ((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)}))))
-     (refl , ∣ refl ∣ₕ)
-     ∣ refl , ∣ refl ∣ₕ ∣ₕ 
-     (λ x → invEquiv (truncIdempotent≃ (2 + n)
-     (isOfHLevelΣ (2 + n) (isOfHLevelSuc (suc n)
-                          (isOfHLevelPath' (suc n)
-                          (isOfHLevelTrunc (2 + n)) _ _))
-       λ p → isOfHLevelTrunc (2 + n))))
-     refl ⟩
-  (Σ (typ X) (λ x → hLevelTrunc (2 + n)
-  (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-  hLevelTrunc (2 + n)
-  (((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)})))))) ,
-  pt X , ∣ refl , ∣ refl ∣ₕ ∣ₕ
- ≃∙⟨ ΣPtdFibEq
-     X
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-     hLevelTrunc (2 + n)
-     (((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)})))))
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-     (((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)})))))
-     ∣ refl , ∣ refl ∣ₕ ∣ₕ
-     ∣ refl , refl ∣ₕ
-     (λ x → invEquiv (isoToEquiv (truncOfΣIso (2 + n))))
-     refl ⟩
-  (Σ (typ X) (λ x → hLevelTrunc (2 + n)
-  (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-  ((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)}))))) ,
-  pt X , ∣ refl , refl ∣ₕ
- ≃∙⟨ ΣPtdFibEq X
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-     ((x , p) ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)}))))
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-      (Σ[ q ∈ x ≡ pt X ]
-       PathP (λ i → trunc {X = X} (2 + n) (q i)
-                   ≡ trunc {X = X} (2 + n) (pt X)) p refl)))
-     ∣ refl , refl ∣ₕ ∣ refl , (refl , refl) ∣ₕ
-     (λ x → cong≃ (hLevelTrunc (2 + n))
-     (Σ-cong-equiv-snd (λ p →
-     invEquiv ΣPathP≃PathPΣ)))
-     (transportRefl ∣ refl , (refl , refl) ∣ₕ) ⟩
-  (Σ (typ X) λ x → hLevelTrunc (2 + n)
-  (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-   (Σ[ q ∈ x ≡ pt X ]
-    PathP (λ i → trunc {X = X} (2 + n) (q i)
-                ≡ trunc {X = X} (2 + n) (pt X)) p refl))) ,
-  (pt X) , ∣ refl , (refl , refl) ∣ₕ
- ≃∙⟨ ΣPtdFibEq X
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-      (Σ[ q ∈ x ≡ pt X ]
-       PathP (λ i → trunc {X = X} (2 + n) (q i)
-                   ≡ trunc {X = X} (2 + n) (pt X)) p refl)))
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-      (Σ[ q ∈ x ≡ pt X ]
-       transport (λ i → trunc {X = X} (2 + n) (q i)
-                       ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl)))
-     ∣ refl , (refl , refl) ∣ₕ ∣ refl , (refl , fromPathP refl) ∣ₕ
-     (λ x → cong≃ (hLevelTrunc (2 + n))
-     (Σ-cong-equiv-snd (λ p →
-     Σ-cong-equiv-snd (λ q →
-     PathP≃Path (λ i → trunc {X = X} (2 + n) (q i)
-                      ≡ trunc {X = X} (2 + n) (pt X)) p refl))))
-     (transportRefl ∣ refl , (refl , fromPathP refl) ∣ₕ) ⟩
-  (Σ (typ X) λ x → hLevelTrunc (2 + n)
-  (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-   (Σ[ q ∈ x ≡ pt X ]
-    transport (λ i → trunc {X = X} (2 + n) (q i)
-                    ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl))) ,
-  (pt X) , ∣ refl , (refl , fromPathP refl) ∣ₕ
- ≃∙⟨ ΣPtdFibEq X
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-      (Σ[ q ∈ x ≡ pt X ]
-       transport (λ i → trunc {X = X} (2 + n) (q i)
-                       ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl)))
-     (λ x → hLevelTrunc (2 + n)
-     (Σ[ q ∈ x ≡ pt X ]
-      (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-       transport (λ i → trunc {X = X} (2 + n) (q i)
-                       ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl)))
-     ∣ refl , (refl , fromPathP refl) ∣ₕ
-     ∣ refl , (refl , fromPathP refl) ∣ₕ
-     (λ x → cong≃ (hLevelTrunc (2 + n))
-       (ΣSwapNested (trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X))
-        (x ≡ pt X) λ p q →
-        transport (λ i → trunc {X = X} (2 + n) (q i)
-                         ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl))
-     (transportRefl ∣ refl , (refl , fromPathP refl) ∣ₕ) ⟩
-  (Σ (typ X) λ x → hLevelTrunc (2 + n)
-  ((Σ[ q ∈ x ≡ pt X ]
-  (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-  transport (λ i → trunc {X = X} (2 + n) (q i)
-                  ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl)))) ,
-  (pt X) , ∣ refl , (refl , fromPathP refl) ∣ₕ
- ≃∙⟨ ΣPtdFibEq X
-     (λ x →
-     hLevelTrunc (2 + n)
-     ((Σ[ q ∈ x ≡ pt X ]
-     (Σ[ p ∈ trunc {X = X} (2 + n) x ≡ trunc {X = X} (2 + n) (pt X) ]
-     transport (λ i → trunc {X = X} (2 + n) (q i)
-                     ≡ trunc {X = X} (2 + n) (pt X)) p ≡ refl))))
-     (λ x → hLevelTrunc (2 + n) (x ≡ pt X))
-     ∣ refl , (refl , fromPathP refl) ∣ₕ ∣ refl ∣ₕ
-     (λ x → cong≃ (hLevelTrunc (2 + n))
-     (Σ-contractSnd (transportOfPathPathContr X x (suc n) (2 + n))))
-     (transportRefl ∣ refl ∣ₕ) ⟩
-  (Σ (typ X) λ x → hLevelTrunc (2 + n) (x ≡ pt X)) , pt X , ∣ refl ∣ₕ
- ≃∙⟨ ΣPtdFibEq X
-     (λ x → hLevelTrunc (2 + n) (x ≡ pt X))
-     (λ x → trunc {X = X} (3 + n) x ≡ trunc {X = X} (3 + n) (pt X))
-     ∣ refl ∣ₕ refl
-     (λ x → invEquiv (isoToEquiv (PathIdTruncIso (2 + n)))) refl ⟩
+ ≃∙⟨ -- **opens a long block in the pointed equivalence proof**
+     Σ∙FibEq
+     (      ( (λ x →
+                  Σ[ p ∈ trunc {X = X} (2 + n) x
+                       ≡ trunc {X = X} (2 + n) (pt X) ]
+                    trunc
+                    { X = fiber∙ {A = X} (trunc∙ (2 + n))}
+                    ( 3 + n)
+                    ( x , p)
+                  ≡ trunc
+                    { X = fiber∙ {A = X} (trunc∙ (2 + n))}
+                    ( 3 + n)
+                    ( pt X , refl))
+            , (refl , refl))
+       ≃∙F⟨
+            ( λ x →
+                 Σ-cong-equiv-snd
+                 ( λ p → isoToEquiv (PathIdTruncIso (2 + n))))
+            , ΣPathP (refl , (cong ∣_∣ₕ (transportRefl refl)))
+          ⟩
+       (    ( (λ x →
+                  Σ[ p ∈ trunc {X = X} (2 + n) x
+                       ≡ trunc {X = X} (2 + n) (pt X) ]
+                    hLevelTrunc (2 + n)
+                    ( (x , p)
+                    ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)})))
+            , (refl , ∣ refl ∣ₕ))
+       ≃∙F⟨
+            ( λ x →
+                 invEquiv
+                 ( truncIdempotent≃ (2 + n)
+                   ( isOfHLevelΣ (2 + n)
+                     ( isOfHLevelSuc (1 + n)
+                       ( isOfHLevelPath' (1 + n)
+                         ( isOfHLevelTrunc (2 + n)) _ _))
+                     ( λ _ → isOfHLevelTrunc (2 + n)))))
+            , refl
+          ⟩
+       (    ( (λ x →
+                  hLevelTrunc (2 + n)
+                  ( Σ[ p ∈ trunc {X = X} (2 + n) x
+                         ≡ trunc {X = X} (2 + n) (pt X) ]
+                      hLevelTrunc (2 + n)
+                      ( (x , p)
+                      ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)}))))
+            , (∣ refl , ∣ refl ∣ₕ ∣ₕ))
+       ≃∙F⟨
+            ( λ x →
+                 invEquiv (isoToEquiv (truncOfΣIso (2 + n))))
+            , refl
+          ⟩
+       (    ( (λ x →
+                  hLevelTrunc (2 + n)
+                  ( Σ[ p ∈ trunc {X = X} (2 + n) x
+                         ≡ trunc {X = X} (2 + n) (pt X) ]
+                     ( (x , p)
+                     ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)}))))
+            , (∣ refl , refl ∣ₕ))
+       ≃∙F⟨ --opens a long block
+            hLevelCong≃∙F (2 + n) _ _
+            ( ΣΣ∙FibEq
+              (     ( (λ x p →
+                            (x , p)
+                          ≡ (pt X , refl {x = trunc {X = X} (2 + n) (pt X)}))
+                    , refl)
+              ≃∙FF⟨
+                    ( λ x p → invEquiv ΣPathP≃PathPΣ)
+                    , refl
+                  ⟩
+              (     ( (λ x p →
+                            Σ[ q ∈ x ≡ pt X ]
+                             PathP
+                             ( λ i → trunc {X = X} (2 + n) (q i)
+                                    ≡ trunc {X = X} (2 + n) (pt X))
+                             ( p)
+                             ( refl))
+                    , (refl , refl))
+              ≃∙FF⟨
+                    ( λ x p → Σ-cong-equiv-snd
+                               ( λ q →
+                                    PathP≃Path
+                                    ( λ i → trunc {X = X} (2 + n) (q i)
+                                           ≡ trunc {X = X} (2 + n) (pt X))
+                                    ( p)
+                                    ( refl)))
+                    , refl
+                  ⟩
+              (     ( (λ x p →
+                            Σ[ q ∈ x ≡ pt X ]
+                             transport
+                             ( λ i → trunc {X = X} (2 + n) (q i)
+                                    ≡ trunc {X = X} (2 + n) (pt X))
+                             ( p)
+                             ≡ refl)
+                    , (refl , fromPathP refl)) ≃∙FF∎))))
+          ⟩ --closes a long block
+       (    ( (λ x →
+                  hLevelTrunc (2 + n)
+                  ( Σ[ p ∈ trunc {X = X} (2 + n) x
+                         ≡ trunc {X = X} (2 + n) (pt X) ]
+                    Σ[ q ∈ x ≡ pt X ]
+                     transport
+                     ( λ i → trunc {X = X} (2 + n) (q i)
+                            ≡ trunc {X = X} (2 + n) (pt X))
+                     ( p)
+                     ≡ refl))
+            , (∣ refl , (refl , fromPathP refl) ∣ₕ))
+       ≃∙F⟨
+            ( λ x →
+                 cong≃
+                 ( hLevelTrunc (2 + n))
+                 ( ΣSwapNested))
+            , transportRefl (∣ refl , (refl , fromPathP refl) ∣ₕ)
+          ⟩
+       (    ( (λ x →
+                  hLevelTrunc (2 + n)
+                  ( Σ[ q ∈ x ≡ pt X ]
+                    Σ[ p ∈ trunc {X = X} (2 + n) x
+                         ≡ trunc {X = X} (2 + n) (pt X) ]
+                     transport
+                     ( λ i → trunc {X = X} (2 + n) (q i)
+                            ≡ trunc {X = X} (2 + n) (pt X))
+                     ( p)
+                     ≡ refl))
+            , (∣ refl , (refl , fromPathP refl) ∣ₕ))
+       ≃∙F⟨
+            ( λ x →
+                 cong≃
+                 ( hLevelTrunc (2 + n))
+                 ( Σ-contractSnd
+                   ( transportOfPathPathContr X x (1 + n) (2 + n))))
+            , transportRefl ∣ refl ∣ₕ
+          ⟩
+       (    ( (λ x → hLevelTrunc (2 + n) (x ≡ pt X))
+            , ∣ refl ∣ₕ)
+       ≃∙F⟨
+            ( λ x →
+                 invEquiv (isoToEquiv (PathIdTruncIso (2 + n))))
+            , refl
+          ⟩
+       (    ( (λ x → trunc {X = X} (3 + n) x ≡ trunc {X = X} (3 + n) (pt X))
+            , refl)
+       ≃∙F∎))))))))
+   ⟩ -- **closes the long block in the pointed equivalence proof**
   fiber∙ {A = X} (trunc∙ (3 + n)) ∎≃∙)
 
 
