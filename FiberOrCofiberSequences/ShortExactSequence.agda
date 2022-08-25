@@ -90,6 +90,31 @@ assocIsoLeft : {A : Type ℓ} {a b c d : A} (p : a ≡ b) (q : b ≡ c) (r : c �
   (s : a ≡ d) → Iso ((p ∙ q) ∙ r ≡ s) (p ∙ q ∙ r ≡ s)
 assocIsoLeft p q r s = ∙IsoOnLeft (assoc p q r)
 
+swapSymLeftIso : {A : Type ℓ} {x y z : A} (p : x ≡ y) (q : x ≡ z)
+  (r : z ≡ y) → Iso ((sym q) ∙ p ≡ r) (p ≡ q ∙ r)
+swapSymLeftIso p q r =
+  compIso (∙LeftIso ((sym q) ∙ p) r q)
+  (compIso (invIso (lCancelIsoLeftLeft p (q ∙ r) (sym q)))
+           (lUnitIsoLeft p (q ∙ r)))
+
+swapSymLeftIso' : {A : Type ℓ} {x y : A} (p : x ≡ y) (q : x ≡ y)
+  → Iso (p ≡ q) (refl ≡ (sym p) ∙ q)
+swapSymLeftIso' p q =
+  invIso
+  (compIso symIso
+  (compIso (swapSymLeftIso q p refl)
+           (invIso (compIso symIso (rUnitIsoRight q p)))))
+
+conjReflSymIso : {A : Type ℓ} {x y : A} (p : x ≡ x) (q : x ≡ y)
+  → Iso ((sym q) ∙ (sym p) ∙ q ≡ refl) ((sym q) ∙ p ∙ q ≡ refl)
+conjReflSymIso p q =
+  compIso (swapSymLeftIso ((sym p) ∙ q) q refl)
+  (compIso symIso
+  (compIso (rUnitIsoLeft q ((sym p) ∙ q))
+  (compIso symIso
+  (compIso (swapSymLeftIso q p q)
+  (compIso (swapSymLeftIso' q (p ∙ q)) symIso)))))
+
 Auxiliary≡Iso : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   (pb : typ (Ω B))
   → Iso (sym (snd (FiberSeqProj F)) ∙
@@ -99,93 +124,10 @@ Auxiliary≡Iso : {A B C : Pointed ℓ} (F : FiberSeq A B C)
           cong (fst (FiberSeqProj F)) pb ∙
           snd (FiberSeqProj F) ≡ refl)
 Auxiliary≡Iso F pb =
- compIso (∙LeftIso (sym (snd (FiberSeqProj F))
-                    ∙ cong (fst (FiberSeqProj F)) (sym pb)
-                    ∙ snd (FiberSeqProj F)) refl (snd (FiberSeqProj F)))
- (compIso (invIso (rUnitIsoRight (snd (FiberSeqProj F)
-                         ∙ sym (snd (FiberSeqProj F))
-                         ∙ cong (fst (FiberSeqProj F)) (sym pb)
-                         ∙ snd (FiberSeqProj F)) (snd (FiberSeqProj F))))
- (compIso (invIso (rCancelIsoLeftLeft (cong (fst (FiberSeqProj F)) (sym pb)
-                                       ∙ snd (FiberSeqProj F))
-                                      (snd (FiberSeqProj F))
-                                      (snd (FiberSeqProj F))))
- (compIso (lUnitIsoLeft (cong (fst (FiberSeqProj F)) (sym pb)
-                        ∙ snd (FiberSeqProj F))
-                        (snd (FiberSeqProj F)))
- (compIso (∙RightIso (cong (fst (FiberSeqProj F)) (sym pb)
-                     ∙ snd (FiberSeqProj F)) (snd (FiberSeqProj F))
-                     (sym (snd (FiberSeqProj F))))
- (compIso (assocIsoLeft (cong (fst (FiberSeqProj F)) (sym pb))
-                        (snd (FiberSeqProj F))
-                        (sym (snd (FiberSeqProj F)))
-                        (snd (FiberSeqProj F)
-                        ∙ sym (snd (FiberSeqProj F))))
- (compIso (invIso (rCancelIsoRightLeft (cong (fst (FiberSeqProj F)) (sym pb))
-                                       (snd (FiberSeqProj F)
-                                       ∙ sym (snd (FiberSeqProj F)))
-                                       (snd (FiberSeqProj F))))
- (compIso (rUnitIsoLeft (cong (fst (FiberSeqProj F)) (sym pb))
-                        (snd (FiberSeqProj F)
-                        ∙ sym (snd (FiberSeqProj F))))
- (compIso symIso
- (compIso (invIso (lUnitIsoLeft (snd (FiberSeqProj F)
-                                ∙ sym (snd (FiberSeqProj F)))
-                                (cong (fst (FiberSeqProj F)) (sym pb))))
- (compIso (invIso (rCancelIsoRightLeft refl
-                     (cong (fst (FiberSeqProj F)) (sym pb))
-                     (snd (FiberSeqProj F))))
- (compIso (lUnitIsoLeft refl
-                     (cong (fst (FiberSeqProj F)) (sym pb)))
- (compIso (∙LeftIso refl (cong (fst (FiberSeqProj F)) (sym pb))
-                         (cong (fst (FiberSeqProj F)) pb))
- (compIso (rUnitIsoLeft (cong (fst (FiberSeqProj F)) pb)
-                        (cong (fst (FiberSeqProj F)) pb
-                        ∙ cong (fst (FiberSeqProj F)) (sym pb)))
- (compIso (∙LeftIso (cong (fst (FiberSeqProj F)) pb)
-                    (cong (fst (FiberSeqProj F)) pb
-                    ∙ cong (fst (FiberSeqProj F)) (sym pb))
-                    (sym (snd (FiberSeqProj F))))
- (compIso symIso
- (compIso (invIso (rCancelIsoRightLeft (sym (snd (FiberSeqProj F)))
-                                       (sym (snd (FiberSeqProj F))
-                                       ∙ cong (fst (FiberSeqProj F)) pb)
-                                       (cong (fst (FiberSeqProj F)) pb)))
- (compIso (rUnitIsoLeft (sym (snd (FiberSeqProj F)))
-                        (sym (snd (FiberSeqProj F))
-                        ∙ cong (fst (FiberSeqProj F)) pb))
- (compIso (∙RightIso (sym (snd (FiberSeqProj F)))
-                     (sym (snd (FiberSeqProj F))
-                     ∙ cong (fst (FiberSeqProj F)) pb)
-                     (snd (FiberSeqProj F)))
- (compIso (∙RightIso (sym (snd (FiberSeqProj F))
-                     ∙ snd (FiberSeqProj F))
-                     (((sym (snd (FiberSeqProj F))
-                      ∙ cong (fst (FiberSeqProj F)) pb)
-                      ∙ snd (FiberSeqProj F)))
-                     refl)
- (compIso (assocIsoLeft (sym (snd (FiberSeqProj F))) (snd (FiberSeqProj F)) refl
-                        (((sym (snd (FiberSeqProj F))
-                         ∙ cong (fst (FiberSeqProj F)) pb)
-                         ∙ snd (FiberSeqProj F)) ∙ refl))
- (compIso (invIso (lCancelIsoLeftLeft refl
-                      (((sym (snd (FiberSeqProj F))
-                       ∙ cong (fst (FiberSeqProj F)) pb)
-                       ∙ snd (FiberSeqProj F))
-                       ∙ refl)
-                    (snd (FiberSeqProj F))))
- (compIso (lUnitIsoLeft refl (((sym (snd (FiberSeqProj F))
-                             ∙ cong (fst (FiberSeqProj F)) pb)
-                             ∙ snd (FiberSeqProj F))
-                             ∙ refl))
- (compIso symIso
- (compIso (rUnitIsoLeft ((sym (snd (FiberSeqProj F))
-                         ∙ cong (fst (FiberSeqProj F)) pb)
-                         ∙ snd (FiberSeqProj F))
-                        refl)
- (assocIsoLeft (sym (snd (FiberSeqProj F))) (cong (fst (FiberSeqProj F)) pb)
-               (snd (FiberSeqProj F)) refl)))))))))))))))))))))))))
-
+  conjReflSymIso
+  ( cong (fst (FiberSeqProj F)) pb)
+  ( snd (FiberSeqProj F))
+                                    
 iteratedPuppeUniversalEquiv : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   (pb : typ (Ω B))
   → (Σ[ pa ∈ typ (Ω A) ] sym (snd (FiberSeqIncl F))

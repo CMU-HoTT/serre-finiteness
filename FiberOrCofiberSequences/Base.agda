@@ -48,7 +48,7 @@ fiber∙ : {A B : Pointed ℓ} → (A →∙ B) → Pointed ℓ
 fiber∙ {A = A} {B = B} f = fiber (fst f) (pt B) , (pt A) , (snd f)
 
 postulate
-  FiberFiberSeq : (A B : Pointed ℓ) (f : A →∙ B)
+  FiberFiberSeq : {A B : Pointed ℓ} (f : A →∙ B)
     → FiberSeq (fiber∙ f) A B
 
   FiberSeqIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
@@ -99,9 +99,9 @@ FiberSeqCompEq'' : {A B C  : Pointed ℓ} (F : FiberSeq A B C)
 FiberSeqCompEq'' F = (fst (FiberSeqCompEq' F)) , (fromPathP (snd (FiberSeqCompEq' F)))
 
 -- these transportPathLemmas should be renamed and moved elsewhere
-transportPathLemma' : {A : Type ℓ} (a b c : A) (p : a ≡ b) (q : b ≡ c)
+transportPathLemma' : {A : Type ℓ} {a b c : A} (p : a ≡ b) (q : b ≡ c)
   → transp (λ i → p (~ i) ≡ c) i0 q ≡ p ∙ q
-transportPathLemma' a b c =
+transportPathLemma' {c = c} =
   J (λ b' p' → (q : b' ≡ c) → transp (λ i → p' (~ i) ≡ c) i0 q ≡ p' ∙ q)
     λ q → transportRefl q ∙ lUnit q
 
@@ -111,22 +111,27 @@ transportFunPathLemma'' a a' =
   J (λ a'' p → transp (λ i → p (~ i) ≡ a'') i0 refl ≡ p)
     (transportRefl refl)
 
-transportFunPathLemma' : {A B : Type ℓ} (a a' : A) (b : B) (f : A → B)
+transportFunPathLemma' : {A B : Type ℓ} {a a' : A} {b : B} (f : A → B)
   (q : a ≡ a') (r : f a' ≡ b)
   → transport (λ i → f (q (~ i)) ≡ b) r ≡ cong f q ∙ r
-transportFunPathLemma' a a' b f =
-  J (λ a* q → (r : f a* ≡ b) → transport (λ i → f (q (~ i)) ≡ b) r ≡ cong f q ∙ r) λ r → transportRefl r ∙ lUnit r
+transportFunPathLemma' {b = b} f =
+  J ( λ a* q
+        → (r : f a* ≡ b)
+        → transport (λ i → f (q (~ i)) ≡ b) r ≡ cong f q ∙ r)
+    ( λ r → transportRefl r ∙ lUnit r)
 
 transportFunPathLemma : {A B : Type ℓ} (a : A) (b : B) (f g : A → B)
   (p : f ≡ g) (q : f a ≡ b) (r : g a ≡ b)
   → transport (λ i → p i a ≡ b) q ≡ r
   → (λ i → p i a) ⁻¹ ∙ q ≡ r
 transportFunPathLemma a b f g =
-  J (λ h p → (q : f a ≡ b) (r : h a ≡ b)
-    → transport (λ i → p i a ≡ b) q ≡ r
-    → (λ i → p i a) ⁻¹ ∙ q ≡ r)
-    λ q r s → cong (_∙ q) (symRefl ⁻¹) ∙ lUnit q ⁻¹
-               ∙ (s ⁻¹ ∙ transportRefl q) ⁻¹
+  J ( λ h p
+       → (q : f a ≡ b) (r : h a ≡ b)
+       → transport (λ i → p i a ≡ b) q ≡ r
+       → (λ i → p i a) ⁻¹ ∙ q ≡ r)
+    ( λ q r s → cong (_∙ q) (symRefl ⁻¹)
+                 ∙ lUnit q ⁻¹
+                 ∙ (s ⁻¹ ∙ transportRefl q) ⁻¹)
 
 FiberSeqCompEq''' : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   → Σ[ p ∈ fst (FiberSeqProj F) ∘ fst (FiberSeqIncl F) ≡ (λ _ → snd C) ]
@@ -171,7 +176,7 @@ postulate
     
 
   ProjOfFiberFiberSeq : {A B : Pointed ℓ} (f : A →∙ B)
-    → FiberSeqProj (FiberFiberSeq A B f) ≡ f
+    → FiberSeqProj (FiberFiberSeq f) ≡ f
 
 inclOfFiberFiberSeq : {A B : Pointed ℓ} (f : A →∙ B)
   → ((fiber∙ f) →∙ A)
@@ -179,7 +184,7 @@ inclOfFiberFiberSeq f = fst , refl
 
 postulate
   InclOfFiberFiberSeq : {A B : Pointed ℓ} (f : A →∙ B)
-    → FiberSeqIncl (FiberFiberSeq A B f) ≡ (fst , refl {x = snd A})
+    → FiberSeqIncl (FiberFiberSeq f) ≡ (fst , refl {x = snd A})
 
 
 FibsEqOfFibSeq' : {A A' B C : Pointed ℓ} (F : FiberSeq A B C)
@@ -189,82 +194,89 @@ FibsEqOfFibSeq' : {A A' B C : Pointed ℓ} (F : FiberSeq A B C)
 FibsEqOfFibSeq' F G q = PathPΣ (FibsEqOfFibSeq F G q)
 
 FibsEqFiberFiberSeq : {A B C : Pointed ℓ} (F : FiberSeq A B C) →
-  Σ[ p ∈ A ≡ fiber∙ (FiberSeqProj F) ] PathP (λ i → (p i) →∙ B) (FiberSeqIncl F) (fst , refl)
+  Σ[ p ∈ A ≡ fiber∙ (FiberSeqProj F) ]
+   PathP (λ i → (p i) →∙ B) (FiberSeqIncl F) (fst , refl)
 FibsEqFiberFiberSeq {A = A} {B = B} {C = C} F =
   transport
-  (λ i → Σ[ p ∈ A ≡ fiber∙ (FiberSeqProj F) ]
-  PathP (λ i → (p i) →∙ B) (FiberSeqIncl F) (InclOfFiberFiberSeq (FiberSeqProj F) i)) (FibsEqOfFibSeq' F (FiberFiberSeq B C (FiberSeqProj F))
-  (ProjOfFiberFiberSeq (FiberSeqProj F) ⁻¹))
+  ( λ i → Σ[ p ∈ A ≡ fiber∙ (FiberSeqProj F) ]
+            PathP
+            ( λ i → (p i) →∙ B)
+            ( FiberSeqIncl F)
+            ( InclOfFiberFiberSeq (FiberSeqProj F) i))
+  ( FibsEqOfFibSeq' F (FiberFiberSeq (FiberSeqProj F))
+  ( ProjOfFiberFiberSeq (FiberSeqProj F) ⁻¹))
 
 FibsIsoFiberFiberSeq : {A B C : Pointed ℓ} (F : FiberSeq A B C) →
   Σ[ H ∈ Iso (typ (fiber∙ (FiberSeqProj F))) (typ A) ]
   Iso.fun H (pt (fiber∙ (FiberSeqProj F))) ≡ (pt A)
 FibsIsoFiberFiberSeq F =
-  fst (FibsIsoOfFibSeq (FiberFiberSeq (FiberSeqTotal F) (FiberSeqBase F)
-                                      (FiberSeqProj F)) F
-                         (ProjOfFiberFiberSeq _))
+  fst (FibsIsoOfFibSeq
+       ( FiberFiberSeq
+         ( FiberSeqProj F))
+       ( F)
+       ( ProjOfFiberFiberSeq _))
 
 postulate  
-  BaseEqFiberSeq : (A B C C' : Pointed ℓ) → C ≡ C' → FiberSeq A B C 
+  BaseEqFiberSeq : {A B C C' : Pointed ℓ} → C ≡ C' → FiberSeq A B C 
     → FiberSeq A B C'
 
-  BaseEquivFiberSeq : (A B C C' : Pointed ℓ) → C ≃∙ C' → FiberSeq A B C
+  BaseEquivFiberSeq : {A B C C' : Pointed ℓ} → C ≃∙ C' → FiberSeq A B C
     → FiberSeq A B C'
 
-  BaseIsoFiberSeq : (A B C C' : Pointed ℓ) (H : Iso (typ C) (typ C'))
+  BaseIsoFiberSeq : {A B C C' : Pointed ℓ} (H : Iso (typ C) (typ C'))
     → Iso.fun H (pt C) ≡ pt C' → FiberSeq A B C → FiberSeq A B C'
 
   BaseIsoFiberSeqProj : {A B C C' : Pointed ℓ} (H : Iso (typ C) (typ C'))
     (p : Iso.fun H (pt C) ≡ pt C') (F : FiberSeq A B C)
-    → FiberSeqProj (BaseIsoFiberSeq A B C C' H p F)
+    → FiberSeqProj (BaseIsoFiberSeq H p F)
     ≡ (Iso.fun H , p) ∘∙ FiberSeqProj F
 
   BaseIsoFiberSeqIncl : {A B C C' : Pointed ℓ} (H : Iso (typ C) (typ C'))
     (p : Iso.fun H (pt C) ≡ pt C') (F : FiberSeq A B C)
-    → FiberSeqIncl (BaseIsoFiberSeq A B C C' H p F)
+    → FiberSeqIncl (BaseIsoFiberSeq H p F)
     ≡ FiberSeqIncl F
 
-  TotalEqFiberSeq : (A B B' C : Pointed ℓ) → B ≡ B' → FiberSeq A B C
+  TotalEqFiberSeq : {A B B' C : Pointed ℓ} → B ≡ B' → FiberSeq A B C
     → FiberSeq A B' C
 
-  TotalEquivFiberSeq : (A B B' C : Pointed ℓ) → B ≃∙ B' → FiberSeq A B C
+  TotalEquivFiberSeq : {A B B' C : Pointed ℓ} → B ≃∙ B' → FiberSeq A B C
     → FiberSeq A B' C
 
-  TotalIsoFiberSeq : (A B B' C : Pointed ℓ) (H : Iso (typ B) (typ B'))
+  TotalIsoFiberSeq : {A B B' C : Pointed ℓ} (H : Iso (typ B) (typ B'))
     → Iso.fun H (pt B) ≡ pt B' → FiberSeq A B C → FiberSeq A B' C
 
   TotalIsoFiberSeqProj : {A B B' C : Pointed ℓ} (H : Iso (typ B) (typ B'))
     (p : Iso.fun H (pt B) ≡ pt B') (F : FiberSeq A B C)
-    → FiberSeqProj (TotalIsoFiberSeq A B B' C H p F)
+    → FiberSeqProj (TotalIsoFiberSeq H p F)
     ≡ (FiberSeqProj F) ∘∙ (Iso.inv H , cong (Iso.inv H) (sym p)
                                        ∙ Iso.leftInv H _)
 
   TotalIsoFiberSeqIncl : {A B B' C : Pointed ℓ} (H : Iso (typ B) (typ B'))
     (p : Iso.fun H (pt B) ≡ pt B') (F : FiberSeq A B C)
-    → FiberSeqIncl (TotalIsoFiberSeq A B B' C H p F)
+    → FiberSeqIncl (TotalIsoFiberSeq H p F)
     ≡ (Iso.fun H , p) ∘∙ (FiberSeqIncl F)
 
-  FiberEqFiberSeq : (A A' B C : Pointed ℓ) → A ≡ A' → FiberSeq A B C
+  FiberEqFiberSeq : {A A' B C : Pointed ℓ} → A ≡ A' → FiberSeq A B C
     → FiberSeq A' B C
 
-  FiberEquivFiberSeq : (A A' B C : Pointed ℓ) → A ≃∙ A' → FiberSeq A B C
+  FiberEquivFiberSeq : {A A' B C : Pointed ℓ} → A ≃∙ A' → FiberSeq A B C
     → FiberSeq A' B C
 
-  FiberIsoFiberSeq : (A A' B C : Pointed ℓ) (H : Iso (typ A) (typ A'))
+  FiberIsoFiberSeq : {A A' B C : Pointed ℓ} (H : Iso (typ A) (typ A'))
     → Iso.fun H (pt A) ≡ pt A' → FiberSeq A B C → FiberSeq A' B C
 
   FiberIsoFiberSeqProj : {A A' B C : Pointed ℓ} (H : Iso (typ A) (typ A'))
     (p : Iso.fun H (pt A) ≡ pt A') (F : FiberSeq A B C)
-    → FiberSeqProj (FiberIsoFiberSeq A A' B C H p F)
+    → FiberSeqProj (FiberIsoFiberSeq H p F)
     ≡ FiberSeqProj F
 
   FiberIsoFiberSeqIncl : {A A' B C : Pointed ℓ} (H : Iso (typ A) (typ A'))
     (p : Iso.fun H (pt A) ≡ pt A') (F : FiberSeq A B C)
-    → FiberSeqIncl (FiberIsoFiberSeq A A' B C H p F)
+    → FiberSeqIncl (FiberIsoFiberSeq H p F)
     ≡ (FiberSeqIncl F) ∘∙ (Iso.inv H , cong (Iso.inv H) (sym p)
                                        ∙ Iso.leftInv H (pt A))
      
-  ContrBase→TotalEqFib : (A B C : Pointed ℓ) → isContr (typ C)
+  ContrBase→TotalEqFib : {A B C : Pointed ℓ} → isContr (typ C)
     → FiberSeq A B C → A ≡ B
 
 

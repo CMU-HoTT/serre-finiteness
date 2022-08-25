@@ -237,7 +237,7 @@ ConnCovFiberSeqZero : (X : Pointed ℓ)
 ConnCovFiberSeqZero X =
   FiberEqFiberSeq ( fiber∙ {A = X} (trunc∙ 2)) (X ⦉ 0 ⦊) X (hLevelTrunc∙ 2 X)
                   ( ConnCovEqFiberZero X)
-                  ( FiberFiberSeq X (hLevelTrunc∙ 2 X) (trunc∙ 2))
+                  ( FiberFiberSeq (trunc∙ 2))
 
 
 ConnCovFiberSeq : (X : Pointed ℓ) (n : ℕ)
@@ -249,9 +249,8 @@ ConnCovFiberSeq X n =
   ( X ⦉ n ⦊)
   ( hLevelTrunc∙ (3 + n) (X ⦉ n ⦊))
   ( ConnCovEqFiberConnCov X n)
-  ( FiberFiberSeq (X ⦉ n ⦊)
-  ( hLevelTrunc∙ (3 + n) (X ⦉ n ⦊))
-  ( trunc∙ (3 + n)))
+  ( FiberFiberSeq
+    ( trunc∙ (3 + n)))
 
 AlternativeFiberSeq : (X : Pointed ℓ) (n : ℕ)
    → FiberSeq (X ⦉ (suc n) ⦊) X (hLevelTrunc∙ (3 + n) X)
@@ -260,7 +259,7 @@ AlternativeFiberSeq X n =
     ( fiber∙ {A = X} (trunc∙ (3 + n))) ( X ⦉ (suc n) ⦊)
     X ( hLevelTrunc∙ (3 + n) X)
     ( ConnCovEqFiber X (suc n) ⁻¹)
-    ( FiberFiberSeq X (hLevelTrunc∙ (3 + n) X) (trunc∙ (3 + n)))
+    ( FiberFiberSeq (trunc∙ (3 + n)))
 
 
 Conn→Eq≥ConnCov : (X : Pointed ℓ) (m n : ℕ) → m ≥ (2 + n)

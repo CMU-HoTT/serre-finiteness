@@ -37,9 +37,9 @@ ChainOfFibers→FiberSeq : {A B C : Pointed ℓ} (F : FiberSeq A B C) (n : ℕ)
               ( ChainOfFibersVertices F (suc n))
               ( ChainOfFibersVertices F n)
 ChainOfFibers→FiberSeq F zero = F
-ChainOfFibers→FiberSeq F 1 = FiberFiberSeq _ _ (FiberSeqIncl F)
+ChainOfFibers→FiberSeq F 1 = FiberFiberSeq (FiberSeqIncl F)
 ChainOfFibers→FiberSeq F (suc (suc n)) =
-  FiberFiberSeq _ _ (ChainOfFibersEdges F (2 + n))
+  FiberFiberSeq (ChainOfFibersEdges F (2 + n))
 
 ChainOfFibers→FiberSeqIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C) (n : ℕ)
   → FiberSeqIncl (ChainOfFibers→FiberSeq F n)
