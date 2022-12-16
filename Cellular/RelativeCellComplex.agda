@@ -125,12 +125,15 @@ module _ (ℐ : Family {ℓi = ℓi} {ℓ = ℓ}) where
 
     -- `fun (po g c)` is a pushout along `g` of `fun c`.
     funPO : {n : ℕ} {X X' : Type ℓ} (g : X → X') (c : T n X)
-      → Σ[ h ∈ (cod c → cod (po g c)) ] Σ[ α ∈ _ ]
-        isPushout (fun c) g h (fun (po g c)) α
+      → isPushoutAlong (fun c) (fun (po g c)) g
     funPO {n = 0} g _ .fst = g
     funPO {n = 0} g _ .snd .fst = refl
     funPO {n = 0} g _ .snd .snd = idIsPushout'
     funPO {n = suc m} g c
+--  TODO: Is it possible to use cancel-isPushoutAlong somehow?
+--      isPushoutAlong-comp (cancel-isPushoutAlong isPushoutAlongInr isPushoutAlongInr)
+--      (funPO _ {!c .snd .snd!})
+--  Maybe would be better to define `po` and `funPO` simultaneously?
       with funPO (Pushout→ _ _ _ _ (idfun _) (idfun _) g refl refl) (c .snd .snd)
     ... | (h , α , po) = h , _ ,
       pasteIsPushout
@@ -162,8 +165,7 @@ module _ (ℐ : Family {ℓi = ℓi} {ℓ = ℓ}) where
     po g c .snd = RCCOL.po g (c .snd)
 
     funPO : {X X' : Type ℓ} (g : X → X') (c : T X)
-      → Σ[ h ∈ (cod c → cod (po g c)) ] Σ[ α ∈ _ ]
-        isPushout (fun c) g h (fun (po g c)) α
+      → isPushoutAlong (fun c) (fun (po g c)) g
     funPO g c = RCCOL.funPO g (c .snd)
 
 module _ (ℐ : Family {ℓi = ℓi} {ℓ = ℓ}) where

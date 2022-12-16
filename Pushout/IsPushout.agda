@@ -417,9 +417,17 @@ module _ {A A' A'' B B' B'' : Type ℓ} {f₀ : A → A'} {f₁ : A' → A''} {g
     cancel'IsPushout po₀ (subst (isPushout _ _ _ _) η po₂)
 
 module _ {A B A' B' : Type ℓ} where
+  isPushoutAlong : (A → B) → (A' → B') → (A → A') → Type _
+  isPushoutAlong f f' g = Σ[ g' ∈ (B → B') ] Σ[ α ∈ g' ∘ f ≡ f' ∘ g ] isPushout f g g' f' α
+
+  ipaOfPO : {f : A → B} {f' : A' → B'} {g : A → A'} {g' : B → B'} {α : g' ∘ f ≡ f' ∘ g} →
+    isPushout f g g' f' α → isPushoutAlong f f' g
+  ipaOfPO po .fst = _
+  ipaOfPO po .snd .fst = _
+  ipaOfPO po .snd .snd = po
+
   isPushoutOf : (A → B) → (A' → B') → Type _
-  isPushoutOf f f' =
-    Σ[ g ∈ (A → A') ] Σ[ g' ∈ (B → B') ] Σ[ α ∈ g' ∘ f ≡ f' ∘ g ] isPushout f g g' f' α
+  isPushoutOf f f' = Σ (A → A') (isPushoutAlong f f')
 
   ipoOfPO : {f : A → B} {f' : A' → B'} {g : A → A'} {g' : B → B'} {α : g' ∘ f ≡ f' ∘ g} →
     isPushout f g g' f' α → isPushoutOf f f'
@@ -431,10 +439,54 @@ module _ {A B A' B' : Type ℓ} where
   poOfIPO : {f : A → B} {f' : A' → B'} → (ipo : isPushoutOf f f') → isPushout f (ipo .fst) (ipo .snd .fst) f' (ipo .snd .snd .fst)
   poOfIPO ipo = ipo .snd .snd .snd
 
-  -- Not a proposition.
+  -- These are not propositions.
+
+isPushoutAlongSelf : {A B : Type ℓ} (f : A → B) → isPushoutAlong f f (idfun A)
+isPushoutAlongSelf {A = A} {B = B} f = ipaOfPO (equivIsPushout {α = refl} (idIsEquiv A) (idIsEquiv B))
 
 isPushoutOfSelf : {A B : Type ℓ} (f : A → B) → isPushoutOf f f
-isPushoutOfSelf {A = A} {B = B} f = ipoOfPO (equivIsPushout {α = refl} (idIsEquiv A) (idIsEquiv B))
+isPushoutOfSelf {A = A} {B = B} f .fst = idfun A
+isPushoutOfSelf {A = A} {B = B} f .snd = isPushoutAlongSelf f
+
+-- TODO: comp-isPushoutAlong, isPushoutAlong-comp
+
+-- isPushoutAlong-comp : {A B C A' B' C' : Type ℓ} {f₀ : A → B} {f₁ : B → C} {f'₀ : A' → B'} {f'₁ : B' → C'} {g : A → A'}
+--   → (ipa : isPushoutAlong f₀ f'₀ g) → isPushoutAlong f₁ f'₁ (ipa .fst) → isPushoutAlong (f₁ ∘ f₀) (f'₁ ∘ f'₀) g
+-- isPushoutAlong-comp = _
+
+-- Surprisingly nontrivial
+cancel-isPushoutAlong' : {A B A' B' A'' B'' : Type ℓ} {f : A → B} {f' : A' → B'} {f'' : A'' → B''}
+  {g₀ : A → A'} {g₁ : A' → A''} {g'₀ : B → B'} {g'₀₁ : B → B''} {α₀ : g'₀ ∘ f ≡ f' ∘ g₀} {α₀₁ : g'₀₁ ∘ f ≡ f'' ∘ g₁ ∘ g₀}
+  → isPushout f g₀ g'₀ f' α₀ → isPushout f (g₁ ∘ g₀) g'₀₁ f'' α₀₁
+  → Σ[ g'₁ ∈ (B' → B'') ] (g'₀₁ ≡ g'₁ ∘ g'₀) × (Σ[ α₁ ∈ _ ] isPushout f' g₁ g'₁ f'' α₁)
+cancel-isPushoutAlong' {ℓ} {A} {B} {A'} {A'' = A''} {f = f} {g₀ = g₀} {g₁ = g₁} po₀ po₀₁ =
+  pushoutRec f g₀
+  {Z = λ {B' : Type ℓ} (g'₀ : B → B') (f' : A' → B') (α₀ : g'₀ ∘ f ≡ f' ∘ g₀) →
+    {B'' : Type ℓ} {f'' : A'' → B''} {g'₀₁ : B → B''} {α₀₁ : g'₀₁ ∘ f ≡ f'' ∘ g₁ ∘ g₀}
+     → isPushout f (g₁ ∘ g₀) g'₀₁ f'' α₀₁
+     → Σ[ g'₁ ∈ (B' → B'') ] (g'₀₁ ≡ g'₁ ∘ g'₀) × (Σ[ α₁ ∈ _ ] isPushout f' g₁ g'₁ f'' α₁)}
+  (λ {B'' = B''} po₀₁ →
+    pushoutRec _ _
+     {Z = λ {B''} g'₀₁ f'' α₀₁ →
+       Σ[ g'₁ ∈ (Pushout f g₀ → B'') ] (g'₀₁ ≡ g'₁ ∘ inl) × (Σ[ α₁ ∈ _ ] isPushout inr g₁ g'₁ f'' α₁) }
+     (Pushout→ _ _ _ _ (idfun _) (idfun _) g₁ refl refl , refl , _ ,
+      cancel'IsPushout' {γ = refl} (funExt push) (PushoutIsPushout f g₀) (PushoutIsPushout f (g₁ ∘ g₀)) (rUnit _ ∙ rUnit _))
+     _ _ _ po₀₁ )
+  _ _ _ po₀ po₀₁
+
+cancel-isPushoutAlong : {A B A' B' A'' B'' : Type ℓ} {f : A → B} {f' : A' → B'} {f'' : A'' → B''}
+  {g₀ : A → A'} {g₁ : A' → A''}
+  → (ipa₀ : isPushoutAlong f f' g₀) → (ipa₀₁ : isPushoutAlong f f'' (g₁ ∘ g₀))
+  → Σ[ ipa₁ ∈ isPushoutAlong f' f'' g₁ ] (ipa₀₁ .fst ≡ ipa₁ .fst ∘ ipa₀ .fst)
+cancel-isPushoutAlong ipa₀ ipa₀₁ with cancel-isPushoutAlong' (ipa₀ .snd .snd) (ipa₀₁ .snd .snd)
+... | (g'₁ , hg' , α₁ , po) = ( g'₁ , α₁ , po ) , hg'
+
+cancel-isPushoutAlong'' : {A B A' B' A'' B'' : Type ℓ} {f : A → B} {f' : A' → B'} {f'' : A'' → B''}
+  {g₀ : A → A'} {g₁ : A' → A''} {g'₀ : B → B'} {g'₀₁ : B → B''} {α₀ : f' ∘ g₀ ≡ g'₀ ∘ f} {α₀₁ : f'' ∘ g₁ ∘ g₀ ≡ g'₀₁ ∘ f}
+  → isPushout g₀ f f' g'₀ α₀ → isPushout (g₁ ∘ g₀) f f'' g'₀₁ α₀₁
+  → Σ[ g'₁ ∈ (B' → B'') ] (g'₀₁ ≡ g'₁ ∘ g'₀) × (Σ[ α₁ ∈ _ ] isPushout g₁ f' f'' g'₁ α₁)
+cancel-isPushoutAlong'' po₀ po₀₁ with cancel-isPushoutAlong' (transposeIsPushout po₀) (transposeIsPushout po₀₁)
+... | (g'₁ , hg' , α₁ , po₁) = (g'₁ , hg' , sym α₁ , transposeIsPushout po₁)
 
 module _ {A B A' B' A'' B'' : Type ℓ} {f : A → B} {f' : A' → B'} {f'' : A'' → B''} where
   comp-isPushoutOf : isPushoutOf f f' → isPushoutOf f' f'' → isPushoutOf f f''
@@ -454,14 +506,38 @@ module _ {A B C A' B' C' : Type ℓ} {f : A → B} {f' : A' → B'} {g : B → C
       e = postCompEquiv (f' , hf')
 
 module _ {A B A' : Type ℓ} {f : A → B} {g : A → A'} where
+  isPushoutAlongInl : isPushoutAlong g inl f
+  isPushoutAlongInl .fst = inr
+  isPushoutAlongInl .snd .fst = sym (funExt push)
+  isPushoutAlongInl .snd .snd = transposeIsPushout (PushoutIsPushout f g)
+
   isPushoutOfInl : isPushoutOf {B' = Pushout f g} g inl
   isPushoutOfInl .fst = f
-  isPushoutOfInl .snd .fst = inr
-  isPushoutOfInl .snd .snd .fst = sym (funExt push)
-  isPushoutOfInl .snd .snd .snd = transposeIsPushout (PushoutIsPushout f g)
+  isPushoutOfInl .snd = isPushoutAlongInl
+
+  isPushoutAlongInr : isPushoutAlong f inr g
+  isPushoutAlongInr .fst = inl
+  isPushoutAlongInr .snd .fst = funExt push
+  isPushoutAlongInr .snd .snd = PushoutIsPushout f g
 
   isPushoutOfInr : isPushoutOf {B' = Pushout f g} f inr
   isPushoutOfInr .fst = g
-  isPushoutOfInr .snd .fst = inl
-  isPushoutOfInr .snd .snd .fst = funExt push
-  isPushoutOfInr .snd .snd .snd = PushoutIsPushout f g
+  isPushoutOfInr .snd = isPushoutAlongInr
+
+isPushoutAlong-rec : {A B A' : Type ℓ} {f : A → B} {g : A → A'}
+  (Z : {B' : Type ℓ} (f' : A' → B') → Type ℓ')
+  → Z {B' = Pushout f g} inr
+  → {B' : Type ℓ} (f' : A' → B') → isPushoutAlong f f' g → Z f'
+isPushoutAlong-rec Z hZ f' ipa =
+  pushoutRec _ _ {Z = λ g' f' α → Z f'}
+  hZ (ipa .fst) f' (ipa .snd .fst) (ipa .snd .snd)
+
+-- To prove a property about any pushout of `f`,
+-- it suffices to prove it about `inr {f = f} {g = g}` for any `g`.
+isPushoutOfRec : {A B : Type ℓ} {f : A → B}
+  (Z : {A' B' : Type ℓ} (f' : A' → B') → Type ℓ')
+  (hZ : {A' : Type ℓ} (g : A → A') → Z {B' = Pushout f g} inr)
+  → {A' B' : Type ℓ} (f' : A' → B') → isPushoutOf f f' → Z f'
+isPushoutOfRec Z hZ f' ipo =
+  pushoutRec _ _ {Z = λ g' f' α → Z f'}
+  (hZ (ipo .fst)) (ipo .snd .fst) f' (ipo .snd .snd .fst) (ipo .snd .snd .snd)
