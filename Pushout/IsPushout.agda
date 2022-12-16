@@ -541,3 +541,8 @@ isPushoutOfRec : {A B : Type ℓ} {f : A → B}
 isPushoutOfRec Z hZ f' ipo =
   pushoutRec _ _ {Z = λ g' f' α → Z f'}
   (hZ (ipo .fst)) (ipo .snd .fst) f' (ipo .snd .snd .fst) (ipo .snd .snd .snd)
+
+isPushoutOf→Pushout≃ : {A B A' B' : Type ℓ} {f : A → B} {f' : A' → B'}
+  (ipo : isPushoutOf f f') → Pushout f (ipo .fst) ≃ B'
+isPushoutOf→Pushout≃ {f = f} ipo =
+  isPushoutAlong-rec (λ {B'} f' → Pushout f (ipo .fst) ≃ B') (idEquiv _) _ (ipo .snd)

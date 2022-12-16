@@ -177,7 +177,12 @@ module _ (d e : ℕ) where
   rangeFamilyConnected m hmd (n , hdn , _) =
     isConnectedFunLE _ n _ (≤-trans hmd hdn) (isConnectedSphere n)
 
-module _ (d e : ℕ) where
+rangeFamilyGenerates : (d e d' e' : ℕ) (hd : d ≤ d') (he : e' ≤ e) →
+  FamilyGenerates (rangeFamily d e) (rangeFamily d' e')
+rangeFamilyGenerates d e d' e' hd he (i , hd'i , hie') =
+  isRCC-base _ (i , ≤-trans hd hd'i , <≤-trans hie' he)
+
+module _ (d : ℕ) where
   -- TODO: Naming
 
   -- A single d-cell
@@ -208,6 +213,26 @@ module _ (d e : ℕ) where
           ... | inl _ = refl
           ... | inr _ = refl
 
+  addCells' : (N₁ N₂ : ℕ) → isPushoutOf (map-⊎ (NCells N₁) (NCells N₂)) (NCells (N₁ + N₂))
+  addCells' N₁ N₂ = ipoOfPO (equivIsPushout {α = α} (equivIsEquiv q) (equivIsEquiv q))
+    where
+      q : {X : Type ℓ} → ((Fin N₁ × X) ⊎ (Fin N₂ × X)) ≃ Fin (N₁ + N₂) × X
+      q {X = X} =
+          ((Fin N₁ × X) ⊎ (Fin N₂ × X))
+        ≃⟨ isoToEquiv (invIso Σ⊎Iso) ⟩
+          _
+        ≃⟨ ≃-× (isoToEquiv (invIso (Fin+≅Fin⊎Fin N₁ N₂))) (idEquiv X) ⟩
+          Fin (N₁ + N₂) × X
+        ■
+
+      α : {X Y : Type ℓ} {f : X → Y} →
+        equivFun q ∘ map-⊎ (map-× (idfun _) f) (map-× (idfun _) f) ≡ map-× (idfun _) f ∘ equivFun q
+      α = funExt p
+        where
+          p : _
+          p (inl _) = refl
+          p (inr _) = refl
+
   isPushout0 : {X Y : Type} {f : X → Y} → isEquiv f → isPushoutOf (NCells 0) f
   isPushout0 hf .fst p = Empty.rec (¬Fin0 (p .fst))
   isPushout0 hf .snd .fst p = Empty.rec (¬Fin0 (p .fst))
@@ -234,115 +259,116 @@ module _ (d e : ℕ) where
       i .rightInv a = refl
       i .leftInv a = ≡-× (isContr→isProp isContrFin1 _ _) refl
 
-  record GoodFactorization {X Y : Type} (f : X → Y) : Type₁ where
-    no-eta-equality
-    field
-      X' : Type
-      g : X → X'
-      h : X' → Y
-      hf : f ≡ h ∘ g
-      N : ℕ
-      hg : isPushoutOf (NCells N) g
-      hh : isRelativeCellComplex (rangeFamily (suc d) e) h
+  module _ (e : ℕ) where
+    record GoodFactorization {X Y : Type} (f : X → Y) : Type₁ where
+      no-eta-equality
+      field
+        X' : Type
+        g : X → X'
+        h : X' → Y
+        hf : f ≡ h ∘ g
+        N : ℕ
+        hg : isPushoutOf (NCells N) g
+        hh : isRelativeCellComplex (rangeFamily (suc d) e) h
 
-  HasGoodFactorization : {X Y : Type} → (X → Y) → Type₁
-  HasGoodFactorization f = ∥ GoodFactorization f ∥₁
+    HasGoodFactorization : {X Y : Type} → (X → Y) → Type₁
+    HasGoodFactorization f = ∥ GoodFactorization f ∥₁
 
-  open GoodFactorization
-  open Iso
+    open GoodFactorization
+    open Iso
 
-  HasGoodFactorization-id : {X : Type} → HasGoodFactorization (idfun X)
-  HasGoodFactorization-id {X = X} = ∣ r ∣₁
-    where
-      r : GoodFactorization (idfun X)
-      r .X' = X
-      r .g = idfun X
-      r .h = idfun X
-      r .hf = refl
-      r .N = 0
-      r .hg = isPushout0 (idIsEquiv X)
-      r .hh = isRCC-idfun _
+    HasGoodFactorization-id : {X : Type} → HasGoodFactorization (idfun X)
+    HasGoodFactorization-id {X = X} = ∣ r ∣₁
+      where
+        r : GoodFactorization (idfun X)
+        r .X' = X
+        r .g = idfun X
+        r .h = idfun X
+        r .hf = refl
+        r .N = 0
+        r .hg = isPushout0 (idIsEquiv X)
+        r .hh = isRCC-idfun _
 
-  conn-GoodFactorization : {X Y : Type} (f : X → Y) → GoodFactorization f →
-    isConnectedFun d f
-  conn-GoodFactorization f ff = subst (isConnectedFun _) (sym (ff .hf))
-    (isConnectedComp (ff .h) (ff .g) _
-      (conn-isRCC (rangeFamily (suc d) e) (rangeFamilyConnected (suc d) e d ≤-sucℕ) (ff .hh))
-      (isConnectedPushout d (ff .hg) (isConnected-map-× d _ (isConnectedSphere d))))
+    conn-GoodFactorization : {X Y : Type} (f : X → Y) → GoodFactorization f →
+      isConnectedFun d f
+    conn-GoodFactorization f ff = subst (isConnectedFun _) (sym (ff .hf))
+      (isConnectedComp (ff .h) (ff .g) _
+        (conn-isRCC (rangeFamily (suc d) e) (rangeFamilyConnected (suc d) e d ≤-sucℕ) (ff .hh))
+        (isConnectedPushout d (ff .hg) (isConnected-map-× d _ (isConnectedSphere d))))
 
-  HasGoodFactorization-comp : {X Y Z : Type} (f₁ : X → Y) (f₂ : Y → Z)
-    → HasGoodFactorization f₁ → HasGoodFactorization f₂ → HasGoodFactorization (f₂ ∘ f₁)
-  HasGoodFactorization-comp {X} {Y} {Z} f₁ f₂ hf₁ hf₂ = do
-    ff₁ ← hf₁
-    ff₂ ← hf₂
-    (l , hl) ← liftSpheresOfIsConnectedFun _ _ f₁ (conn-GoodFactorization f₁ ff₁) (ff₂ .hg .fst)
-    return (finish ff₁ ff₂ l (hl ∙ (ff₁ .hf ▹ l)))
-    where
-      finish : (ff₁ : GoodFactorization f₁) → (ff₂ : GoodFactorization f₂)
-        → (l : (Fin (ff₂ .N) × S (-1+ d)) → X) → (ff₂ .hg .fst ≡ ff₁ .h ∘ ff₁ .g ∘ l)
-        → GoodFactorization (f₂ ∘ f₁)
-      finish ff₁ ff₂ l hl = r
-        where
-          open Recombination _ _ (ff₁ .g) (ff₁ .h) (ff₂ .g) (ff₁ .hg) (ff₂ .hg) l (sym hl)
-          r : GoodFactorization (f₂ ∘ f₁)
-          r .X' = X''
-          r .g = f'
-          r .h = ff₂ .h ∘ g'
-          r .hf = (f₂ ◃ ff₁ .hf) ∙ (ff₂ .hf ▹ _) ∙ (ff₂ .h ◃ q)
-          r .N = ff₁ .N + ff₂ .N
-          r .hg = comp-isPushoutOf (addCells _ _) hf'
-          r .hh = isRCC-comp _ (isRCC-po _ hg' (ff₁ .hh)) (ff₂ .hh)
+    HasGoodFactorization-comp : {X Y Z : Type} (f₁ : X → Y) (f₂ : Y → Z)
+      → HasGoodFactorization f₁ → HasGoodFactorization f₂ → HasGoodFactorization (f₂ ∘ f₁)
+    HasGoodFactorization-comp {X} {Y} {Z} f₁ f₂ hf₁ hf₂ = do
+      ff₁ ← hf₁
+      ff₂ ← hf₂
+      (l , hl) ← liftSpheresOfIsConnectedFun _ _ f₁ (conn-GoodFactorization f₁ ff₁) (ff₂ .hg .fst)
+      return (finish ff₁ ff₂ l (hl ∙ (ff₁ .hf ▹ l)))
+      where
+        finish : (ff₁ : GoodFactorization f₁) → (ff₂ : GoodFactorization f₂)
+          → (l : (Fin (ff₂ .N) × S (-1+ d)) → X) → (ff₂ .hg .fst ≡ ff₁ .h ∘ ff₁ .g ∘ l)
+          → GoodFactorization (f₂ ∘ f₁)
+        finish ff₁ ff₂ l hl = r
+          where
+            open Recombination _ _ (ff₁ .g) (ff₁ .h) (ff₂ .g) (ff₁ .hg) (ff₂ .hg) l (sym hl)
+            r : GoodFactorization (f₂ ∘ f₁)
+            r .X' = X''
+            r .g = f'
+            r .h = ff₂ .h ∘ g'
+            r .hf = (f₂ ◃ ff₁ .hf) ∙ (ff₂ .hf ▹ _) ∙ (ff₂ .h ◃ q)
+            r .N = ff₁ .N + ff₂ .N
+            r .hg = comp-isPushoutOf (addCells _ _) hf'
+            r .hh = isRCC-comp _ (isRCC-po _ hg' (ff₁ .hh)) (ff₂ .hh)
 
-  HasGoodFactorization-po : {X Y X₁ : Type} (f : X → Y) (k : X → X₁)
-    → HasGoodFactorization f → HasGoodFactorization {Y = Pushout f k} inr
-  HasGoodFactorization-po {X = X} {Y = Y} {X₁ = X₁} f k = map GF
-    where
-      GF : GoodFactorization f → GoodFactorization inr
-      GF ff = r
-        where
-          s =
-            cancel-isPushoutAlong'' {g₁ = ff .h}
-              (PushoutIsPushout (ff .g) k)
-              (paste'IsPushout (equivIsPushout {α = sym (ff .hf)} (idIsEquiv X) (idIsEquiv Y)) (PushoutIsPushout f k))
+    HasGoodFactorization-po : {X Y X₁ : Type} (f : X → Y) (k : X → X₁)
+      → HasGoodFactorization f → HasGoodFactorization {Y = Pushout f k} inr
+    HasGoodFactorization-po {X = X} {Y = Y} {X₁ = X₁} f k = map GF
+      where
+        GF : GoodFactorization f → GoodFactorization inr
+        GF ff = r
+          where
+            s =
+              cancel-isPushoutAlong'' {g₁ = ff .h}
+                (PushoutIsPushout (ff .g) k)
+                (paste'IsPushout (equivIsPushout {α = sym (ff .hf)} (idIsEquiv X) (idIsEquiv Y)) (PushoutIsPushout f k))
 
-          r : GoodFactorization inr
-          r .X' = Pushout (ff .g) k
-          r .g = inr
-          r .h = s .fst
-          r .hf = s .snd .fst
-          r .N = ff .N
-          r .hg = comp-isPushoutOf (ff .hg) isPushoutOfInr
-          r .hh = isRCC-po _ (_ , _ , _ , s .snd .snd .snd) (ff .hh)
+            r : GoodFactorization inr
+            r .X' = Pushout (ff .g) k
+            r .g = inr
+            r .h = s .fst
+            r .hf = s .snd .fst
+            r .N = ff .N
+            r .hg = comp-isPushoutOf (ff .hg) isPushoutOfInr
+            r .hh = isRCC-po _ (_ , _ , _ , s .snd .snd .snd) (ff .hh)
 
-  HasGoodFactorization-cell : (i : Σ[ n ∈ ℕ ] (d ≤ n) × (n < e))
-    → HasGoodFactorization (λ (_ : S (-1+ i .fst)) → tt)
-  HasGoodFactorization-cell i with ≤-split (i .snd .fst)
-  ... | (inl hlt) = ∣ r ∣₁
-    where
-      r : GoodFactorization (λ (_ : S (-1+ i .fst)) → tt)
-      r .X' = S (-1+ i .fst)
-      r .g = idfun _
-      r .h = λ _ → tt
-      r .hf = refl
-      r .N = 0
-      r .hg = isPushout0 (idIsEquiv _)
-      r .hh = isRCC-base (rangeFamily (suc d) e) (i .fst , hlt , i .snd .snd)
-  ... | (inr heq) = subst (λ m → HasGoodFactorization (λ (_ : S (-1+ m)) → tt)) heq ∣ r ∣₁
-    where
-      r : GoodFactorization (λ (_ : S (-1+ d)) → tt)
-      r .X' = Unit
-      r .g = oneCell
-      r .h = idfun Unit
-      r .hf = refl
-      r .N = 1
-      r .hg = isPushout1
-      r .hh = isRCC-idfun _
+    HasGoodFactorization-cell : (i : Σ[ n ∈ ℕ ] (d ≤ n) × (n < e))
+      → HasGoodFactorization (λ (_ : S (-1+ i .fst)) → tt)
+    HasGoodFactorization-cell i with ≤-split (i .snd .fst)
+    ... | (inl hlt) = ∣ r ∣₁
+      where
+        r : GoodFactorization (λ (_ : S (-1+ i .fst)) → tt)
+        r .X' = S (-1+ i .fst)
+        r .g = idfun _
+        r .h = λ _ → tt
+        r .hf = refl
+        r .N = 0
+        r .hg = isPushout0 (idIsEquiv _)
+        r .hh = isRCC-base (rangeFamily (suc d) e) (i .fst , hlt , i .snd .snd)
+    ... | (inr heq) = subst (λ m → HasGoodFactorization (λ (_ : S (-1+ m)) → tt)) heq ∣ r ∣₁
+      where
+        r : GoodFactorization (λ (_ : S (-1+ d)) → tt)
+        r .X' = Unit
+        r .g = oneCell
+        r .h = idfun Unit
+        r .hf = refl
+        r .N = 1
+        r .hg = isPushout1
+        r .hh = isRCC-idfun _
 
-  hasGoodFactorization : {X Y : Type} (f : X → Y) → isRelativeCellComplex (rangeFamily d e) f
-    → HasGoodFactorization f
-  hasGoodFactorization =
-    isRCCElimProp _ HasGoodFactorization (λ _ → isPropPropTrunc)
-    HasGoodFactorization-id
-    HasGoodFactorization-comp
-    (λ {i} → HasGoodFactorization-cell i)
-    HasGoodFactorization-po
+    hasGoodFactorization : {X Y : Type} (f : X → Y) → isRelativeCellComplex (rangeFamily d e) f
+      → HasGoodFactorization f
+    hasGoodFactorization =
+      isRCCElimProp _ HasGoodFactorization (λ _ → isPropPropTrunc)
+      HasGoodFactorization-id
+      HasGoodFactorization-comp
+      (λ {i} → HasGoodFactorization-cell i)
+      HasGoodFactorization-po

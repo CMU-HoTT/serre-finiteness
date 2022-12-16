@@ -2,6 +2,7 @@ module Cellular.RelativeCellComplex where
 
 open import Cubical.Data.Nat hiding (elim)
 open import Cubical.Data.Sigma
+open import Cubical.Data.Sum using (map-⊎)
 open import Cubical.Foundations.Everything
 open import Cubical.Foundations.SIP
 open import Cubical.HITs.Pushout
@@ -270,6 +271,11 @@ module _ (ℐ : Family {ℓi = ℓi} {ℓ = ℓ}) where
       {X Y : Type ℓ} (f : X → Y) (hf : isRelativeCellComplex f) → P f
     isRCCElimProp {X = X} {Y = Y} f = rec (hP _) λ ( c , h ) →
       subst (λ p → P (p .snd)) (≡under (h .fst) (h .snd)) (elimRCC c)
+
+  isRCC-⊎ : {X Y X' Y' : Type ℓ} {f : X → Y} {f' : X' → Y'}
+    → isRelativeCellComplex f → isRelativeCellComplex f'
+    → isRelativeCellComplex (map-⊎ f f')
+  isRCC-⊎ = _
 
 -- Change of family.
 -- If every morphism of ℐ' is a relative ℐ-cell complex,
