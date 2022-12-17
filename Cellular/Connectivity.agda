@@ -7,7 +7,7 @@ open import Cubical.Data.Nat hiding (elim)
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.NatMinusOne
 open import Cubical.Data.Sigma
-open import Cubical.Data.Sum hiding (map ; rec)
+open import Cubical.Data.Sum hiding (rec) renaming (map to map⊎)
 open import Cubical.Data.Unit
 open import Cubical.Foundations.Everything
 open import Cubical.Functions.Surjection
@@ -193,7 +193,7 @@ module _ (d : ℕ) where
   NCells N = map-× (idfun (Fin N)) oneCell
 
   -- In fact, the maps are equivalent in the arrow category.
-  addCells : (N₁ N₂ : ℕ) → isPushoutOf (NCells (N₁ + N₂)) (map-⊎ (NCells N₁) (NCells N₂))
+  addCells : (N₁ N₂ : ℕ) → isPushoutOf (NCells (N₁ + N₂)) (map⊎ (NCells N₁) (NCells N₂))
   addCells N₁ N₂ = ipoOfPO (equivIsPushout {α = α} (equivIsEquiv q) (equivIsEquiv q))
     where
       q : {X : Type ℓ} → Fin (N₁ + N₂) × X ≃ ((Fin N₁ × X) ⊎ (Fin N₂ × X))
@@ -205,7 +205,7 @@ module _ (d : ℕ) where
           ((Fin N₁ × X) ⊎ (Fin N₂ × X)) ■
 
       α : {X Y : Type ℓ} {f : X → Y} →
-        equivFun q ∘ map-× (idfun _) f ≡ map-⊎ (map-× (idfun _) f) (map-× (idfun _) f) ∘ equivFun q
+        equivFun q ∘ map-× (idfun _) f ≡ map⊎ (map-× (idfun _) f) (map-× (idfun _) f) ∘ equivFun q
       α = funExt p
         where
           p : _
@@ -213,7 +213,7 @@ module _ (d : ℕ) where
           ... | inl _ = refl
           ... | inr _ = refl
 
-  addCells' : (N₁ N₂ : ℕ) → isPushoutOf (map-⊎ (NCells N₁) (NCells N₂)) (NCells (N₁ + N₂))
+  addCells' : (N₁ N₂ : ℕ) → isPushoutOf (map⊎ (NCells N₁) (NCells N₂)) (NCells (N₁ + N₂))
   addCells' N₁ N₂ = ipoOfPO (equivIsPushout {α = α} (equivIsEquiv q) (equivIsEquiv q))
     where
       q : {X : Type ℓ} → ((Fin N₁ × X) ⊎ (Fin N₂ × X)) ≃ Fin (N₁ + N₂) × X
@@ -226,7 +226,7 @@ module _ (d : ℕ) where
         ■
 
       α : {X Y : Type ℓ} {f : X → Y} →
-        equivFun q ∘ map-⊎ (map-× (idfun _) f) (map-× (idfun _) f) ≡ map-× (idfun _) f ∘ equivFun q
+        equivFun q ∘ map⊎ (map-× (idfun _) f) (map-× (idfun _) f) ≡ map-× (idfun _) f ∘ equivFun q
       α = funExt p
         where
           p : _

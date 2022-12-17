@@ -14,6 +14,10 @@ private
 Π⊥≡ : {A : Type ℓ'} {f g : ⊥* {ℓ = ℓ} → A} → f ≡ g
 Π⊥≡ = funExt λ ()
 
+map⊎≡ : {A B A' B' : Type ℓ} (f : A → B) (g : A' → B')
+  → map f g ≡ map (idfun B) g ∘ map f (idfun A')
+map⊎≡ f g = funExt (λ { (inl _) → refl ; (inr _) → refl })
+
 module _ {X Y : Type ℓ} {zX : ⊥* → X} {zY : ⊥* → Y} where
   SumIsPushout : {α : _} → isPushout zX zY inl inr α
   SumIsPushout {α} .isPushout.comparisonIsEquiv E =

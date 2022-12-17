@@ -37,8 +37,8 @@ module Recombination {A A' B B' : Type ℓ} (j : A → A') (k : B → B')
       (glue₁IsPushout (hf .snd .snd .snd) l)
       (glue₂IsPushout (transposeIsPushout (PushoutIsPushout (f ∘ l) k)) (hf .snd .fst)))
 
-  hf' : isPushoutOf (map-⊎ j k) f'
-  hf' = subst (λ F → isPushoutOf F f') (funExt (elim (λ _ → refl) (λ _ → refl))) hf'0
+  hf' : isPushoutOf (map j k) f'
+  hf' = subst (λ F → isPushoutOf F f') (sym (map⊎≡ j k)) hf'0
 
   hg' : isPushoutOf g g'
   hg' = _ , _ , _ , s .snd .snd .snd

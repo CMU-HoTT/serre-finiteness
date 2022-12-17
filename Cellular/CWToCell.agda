@@ -7,6 +7,7 @@ open import Cubical.Data.Nat.Order
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Everything
 open import Cubical.HITs.PropositionalTruncation hiding (rec)
+open import Cubical.HITs.PropositionalTruncation.Monad
 
 open import Cellular.CellComplex
 open import Cellular.Connectivity
@@ -56,8 +57,8 @@ isCellComplex-dimCW (suc d) (C , N , k) =
   subst (isRelativeCellComplex standardFamily) (funExt λ ())
   (isRCC-comp _ (isCellComplex-dimCW d C) (isRCC-po _ isPushoutOfInr (isCellComplex-NCells _ _)))
 
-isFinCW→isCellComplex : {X : Type} → isFinCW X → ∥ isCellComplex X ∥₁
-isFinCW→isCellComplex =
-  map (λ ((d , C) , g) →
-    subst (isRelativeCellComplex standardFamily) (funExt λ ())
-    (isRCC-comp _ (isCellComplex-dimCW d C) (isRCC-equiv _ g)))
+isFinCW→isCellComplex : {X : Type} → isFinCW X → isCellComplex X
+isFinCW→isCellComplex hX = do
+  ((d , C) , g) ← hX
+  subst (isRelativeCellComplex standardFamily) (funExt λ ())
+    (isRCC-comp _ (isCellComplex-dimCW d C) (isRCC-equiv _ g))
