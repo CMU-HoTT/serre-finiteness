@@ -75,3 +75,28 @@ isFinCWRec P hP hP1 hP0 hPp hX =
     aux : (d : ℕ) (C : dimCW.T d) → P (dimCW.ty C)
     aux 0 _ = hP0
     aux (suc d) (C , N , k) = hPp (fin× _ _ (hPS d)) (fin× _ _ hP1) (aux d C)
+
+×Pushout : {X A B C : Type} {f : A → B} {g : A → C}
+  → Pushout (map-× (idfun X) f) (map-× (idfun X) g) ≃ X × Pushout f g
+×Pushout = isoToEquiv i
+  where
+    i : Iso _ _
+    i .fun (inl (x , b)) = x , inl b
+    i .fun (inr (x , c)) = x , inr c
+    i .fun (push (x , a) j) = x , push a j
+    i .inv (x , inl b) = inl (x , b)
+    i .inv (x , inr c) = inr (x , c)
+    i .inv (x , push a j) = push (x , a) j
+    i .rightInv (x , inl b) = refl
+    i .rightInv (x , inr c) = refl
+    i .rightInv (x , push a j) = refl
+    i .leftInv (inl (x , b)) = refl
+    i .leftInv (inr (x , c)) = refl
+    i .leftInv (push (x , a) j) = refl
+
+isFinCWProd : {X Y : Type} → isFinCW X → isFinCW Y → isFinCW (X × Y)
+isFinCWProd {X} hX =
+  isFinCWRec (λ Y → isFinCW (X × Y)) isPropIsFinCW
+  (subst isFinCW (ua (isoToEquiv (invIso rUnit×Iso))) hX)
+  (subst isFinCW (ua (uninhabEquiv (idfun _) snd)) isFinCWEmpty)
+  λ hPX hPY hPZ → subst isFinCW (ua ×Pushout) (isFinCWPushout (PushoutIsPushout _ _) hPX hPY hPZ)

@@ -6,6 +6,7 @@ open import Cubical.Data.Nat
 open import Cubical.Data.NatMinusOne
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Everything
+open import Cubical.HITs.PropositionalTruncation
 open import Cubical.HITs.Pushout
 open import Cubical.HITs.Sn
 
@@ -36,3 +37,6 @@ FinCW-ty (d , c) = dimCW.ty c
 
 isFinCW : Type → Type
 isFinCW X = ∃[ c ∈ FinCW ] FinCW-ty c ≃ X
+
+isPropIsFinCW : {X : Type} → isProp (isFinCW X)
+isPropIsFinCW = isPropPropTrunc
