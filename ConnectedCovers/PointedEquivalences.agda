@@ -187,3 +187,4 @@ ua∙* A B e = ua∙ (fst e) (snd e)
 au∙ : (A B : Pointed ℓ) → A ≡ B → A ≃∙ B
 au∙ A B = J (λ A' p' → A ≃∙ A') ((idEquiv (typ A)) , refl)
 
+
