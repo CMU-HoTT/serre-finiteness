@@ -96,7 +96,7 @@ fiberSequenceAbGroups F n =
   ( λ H e → (x y : ⟨ H ⟩) →
     GroupStr._·_ (snd H) x y ≡ GroupStr._·_ (snd H) y x)
   ( πGr-comm 0 (ChainOfFibersVertices F n))
-  ( GroupIso→GroupEquiv (GrIso-πΩ-π {A = ChainOfFibersVertices F n} 0)))
+  ( invGroupEquiv (GroupIso→GroupEquiv (GrIso-πΩ-π 0))))
 
 FirstTermOfFiberSequence : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   → (fiberSequence F) 0 ≡ πGr 0 C

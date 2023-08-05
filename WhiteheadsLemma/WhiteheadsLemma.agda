@@ -27,6 +27,25 @@ Iso.rightInv (isoPostComp p) =
 Iso.leftInv (isoPostComp p) =
   λ r → (sym (assoc r p (sym p))) ∙ cong (r ∙_) (rCancel p) ∙ sym (rUnit r)
 
+isoPostComp≃∙ : {A : Type ℓ} {a b c : A} {q : a ≡ b} (p : b ≡ c)
+  → ((a ≡ b) , q) ≃∙ ((a ≡ c) , q ∙ p)
+fst (isoPostComp≃∙ p) = isoToEquiv (isoPostComp p)
+snd (isoPostComp≃∙ p) = refl
+
+isoPreComp : {A : Type ℓ} {a b c : A} (p : a ≡ b)
+  → Iso (b ≡ c) (a ≡ c)
+Iso.fun (isoPreComp p) = λ r → p ∙ r
+Iso.inv (isoPreComp p) = λ r → (sym p) ∙ r
+Iso.rightInv (isoPreComp p) =
+  λ r → assoc p (sym p) r ∙ cong (_∙ r) (rCancel p) ∙ sym (lUnit r)
+Iso.leftInv (isoPreComp p) =
+  λ r → assoc (sym p) p r ∙ cong (_∙ r) (lCancel p) ∙ sym (lUnit r)
+
+isoPreComp≃∙ : {A : Type ℓ} {a b c : A} {q : b ≡ c} (p : a ≡ b)
+  → ((b ≡ c) , q) ≃∙ ((a ≡ c) , p ∙ q)
+fst (isoPreComp≃∙ p) = isoToEquiv (isoPreComp p)
+snd (isoPreComp≃∙ p) = refl
+
 PathPCongLemma : {A B : Type ℓ}
   (f : A → B)
   (a a' : A)

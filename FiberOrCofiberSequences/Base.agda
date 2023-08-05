@@ -105,6 +105,18 @@ transportPathLemma' {c = c} =
   J (λ b' p' → (q : b' ≡ c) → transp (λ i → p' (~ i) ≡ c) i0 q ≡ p' ∙ q)
     λ q → transportRefl q ∙ lUnit q
 
+transportPathLemmaRight : {A : Type ℓ} {a b c : A} (p : b ≡ c) (q : a ≡ b)
+  → transport (λ i → a ≡ (p i)) q ≡ q ∙ p
+transportPathLemmaRight {a = a} {b = b} =
+  J (λ c p → ∀ (q : a ≡ b) → transport (λ i → a ≡ (p i)) q ≡ q ∙ p)
+    λ q → fromPathP (rUnit q)
+
+transportPathLemmaLeft : {A : Type ℓ} {a b c : A} (p : b ≡ a) (q : b ≡ c)
+  → transport (λ i → p i ≡ c) q ≡ (p ⁻¹) ∙ q
+transportPathLemmaLeft {b = b} {c = c} =
+  J (λ a p → (q : b ≡ c) → transport (λ i → p i ≡ c) q ≡ (p ⁻¹) ∙ q)
+    (λ q → fromPathP (lUnit q ∙ cong (_∙ q) symRefl))
+
 transportFunPathLemma'' : {A : Type ℓ} (a a' : A) (p : a ≡ a')
   → transp (λ i → p (~ i) ≡ a') i0 refl ≡ p
 transportFunPathLemma'' a a' =
@@ -132,6 +144,24 @@ transportFunPathLemma a b f g =
     ( λ q r s → cong (_∙ q) (symRefl ⁻¹)
                  ∙ lUnit q ⁻¹
                  ∙ (s ⁻¹ ∙ transportRefl q) ⁻¹)
+
+movingTransportPathLemma : (A : Type ℓ) (a b : A)
+  (p : a ≡ b) (q : a ≡ b) (r : a ≡ a)
+  → transport (λ i → p i ≡ q i) r ≡ p ⁻¹ ∙ r ∙ q
+movingTransportPathLemma A a b =
+  J (λ b' p → ∀ (q : a ≡ b') (r : a ≡ a)
+    → transport (λ i → p i ≡ q i) r ≡ p ⁻¹ ∙ r ∙ q)
+    λ q r → transportPathLemmaRight q r ∙ lUnit _ ∙ cong (_∙ r ∙ q) symRefl
+
+movFunTransportPathLemma : {A B : Type ℓ} {a : A} {b c : B} (f : B → A)
+  (p : b ≡ c) (q : a ≡ a) (r : f b ≡ a)
+  → transport (λ i → q i ≡ f (p i)) (r ⁻¹) ≡ q ⁻¹ ∙ (r ⁻¹) ∙ (cong f p)
+movFunTransportPathLemma {a = a} {b = b} f =
+ J (λ c p → ∀ (q : a ≡ a) (r : f b ≡ a)
+          → transport (λ i → q i ≡
+                              f (p i)) (r ⁻¹) ≡ q ⁻¹ ∙ (r ⁻¹) ∙ (cong f p))
+   λ q r → transportPathLemmaLeft q (r ⁻¹) ∙ rUnit (q ⁻¹ ∙ r ⁻¹)
+                                            ∙ (assoc (q ⁻¹) (r ⁻¹) refl) ⁻¹
 
 FiberSeqCompEq''' : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   → Σ[ p ∈ fst (FiberSeqProj F) ∘ fst (FiberSeqIncl F) ≡ (λ _ → snd C) ]
