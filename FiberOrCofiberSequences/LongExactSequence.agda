@@ -1,4 +1,4 @@
-{-# OPTIONS --experimental-lossy-unification #-}
+{-# OPTIONS --lossy-unification #-}
 module FiberOrCofiberSequences.LongExactSequence where
 
 open import Cubical.Foundations.Everything

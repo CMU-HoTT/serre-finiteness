@@ -1,3 +1,4 @@
+{-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.EquivPreservation where
 
 open import Cubical.Foundations.Everything
@@ -25,7 +26,7 @@ open import ConnectedCovers.PointedEquivalences
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.LongExactSequence
 
-open import WhiteheadsLemma.WhiteheadsLemma
+open import Cubical.Homotopy.WhiteheadsLemma
 
 private
   variable
@@ -117,44 +118,43 @@ AbGroupHom-pathToEquivPreserves {X = X} =
                       (pathToEquiv (λ i → (AbGroupHom X (e i))))) f)))
     λ f hf
     → transport (λ i → isEquiv (fst (invPathToEquivRefl (~ i) f))) hf
-  
+
+
+LoopAbHomZeroAux : (X : Pointed ℓ) → πGr 0 (Ω X) ≡ (AbGroup→Group (πAb 0 X))
+LoopAbHomZeroAux X = uaGroup (GroupIsoEquiv (πGr 0 (Ω X)) (πGr 1 X) (GrIso-πΩ-π 0))
 
 LoopAbHomZero : (G : AbGroup ℓ) (X : Pointed ℓ)
   → GroupHom (AbGroup→Group G) (πGr 0 (Ω X)) ≃ AbGroupHom G (πAb 0 X)
-LoopAbHomZero G X = pathToEquiv
-                     λ i → GroupHom (AbGroup→Group G)
-                                      (uaGroup (GroupIsoEquiv (πGr 0 (Ω X))
-                                                              (πGr 1 X)
-                                                              (GrIso-πΩ-π 0))
-                                               i)
+LoopAbHomZero G X =
+  pathToEquiv
+  λ i →
+    GroupHom
+     (AbGroup→Group G)
+     (LoopAbHomZeroAux X i)
 
 LoopAbHomZeroPreservesEquiv : (G : AbGroup ℓ) (X : Pointed ℓ)
   → (f : AbGroupHom G (πAb 0 X))
   → isEquiv (fst f)
   → isEquiv (fst (fst (invEquiv (LoopAbHomZero G X)) f))
 LoopAbHomZeroPreservesEquiv G X =
-  GroupHom-pathToEquivPreserves (uaGroup (GroupIsoEquiv (πGr 0 (Ω X))
-                                                        (πGr 1 X)
-                                                        (GrIso-πΩ-π 0)))
+  GroupHom-pathToEquivPreserves (LoopAbHomZeroAux X)
+
+LoopAbHomNAux : (X : Pointed ℓ) (n : ℕ) → (AbGroup→Group (πAb n (Ω X))) ≡ (AbGroup→Group (πAb (1 + n) X))
+LoopAbHomNAux X n = uaGroup (GroupIsoEquiv (πGr (1 + n) (Ω X)) (πGr (2 + n) X) (GrIso-πΩ-π (1 + n)))
 
 LoopAbHomN : (G : AbGroup ℓ) (X : Pointed ℓ) (n : ℕ)
   → AbGroupHom G (πAb n (Ω X)) ≃ AbGroupHom G (πAb (1 + n) X)
 LoopAbHomN G X n = pathToEquiv
                    (λ i →
                         GroupHom (AbGroup→Group G)
-                                 (uaGroup (GroupIsoEquiv (πGr (1 + n) (Ω X))
-                                                         (πGr (2 + n) X)
-                                                         (GrIso-πΩ-π (1 + n)))
-                                                         i))
+                                 (LoopAbHomNAux X n i))
 
 LoopAbHomNPreservesEquiv : (G : AbGroup ℓ) (X : Pointed ℓ) (n : ℕ)
   → (f : AbGroupHom G (πAb (1 + n) X))
   → isEquiv (fst f)
   → isEquiv (fst (fst (invEquiv (LoopAbHomN G X n)) f))
 LoopAbHomNPreservesEquiv G X n =
-  GroupHom-pathToEquivPreserves (uaGroup (GroupIsoEquiv (πGr (1 + n) (Ω X))
-                                                        (πGr (2 + n) X)
-                                                        (GrIso-πΩ-π (1 + n))))
+  GroupHom-pathToEquivPreserves (LoopAbHomNAux X n)
 
 →∙CommEquivΩ^ : (X Y : Pointed ℓ) (n : ℕ)
   → (Y →∙ ((Ω^ (1 + n)) X)) ≃ (Y →∙ ((Ω^ n) (Ω X)))

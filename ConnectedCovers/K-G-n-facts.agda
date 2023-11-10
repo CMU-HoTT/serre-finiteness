@@ -1,4 +1,4 @@
-{-# OPTIONS --experimental-lossy-unification #-}
+{-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.K-G-n-facts where
 
 open import Cubical.Foundations.Everything
@@ -42,7 +42,7 @@ open import ConnectedCovers.EquivPreservation
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.LongExactSequence
 
-open import WhiteheadsLemma.WhiteheadsLemma
+open import Cubical.Homotopy.WhiteheadsLemma
 
 private
   variable
@@ -381,7 +381,7 @@ fst (Iso.inv (EM1UniversalPropertyAux G X hX) (h , p)) =
 snd (Iso.inv (EM1UniversalPropertyAux G X hX) (h , p)) = refl
 Iso.rightInv (EM1UniversalPropertyAux G X hX) h =
   GroupHomExt G (1TypHomGr X hX) _ h
-              λ g → (doubleCompPath-filler-refl ((fst h) g)) ⁻¹
+              λ g → (rUnit ((fst h) g)) ⁻¹
 Iso.leftInv (EM1UniversalPropertyAux G X hX) f =
  ΣPathP ((funExt (elimSet G (λ g → isOfHLevelPathP' 2 hX _ _) (sym (snd f))
                  λ g → toPathP

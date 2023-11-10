@@ -13,7 +13,7 @@ open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Unit
 open import Cubical.HITs.SetTruncation
-open import Cubical.HITs.Truncation
+open import Cubical.HITs.Truncation hiding (rec2 ; elim2)
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Loopspace
 
@@ -21,10 +21,11 @@ private
   variable
     ℓ : Level
 
-postulate
-  -- Essentially proven as EH-π in Cubical.Homotopy.Loopspace
-  πGr-comm : (n : ℕ) (A : Pointed ℓ) → (a b : typ (πGr (suc n) A))
-    → ·π (suc n) a b ≡ ·π (suc n) b a
+
+-- Essentially proven as EH-π in Cubical.Homotopy.Loopspace
+πGr-comm : (n : ℕ) (A : Pointed ℓ) → (a b : typ (πGr (suc n) A))
+  → ·π (suc n) a b ≡ ·π (suc n) b a
+πGr-comm n A = elim2 (λ _ _ → isSetPathImplicit) λ a b → cong ∣_∣₂ (EH 0 a b)
 
 -- πAb n A = πₙ₊₂(A), as an abelian group
 πAb : (n : ℕ) (A : Pointed ℓ) → AbGroup ℓ

@@ -1,4 +1,4 @@
-
+{-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.UsefulLemmas where
 
 open import Cubical.Foundations.Everything
@@ -34,17 +34,29 @@ open import Cubical.Homotopy.Loopspace
 
 open import HomotopyGroups
 
-open import ConnectedCovers.GeneralisingFreudnthl
-open import ConnectedCovers.PointedEquivalences
+--open import ConnectedCovers.GeneralisingFreudnthl
+--open import ConnectedCovers.PointedEquivalences
 
 open import FiberOrCofiberSequences.Base
-open import FiberOrCofiberSequences.LongExactSequence
+--open import FiberOrCofiberSequences.LongExactSequence
 
-open import WhiteheadsLemma.WhiteheadsLemma
+open import Cubical.Homotopy.WhiteheadsLemma
 
 private
   variable
     ℓ : Level
+
+hTr : (A : Type ℓ) (n : ℕ) → A → ∥ A ∥ n
+hTr A n a = ∣ a ∣ₕ
+
+isSetGroup : (G : Group ℓ) → isSet (typ G)
+isSetGroup G = GroupStr.is-set (snd G)
+
+congSym : {A B : Type ℓ} {a b : A} (f : A → B) (p : a ≡ b)
+       → (cong f p) ⁻¹ ≡ cong f (p ⁻¹)
+congSym f = J (λ b p → (cong f p) ⁻¹ ≡ cong f (p ⁻¹))
+              refl
+
 -- not sure where to find this
 isIso→isIsotransport∙ : {A B C : Pointed ℓ} {f : A →∙ B} (p : B ≡ C)
   → isIso (fst f) → isIso (fst (transport (λ i → A →∙ (p i)) f))
@@ -289,8 +301,8 @@ correction : {A : Pointed ℓ} (m n : ℕ)
           →∙ hLevelTrunc∙ n ((Ω^ m) A))
 correction {A = A} zero n = id∙ (hLevelTrunc∙ n A)
 correction (suc zero) n = correction≡∙ n refl
-correction (suc (suc m)) n =
-  (correction 1 n
+correction {A = A} (suc (suc m)) n =
+  (correction {A = (Ω^ (1 + m)) A} 1 n
   ∘∙ Ω→ (correction (suc m) (suc n)))
   ∘∙ hLevelTrunc→∙ (suc m) n
 
@@ -305,7 +317,7 @@ fstCorrection1EqCorrection≡ {A = A} (suc n) =
     (transportRefl (correction≡ (suc n)))
 
 correctionEqCorrection : {A : Pointed ℓ} (m n : ℕ)
-  → ((correction 1 n
+  → ((correction {A = (Ω^ m) A} 1 n
      ∘∙ Ω→ (correction {A = A} m (suc n)))
      ∘∙ hLevelTrunc→∙ {A = A} m n)
    ≡ correction (suc m) n
@@ -325,16 +337,20 @@ isIsoCorrection {A = A} (suc zero) n =
   transport (λ i → isIso
                     (fstCorrection1EqCorrection≡ n {a' = pt A} refl (~ i)))
             (Iso→isIso (PathIdTruncIso n))
-isIsoCorrection (suc (suc m)) n =
+isIsoCorrection {A = A} (suc (suc m)) n =
   Iso→isIso (compIso
-   (isIsoToIso (fst (hLevelTrunc→∙ (suc m) n)) (isIsoHLevelTrunc→∙ (suc m) n))
-   (compIso (isIsoToIso (fst (Ω→ (correction (suc m) (suc n))))
-                        (isEquiv→isIso (fst (Ω→ (correction (suc m) (suc n))))
-                           (isEquivΩ→ (correction (suc m) (suc n))
-                                       (isIso→isEquiv
-                                       (fst (correction (suc m) (suc n)))
-                                       (isIsoCorrection (suc m) (suc n))))))
-            (isIsoToIso (fst (correction 1 n)) (isIsoCorrection 1 n))))
+    (isIsoToIso (fst (hLevelTrunc→∙ (suc m) n))
+                (isIsoHLevelTrunc→∙ (suc m) n))
+    (compIso
+      (isIsoToIso
+        (fst (Ω→ (correction (suc m) (suc n))))
+        (isEquiv→isIso (fst (Ω→ (correction (suc m) (suc n))))
+          (isEquivΩ→ (correction (suc m) (suc n))
+                      (isIso→isEquiv
+                      (fst (correction (suc m) (suc n)))
+                      (isIsoCorrection (suc m) (suc n))))))
+      (isIsoToIso (fst (correction {A = (Ω^ (suc m)) A} 1 n))
+                  (isIsoCorrection {A = (Ω^ (suc m)) A} 1 n))))
 
 hLevelNatComm : {A : Type ℓ} (m n : ℕ)
              → isOfHLevel ((suc m) + n) A
@@ -514,6 +530,21 @@ IntermediateCorrectionId'' : {A : Pointed ℓ} (n : ℕ)
 IntermediateCorrectionId'' n =
   IntermediateCorrectionId' n ∙ IntermediateCorrectionId n
 
+PathFunctionNeed : {A B : Pointed ℓ} (n : ℕ) (f : A →∙ B)
+                   (hB : isOfHLevel (2 + n) (typ B))
+              → (hTr (pt A ≡ pt A) (1 + n) (refl {x = pt (fst A , snd A)})  ≡ ∣ transport refl (refl {x = pt (fst A , snd A)}) ∣ₕ)
+              →
+  recTrunc (hLevelΩ^ 1 (suc n) hB) (fst (Ω→ f))
+      (fst (correction≡∙ (suc n) (λ _ → pt (fst A , snd A)))
+       (pt (Ω (hLevelTrunc∙ (2 + n) A))))
+      ≡
+      recTrunc (hLevelΩ^ 1 (suc n) hB) (fst (Ω→ f))
+      ∣ (λ _ → pt (fst A , snd A)) ∣ₕ
+PathFunctionNeed {A = A} n f hB = λ p → cong (recTrunc (hLevelΩ^ 1 (suc n) hB) (fst (Ω→ f)))
+                       ( p
+                       ∙ (funExt⁻ (fstCorrection1EqCorrection≡ (suc n) refl)
+                                 (pt (Ω (hLevelTrunc∙ (2 + n) A))) ⁻¹)) ⁻¹
+
 NeedPathEq : {A B : Pointed ℓ} (n : ℕ) (f : A →∙ B)
              (hB : isOfHLevel (2 + n) (typ B))
            → (funExt⁻ (congRecFunComm (suc n) (fst f) hB
@@ -607,15 +638,8 @@ NeedPathEq {A = A} {B = B} n f hB =
   ∙ funExt⁻ (fstCorrection1EqCorrection≡ (suc n) refl ⁻¹)
             (pt (Ω (hLevelTrunc∙ (2 + n) A)))) ⁻¹)
   ≡⟨ refl ⟩
-  cong (recTrunc (hLevelΩ^ 1 (suc n) hB) (fst (Ω→ f)))
-  ((cong ∣_∣ₕ (transportRefl refl ⁻¹)
-  ∙ (funExt⁻ (fstCorrection1EqCorrection≡ (suc n) refl)
-            (pt (Ω (hLevelTrunc∙ (2 + n) A))) ⁻¹)) ⁻¹)
-  ≡⟨ cong (λ p → cong (recTrunc (hLevelΩ^ 1 (suc n) hB) (fst (Ω→ f)))
-                       ( p
-                       ∙ (funExt⁻ (fstCorrection1EqCorrection≡ (suc n) refl)
-                                 (pt (Ω (hLevelTrunc∙ (2 + n) A))) ⁻¹)) ⁻¹)
-      ((congSym ∣_∣ₕ (transportRefl refl)) ⁻¹) ⟩
+  PathFunctionNeed n f hB (cong ∣_∣ₕ (transportRefl refl ⁻¹))
+  ≡⟨ cong (PathFunctionNeed n f hB) ((congSym ∣_∣ₕ (transportRefl refl)) ⁻¹) ⟩
   cong (recTrunc (hLevelΩ^ 1 (suc n) hB) (fst (Ω→ f)))
   (((cong ∣_∣ₕ (transportRefl refl)) ⁻¹
   ∙ (funExt⁻ (fstCorrection1EqCorrection≡ (suc n) refl)
@@ -747,33 +771,33 @@ recTrunc∘∙≡ f n hB =
    ≡⟨ ∘∙-assoc (recTrunc∙ n (hLevelΩ^ 1 n
                              (hLevelΩ^ m (suc n) (hLevelNatComm m n hB)))
                              ((Ω^→ (suc m)) f))
-                (correction 1 n)
+                (correction {A = (Ω^ m) A} 1 n)
                 (Ω→ (correction m (suc n))
                 ∘∙ hLevelTrunc→∙ m n) ⟩
   recTrunc∙ n (hLevelΩ^ 1 n (hLevelΩ^ m (suc n) (hLevelNatComm m n hB)))
             ((Ω^→ (suc m)) f)
-  ∘∙ (correction 1 n
+  ∘∙ (correction {A = (Ω^ m) A} 1 n
   ∘∙ (Ω→ (correction m (suc n))
   ∘∙ hLevelTrunc→∙ m n))
    ≡⟨ cong ((recTrunc∙ n (hLevelΩ^ 1 n (hLevelΩ^ m (suc n)
                          (hLevelNatComm m n hB)))
                          ((Ω^→ (suc m)) f)) ∘∙_)
-            ((∘∙-assoc (correction 1 n)
+            ((∘∙-assoc (correction {A = (Ω^ m) A} 1 n)
                        (Ω→ (correction m (suc n)))
                        (hLevelTrunc→∙ m n)) ⁻¹) ⟩
   recTrunc∙ n (hLevelΩ^ 1 n (hLevelΩ^ m (suc n) (hLevelNatComm m n hB)))
             ((Ω^→ (suc m)) f)
-  ∘∙ ((correction 1 n
+  ∘∙ ((correction {A = (Ω^ m) A} 1 n
   ∘∙ Ω→ (correction m (suc n)))
   ∘∙ hLevelTrunc→∙ m n)
    ≡⟨ cong (λ H
             → recTrunc∙ n H ((Ω^→ (suc m)) f)
-              ∘∙ ((correction 1 n
+              ∘∙ ((correction {A = (Ω^ m) A} 1 n
               ∘∙ Ω→ (correction m (suc n)))
               ∘∙ hLevelTrunc→∙ m n))
             (isPropIsOfHLevel n _ _) ⟩
   (recTrunc∙ n (hLevelΩ^ (suc m) n hB) ((Ω^→ (suc m)) f)
-  ∘∙ (((correction 1 n
+  ∘∙ (((correction {A = (Ω^ m) A} 1 n
   ∘∙ Ω→ (correction m (suc n)))
   ∘∙ hLevelTrunc→∙ m n)))
    ≡⟨ cong (recTrunc∙ n (hLevelΩ^ (suc m) n hB) ((Ω^→ (suc m)) f) ∘∙_)

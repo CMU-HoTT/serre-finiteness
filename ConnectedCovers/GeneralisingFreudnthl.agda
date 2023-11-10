@@ -24,16 +24,11 @@ open import Cubical.Homotopy.Freudenthal
 open import Cubical.Homotopy.Loopspace
 open import Cubical.Homotopy.Group.Base
 
-open import WhiteheadsLemma.WhiteheadsLemma
+open import Cubical.Homotopy.WhiteheadsLemma
 
 private
   variable
     ℓ : Level
-
-congSym : {A B : Type ℓ} {a b : A} (f : A → B) (p : a ≡ b)
-       → (cong f p) ⁻¹ ≡ cong f (p ⁻¹)
-congSym f = J (λ b p → (cong f p) ⁻¹ ≡ cong f (p ⁻¹))
-              refl
 
 connConnMapIso : {A B : Type ℓ} (f : A → B)
   → (b : B) → Iso (fiber (sMap f) ∣ b ∣₂) (∥ Σ[ a ∈ A ] ∥ f a ≡ b ∥₁ ∥₂)
@@ -215,7 +210,7 @@ SuspUnitFun≡ A = ΣPathP (SuspUnit≡∙ , (SuspFunUnit A))
                   ≃ A (snd (SuspUnit≡∙ (~ i))))
             ΠUnit
 
-isConnectedSusp : (A : Type ℓ) (n : ℕ) → isConnected n A
+{-isConnectedSusp : (A : Type ℓ) (n : ℕ) → isConnected n A
   → isConnected (1 + n) (Susp A)
 isConnectedSusp A n cA =
   transport ((ua (ΠSuspUnit _)
@@ -225,7 +220,7 @@ isConnectedSusp A n cA =
             (isConnectedSuspFun (λ (a : A) → tt) n
               (transport
               (cong (isConnected n) (sym (ua (isoToEquiv fiberUnitIso)))
-              ∙ sym (ua (ΠUnit _))) cA))
+              ∙ sym (ua (ΠUnit _))) cA))-}
 
 +∸' : (m n : ℕ) → (m < n) → m + (n ∸ m) ≡ n
 +∸' m n (zero , p) =
@@ -267,7 +262,7 @@ toSuspPointedωConnected' {A = A} (suc m) n hA =
                    (transport (λ i → isConnectedFun (2+n+2+n=2+n+1+n+1 n i)
                               (fst (toSuspPointedω (Susp∙ (typ A)) m)))
                   (toSuspPointedωConnected' m (1 + n)
-                    (isConnectedSusp (typ A) (suc (suc n)) hA)))))
+                    (isConnectedSusp (suc (suc n)) hA)))))
                   (isConnectedσ n hA)
 
 LoopSusp^AdjGambit' : (A B : Pointed ℓ) (n : ℕ) (f : Susp∙^ (1 + n) A →∙ B)
