@@ -1,3 +1,4 @@
+{-# OPTIONS --lossy-unification #-}
 module SerreFinitenessTheorem where
 
 open import Cubical.Data.Nat
