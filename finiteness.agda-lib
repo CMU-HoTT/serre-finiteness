@@ -1,4 +1,5 @@
 name: serre-finiteness
 include: .
-         ../WhiteheadPR/cubical
-flags: --cubical --no-import-sorts 
+         ../cubical
+flags: --cubical --no-import-sorts
+depend: cubical
