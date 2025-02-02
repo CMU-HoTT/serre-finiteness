@@ -3,7 +3,7 @@ module SerreFinitenessTheorem where
 
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
-open import Cubical.Foundations.Everything
+open import Everything
 open import Cubical.Homotopy.Connected
 
 

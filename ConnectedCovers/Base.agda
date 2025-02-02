@@ -1,6 +1,6 @@
 module ConnectedCovers.Base where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Data.Empty renaming (rec to rec⊥)
 open import Cubical.Data.Nat

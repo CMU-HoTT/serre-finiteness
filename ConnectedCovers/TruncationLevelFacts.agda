@@ -1,6 +1,6 @@
 module ConnectedCovers.TruncationLevelFacts where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.Group.MorphismProperties

@@ -1,6 +1,6 @@
 module FiniteCW where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Data.Nat
 open import Cubical.Data.Unit

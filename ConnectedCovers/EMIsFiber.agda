@@ -2,7 +2,7 @@
 {-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.EMIsFiber where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Homotopy.EilenbergMacLane.Base

@@ -1,7 +1,7 @@
 {-# OPTIONS --lossy-unification #-}
 module FiberOrCofiberSequences.LongExactSequence where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.Unit

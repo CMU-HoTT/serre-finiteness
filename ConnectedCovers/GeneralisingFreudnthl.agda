@@ -1,6 +1,6 @@
 module ConnectedCovers.GeneralisingFreudnthl where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Data.Nat

@@ -1,7 +1,7 @@
-
+{-# OPTIONS --lossy-unification #-}
 module FiberOrCofiberSequences.PuppeLemma where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Data.Sigma
 open import Cubical.Homotopy.Loopspace

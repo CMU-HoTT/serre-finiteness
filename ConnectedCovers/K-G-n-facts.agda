@@ -1,7 +1,7 @@
 {-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.K-G-n-facts where
 
-open import Cubical.Foundations.Everything
+open import Everything
 open import Cubical.Foundations.Pointed.Homogeneous
 
 open import Cubical.Algebra.AbGroup.Base

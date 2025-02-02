@@ -1,6 +1,6 @@
 module FiberOrCofiberSequences.ShortExactSequence where
 
-open import Cubical.Foundations.Everything
+open import Everything
 
 open import Cubical.Algebra.Group
 open import Cubical.Algebra.Group.Morphisms
