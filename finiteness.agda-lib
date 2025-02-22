@@ -1,6 +1,4 @@
 name: serre-finiteness
 include: .
-         ../cubical
+         ../CCPR/cubical
 flags: --cubical --no-import-sorts
-
-depend: cubical

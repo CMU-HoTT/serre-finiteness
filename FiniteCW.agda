@@ -1,3 +1,5 @@
+
+--**** STOCKHOLM ****
 module FiniteCW where
 
 open import Everything
@@ -5,14 +7,21 @@ open import Everything
 open import Cubical.Data.Nat
 open import Cubical.Data.Unit
 open import Cubical.HITs.Join
-open import Cubical.HITs.PropositionalTruncation
+open import Cubical.HITs.Truncation
 open import Cubical.HITs.Pushout
 open import Cubical.HITs.Sn
+open import Cubical.HITs.Susp
 open import Cubical.Homotopy.Connected
 
 private
   variable
     ℓ : Level
+
+-- possibly this exists elsewhere
+Susp^ : ℕ → Type ℓ → Type ℓ
+Susp^ 0 X = X
+Susp^ (suc n) X = Susp^ n (Susp X)
+
 -- finite CW complexes
 postulate
   -- The type of "finite CW complex structures".
@@ -25,13 +34,17 @@ postulate
   isFinCW : Type ℓ → Type ℓ
   isFinCW-isProp : {X : Type ℓ} → isProp (isFinCW X)
 
-  isFinCW-def : {X : Type ℓ} → isFinCW X ≃ ∥ Σ[ C ∈ FinCW ℓ ] X ≡ decodeFinCW C ∥₁
+  isFinCW-def : {X : Type ℓ} → isFinCW X ≃ (∥ (Σ[ C ∈ FinCW ℓ ] (X ≡ decodeFinCW C)) ∥ 1)
+
+  isFinCW-def-fun : {X : Type ℓ} → isFinCW X → (∥ (Σ[ C ∈ FinCW ℓ ] X ≡ decodeFinCW C) ∥ 1)
 
   -- closure under pushouts, products, etc.
 
   isFinCWUnit : isFinCW (Unit* {ℓ = ℓ})
 
   isFinCWSn : {n : ℕ} → isFinCW (S₊ n)
+
+  isFinCWSusp : {n : ℕ} (X : Type ℓ) → isFinCW (Susp^ n X)
 
   isFinCWPushout : {X Y Z : Type ℓ} (f : X → Y) (g : X → Z)
     → isFinCW X → isFinCW Y → isFinCW Z → isFinCW (Pushout f g)
@@ -50,7 +63,7 @@ postulate
   -- "Obstruction theory".
   liftFromNDimFinCW : (n : HLevel) (X : Type ℓ) (hX : isNDimFinCW n X)
     {Y Z : Type ℓ} (f : Y → Z) (hf : isConnectedFun (2 + n) f) (g : X → Z)
-    → ∥ Σ[ l ∈ (X → Y) ] f ∘ l ≡ g ∥₁
+    → ∥ Σ[ l ∈ (X → Y) ] f ∘ l ≡ g ∥ 1
 
   mapFromNSkel : (X : Type ℓ) (hX : isFinCW X) (n : HLevel)
-    → ∥ Σ[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (X → Y) ] isConnectedFun n f ∥₁
+    → ∥ Σ[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (Y → X) ] isConnectedFun n f ∥ 1

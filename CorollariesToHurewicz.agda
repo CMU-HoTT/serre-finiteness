@@ -18,10 +18,14 @@ postulate
   -- Bottom homotopy groups, e.g.,
   -- if n = 0 we are talking about π₂(X),
   -- and X must be simply connected = 1-connected.
+  --*** STOCKHOLM ***
   isFinCW→isFPBottomπ : (X : Pointed ℓ) (hX : isFinCW (typ X))
     (n : ℕ) (cX : isConnected (3 + n) (typ X))
     → isFP (πAb n X)
 
+
+
+postulate
   -- Could weaken hypothesis to stablyNFinite n X (or so).
   saf→isFPBottomπ : (X : Pointed ℓ) (hX : saf X)
     (n : ℕ) (cX : isConnected (3 + n) (typ X))

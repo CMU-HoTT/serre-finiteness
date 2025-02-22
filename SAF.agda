@@ -21,11 +21,9 @@ private
     ℓ : Level
 
 -- stably almost finite spaces
-
--- possibly this exists elsewhere
-Susp^ : ℕ → Type ℓ → Type ℓ
-Susp^ 0 X = X
-Susp^ (suc n) X = Susp (Susp^ n X)
+postulate
+  isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
+    → isEquiv (transport (λ i → p i → X) (λ x → x))
 
 -- (n-1)-finite, perhaps?
 nFinite : HLevel → Type ℓ → Type ℓ
@@ -34,6 +32,11 @@ nFinite {ℓ} n X =
 
 nFinite-isProp : {n : HLevel} {X : Type ℓ} → isProp (nFinite n X)
 nFinite-isProp = isOfHLevelTrunc 1
+
+-- closure of n-finiteness
+postulate
+  cofNFinite : {n : ℕ} {X Y Z : Pointed ℓ} → CofiberSeq X Y Z
+    → nFinite n (typ X) → nFinite n (typ Y) → nFinite n (typ Z)
 
 -- should change to use pointed suspension
 stablyNFinite : HLevel → Pointed ℓ → Type ℓ
@@ -54,20 +57,39 @@ saf-isProp {X = X} = isPropΠ (λ n → stablyNFinite-isProp {n = n} {X = X})
 saf'-isProp : {X : Pointed ℓ} → isProp (saf' X)
 saf'-isProp = isOfHLevelTrunc 1
 
--- depends on the implementation of FinCW, postulate skeleton function
--- seems wrong
-postulate
-  isFinCW→saf : {X : Pointed ℓ} → isFinCW (typ X) → saf X
+-- depends on the implementation of FinCW
+isFinCW→saf : {X : Pointed ℓ} → isFinCW (typ X) → saf X
+isFinCW→saf {X = X} hX =
+  rec (saf-isProp {X = X}) (λ p n →
+                    ∣ 0 , ∣ (fst p) ,
+                           ((transport (λ i → (snd p i) → (typ X)) (λ x → x))
+                       , isEquiv→isConnected
+                          (transport (λ i → (snd p i) → (typ X))
+                                      (λ x → x))
+                           (isEquivTrnspId (snd p)) n) ∣ ∣)
+                           (isFinCW-def-fun hX)
 
+postulate
   isFinCW→saf' : {X : Pointed ℓ} → isFinCW (typ X) → saf' X
 
+  arith : ∀ p n → (p + suc n) ≡ suc (p + n)
+
+-- all just arithmetic
+stablyNFiniteOfSusp : (n : HLevel) (A : Pointed ℓ)
+      → stablyNFinite (suc n) (S∙ A) → stablyNFinite n A
+stablyNFiniteOfSusp n A = rec (stablyNFinite-isProp {X = A})
+  λ p → ∣ suc (fst p) , rec nFinite-isProp (λ x → ∣ (fst x) , (fst (snd x)) ,
+                        transport (λ i → isConnectedFun (arith (fst p) n i)
+                                                         (fst (snd x)))
+                                  (snd (snd x)) ∣) (snd p) ∣
+
+-- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
 postulate
-  stablyNFiniteOfSusp : (n : HLevel) (A : Pointed ℓ)
-    → stablyNFinite (suc n) (S∙ A) → stablyNFinite n A
-
   stablyNFiniteExtension : {n : HLevel} {A B C : Pointed ℓ} (S : CofiberSeq A B C)
-    → stablyNFinite n A → stablyNFinite n C → stablyNFinite n B
+      → stablyNFinite n A → stablyNFinite n C → stablyNFinite n B
+--stablyNFiniteExtension Co hA hC = {!!}
 
+postulate
   safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf B → saf C
 
@@ -80,6 +102,8 @@ postulate
   saf'Extension : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf' A → saf' C → saf' B
 
+-- hmm
+postulate
   safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
 
   saf'S¹× : {A : Pointed ℓ} → saf' A → saf' (S¹∙ ×∙ A)
