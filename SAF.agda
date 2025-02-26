@@ -2,12 +2,17 @@ module SAF where
 
 open import Everything
 
+open import Cubical.Algebra.AbGroup
+open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
+open import Cubical.Data.Fin
 open import Cubical.Homotopy.Connected
 open import Cubical.HITs.Join
 open import Cubical.HITs.Truncation
 open import Cubical.HITs.Susp
+open import Cubical.Homotopy.EilenbergMacLane.Base
+--open import Cubical.HITs.Sphere
 
 open import FiniteCW
 open import PointedHITs
@@ -15,6 +20,7 @@ open import FPAbGroup
 open import HomotopyGroups
 
 open import FiberOrCofiberSequences.Base
+open import FiberOrCofiberSequences.CofiberBase
 
 private
   variable
@@ -24,6 +30,11 @@ private
 postulate
   isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
     → isEquiv (transport (λ i → p i → X) (λ x → x))
+
+-- spheres with arbitrary universe level?
+postulate
+  S : ℕ → Pointed ℓ
+  
 
 -- (n-1)-finite, perhaps?
 nFinite : HLevel → Type ℓ → Type ℓ
@@ -48,14 +59,8 @@ stablyNFinite-isProp = isOfHLevelTrunc 1
 saf : Pointed ℓ → Type ℓ
 saf X = (n : ℕ) → stablyNFinite n X
 
-saf' : Pointed ℓ → Type ℓ
-saf' X = ∥ ((n : ℕ) → (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X)))) ∥ 1
-
 saf-isProp : {X : Pointed ℓ} → isProp (saf X)
 saf-isProp {X = X} = isPropΠ (λ n → stablyNFinite-isProp {n = n} {X = X})
-
-saf'-isProp : {X : Pointed ℓ} → isProp (saf' X)
-saf'-isProp = isOfHLevelTrunc 1
 
 -- depends on the implementation of FinCW
 isFinCW→saf : {X : Pointed ℓ} → isFinCW (typ X) → saf X
@@ -70,9 +75,18 @@ isFinCW→saf {X = X} hX =
                            (isFinCW-def-fun hX)
 
 postulate
-  isFinCW→saf' : {X : Pointed ℓ} → isFinCW (typ X) → saf' X
-
   arith : ∀ p n → (p + suc n) ≡ suc (p + n)
+
+  -- silly
+  saf-Fin : ∀ n (b : Fin* {ℓ} n) → saf (Fin* n , b)
+
+  EMDirProd : (H K : AbGroup ℓ) (n : ℕ)
+    → (EM∙ (AbDirProd H K) n)
+       ≡ (EM∙ H n) ×∙ (EM∙ K n)
+
+  EM₁ℤ : (EM∙ {ℓ} ℤ 1) ≡ S 1 --S¹
+
+  saf-Sn : ∀ n → saf (S {ℓ} n)
 
 -- all just arithmetic
 stablyNFiniteOfSusp : (n : HLevel) (A : Pointed ℓ)
@@ -92,21 +106,17 @@ postulate
 postulate
   safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf B → saf C
-
-  saf'Cofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
-    → saf' A → saf' B → saf' C
-
+    
   safExtension : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf C → saf B
 
-  saf'Extension : {A B C : Pointed ℓ} → CofiberSeq A B C
-    → saf' A → saf' C → saf' B
-
 -- hmm
 postulate
+  saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
+
   safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
 
-  saf'S¹× : {A : Pointed ℓ} → saf' A → saf' (S¹∙ ×∙ A)
+  safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
 
   -- TODO: Most likely the inequalities on `k` are not quite right
   stablyNFiniteJoin : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)

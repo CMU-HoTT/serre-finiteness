@@ -92,11 +92,6 @@ movFunTransportPathLemma {a = a} {b = b} f =
                               f (p i)) (r ⁻¹) ≡ q ⁻¹ ∙ (r ⁻¹) ∙ (cong f p))
    λ q r → transportPathLemmaLeft q (r ⁻¹) ∙ rUnit (q ⁻¹ ∙ r ⁻¹)
                                             ∙ (assoc (q ⁻¹) (r ⁻¹) refl) ⁻¹
-
-postulate
-  CofiberSeq : Pointed ℓ → Pointed ℓ → Pointed ℓ → Type ℓ
-  -- CofiberSeq A B C = Σ[ f ∈ A →∙ B ] Σ[ g ∈ B →∙ C ] Σ[ h ∈ g ∘∙ f = const∙ A C ], ...
-  -- Probably use a record.
   
   --FiberSeq : Pointed ℓ → Pointed ℓ → Pointed ℓ → Type ℓ
   -- likewise

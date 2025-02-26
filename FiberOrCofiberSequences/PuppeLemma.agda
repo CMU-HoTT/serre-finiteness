@@ -9,6 +9,7 @@ open import Cubical.Homotopy.Loopspace
 open import PointedHITs
 
 open import FiberOrCofiberSequences.Base
+open import FiberOrCofiberSequences.CofiberBase
 
 private
   variable

@@ -27,6 +27,7 @@ postulate
 
 postulate
   -- Could weaken hypothesis to stablyNFinite n X (or so).
+  -- not stockholm
   saf→isFPBottomπ : (X : Pointed ℓ) (hX : saf X)
     (n : ℕ) (cX : isConnected (3 + n) (typ X))
     → isFP (πAb n X)
