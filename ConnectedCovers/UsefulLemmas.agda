@@ -1,7 +1,7 @@
 {-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.UsefulLemmas where
 
-open import Everything
+open import Everything hiding (isIsoToIso)
 open import Cubical.Foundations.Pointed.Homogeneous
 
 open import Cubical.Algebra.AbGroup.Base

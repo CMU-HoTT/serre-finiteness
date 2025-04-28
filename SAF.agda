@@ -6,13 +6,14 @@ open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
-open import Cubical.Data.Fin
+open import Cubical.Data.Fin.Inductive
 open import Cubical.Homotopy.Connected
 open import Cubical.HITs.Join
 open import Cubical.HITs.Truncation
 open import Cubical.HITs.Susp
 open import Cubical.Homotopy.EilenbergMacLane.Base
 --open import Cubical.HITs.Sphere
+open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 
 open import FiniteCW
 open import PointedHITs
@@ -78,13 +79,13 @@ postulate
   arith : ∀ p n → (p + suc n) ≡ suc (p + n)
 
   -- silly
-  saf-Fin : ∀ n (b : Fin* {ℓ} n) → saf (Fin* n , b)
+  saf-Fin : ∀ n (b : Fin n) → saf (Fin n , b)
 
   EMDirProd : (H K : AbGroup ℓ) (n : ℕ)
     → (EM∙ (AbDirProd H K) n)
        ≡ (EM∙ H n) ×∙ (EM∙ K n)
 
-  EM₁ℤ : (EM∙ {ℓ} ℤ 1) ≡ S 1 --S¹
+  EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1 --S¹
 
   saf-Sn : ∀ n → saf (S {ℓ} n)
 
