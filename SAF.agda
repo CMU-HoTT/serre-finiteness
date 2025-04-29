@@ -10,6 +10,7 @@ open import Cubical.Data.Fin.Inductive
 open import Cubical.Homotopy.Connected
 open import Cubical.HITs.Join
 open import Cubical.HITs.Truncation
+open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.HITs.Susp
 open import Cubical.Homotopy.EilenbergMacLane.Base
 --open import Cubical.HITs.Sphere
@@ -35,15 +36,15 @@ postulate
 -- spheres with arbitrary universe level?
 postulate
   S : ℕ → Pointed ℓ
-  
+
 
 -- (n-1)-finite, perhaps?
-nFinite : HLevel → Type ℓ → Type ℓ
+nFinite : HLevel → Type ℓ → Type (ℓ-suc ℓ)
 nFinite {ℓ} n X =
-  ∥ (Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f) ∥ 1
+  ∥ (Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f) ∥₁
 
 nFinite-isProp : {n : HLevel} {X : Type ℓ} → isProp (nFinite n X)
-nFinite-isProp = isOfHLevelTrunc 1
+nFinite-isProp = squash₁
 
 -- closure of n-finiteness
 postulate
@@ -51,13 +52,13 @@ postulate
     → nFinite n (typ X) → nFinite n (typ Y) → nFinite n (typ Z)
 
 -- should change to use pointed suspension
-stablyNFinite : HLevel → Pointed ℓ → Type ℓ
-stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))) ∥ 1
+stablyNFinite : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
+stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))) ∥₁
 
 stablyNFinite-isProp : {n : HLevel} {X : Pointed ℓ} → isProp (stablyNFinite n X)
-stablyNFinite-isProp = isOfHLevelTrunc 1
+stablyNFinite-isProp = squash₁
 
-saf : Pointed ℓ → Type ℓ
+saf : Pointed ℓ → Type (ℓ-suc ℓ)
 saf X = (n : ℕ) → stablyNFinite n X
 
 saf-isProp : {X : Pointed ℓ} → isProp (saf X)
@@ -65,19 +66,20 @@ saf-isProp {X = X} = isPropΠ (λ n → stablyNFinite-isProp {n = n} {X = X})
 
 -- depends on the implementation of FinCW
 isFinCW→saf : {X : Pointed ℓ} → isFinCW (typ X) → saf X
-isFinCW→saf {X = X} hX =
-  rec (saf-isProp {X = X}) (λ p n →
+isFinCW→saf {ℓ = ℓ }{X = X} hX =
+  PT.rec (saf-isProp {X = X}) (λ p n →
                     ∣ 0 , ∣ (fst p) ,
-                           ((transport (λ i → (snd p i) → (typ X)) (λ x → x))
-                       , isEquiv→isConnected
-                          (transport (λ i → (snd p i) → (typ X))
+                             (transport (λ i → (snd p i) → (typ X)) (λ x → x)
+                            , isEquiv→isConnected (transport (λ i → (snd p i) → (typ X))
                                       (λ x → x))
-                           (isEquivTrnspId (snd p)) n) ∣ ∣)
+                                      (lem p) n) ∣₁ ∣₁)
                            (isFinCW-def-fun hX)
+  where
+  lem : (p : Σ (FinCW ℓ) (λ v → fst X ≡ decodeFinCW v))
+    → isEquiv (transport (λ i → snd p i → typ X) (λ x → x))
+  lem p = isEquivTrnspId (snd p)
 
 postulate
-  arith : ∀ p n → (p + suc n) ≡ suc (p + n)
-
   -- silly
   saf-Fin : ∀ n (b : Fin n) → saf (Fin n , b)
 
@@ -92,11 +94,11 @@ postulate
 -- all just arithmetic
 stablyNFiniteOfSusp : (n : HLevel) (A : Pointed ℓ)
       → stablyNFinite (suc n) (S∙ A) → stablyNFinite n A
-stablyNFiniteOfSusp n A = rec (stablyNFinite-isProp {X = A})
-  λ p → ∣ suc (fst p) , rec nFinite-isProp (λ x → ∣ (fst x) , (fst (snd x)) ,
-                        transport (λ i → isConnectedFun (arith (fst p) n i)
+stablyNFiniteOfSusp n A = PT.rec (stablyNFinite-isProp {X = A})
+  λ p → ∣ suc (fst p) , PT.rec nFinite-isProp (λ x → ∣ (fst x) , (fst (snd x)) ,
+                        transport (λ i → isConnectedFun (+-suc (fst p) n i)
                                                          (fst (snd x)))
-                                  (snd (snd x)) ∣) (snd p) ∣
+                                  (snd (snd x)) ∣₁) (snd p) ∣₁
 
 -- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
 postulate
@@ -107,7 +109,7 @@ postulate
 postulate
   safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf B → saf C
-    
+
   safExtension : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf C → saf B
 
@@ -133,5 +135,3 @@ postulate
   stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun n (fst f))
     → stablyNFinite n Y → stablyNFinite n X
-
-

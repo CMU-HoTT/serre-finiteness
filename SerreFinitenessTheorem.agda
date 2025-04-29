@@ -35,5 +35,3 @@ mutual
   saf→saf<-> X safX scX (suc n) =
     safTotal (<->EMFibSeq X n) (Conn→ConnConnCov X 3 (suc n) scX)
       (saf→saf<-> X safX scX n) (isFP→safEM (πAb n X) (saf→isFPπ X safX scX n) n)
-   
-
