@@ -79,8 +79,8 @@ postulate
     (g : (CofiberSeqExt S) →∙ (CofiberSeqExt S'))
     (p : (g ∘∙ CofiberSeqInc S) ≡ (CofiberSeqInc S' ∘∙ f))
     → isConnectedFun n (fst f)
-    → isConnectedFun n (fst g)
-    → isConnectedFun n (fst (CofiberSeqMap S S' f g p))
+    → isConnectedFun (1 + n) (fst g)
+    → isConnectedFun (1 + n) (fst (CofiberSeqMap S S' f g p))
 
 -- cofiber sequences for unpointed maps
 postulate
@@ -122,6 +122,17 @@ postulate
                       → (isFinCW (CofiberSeqExt₋ S))
                       → (isFinCW (typ (CofiberSeqCof₋ S)))
 
+  cofiberDom-isFinCWCofiberSeq₋ : {A B : Type ℓ} (f : A → B)
+                                  → isFinCW A
+                                  → isFinCW (CofiberSeqDom₋
+                                       (cofiber-CofiberSeq₋ f))
+
+  
+  cofiberExt-isFinCWCofiberSeq₋ : {A B : Type ℓ} (f : A → B)
+                                  → isFinCW B
+                                  → isFinCW (CofiberSeqExt₋
+                                       (cofiber-CofiberSeq₋ f))
+
   CofiberSeqMap₋ : {A B A' B' : Type ℓ} {C C' : Pointed ℓ}
     (S : CofiberSeq₋ A B C) (S' : CofiberSeq₋ A' B' C')
     (f : (CofiberSeqDom₋ S) → (CofiberSeqDom₋ S'))
@@ -135,5 +146,38 @@ postulate
     (g : (CofiberSeqExt₋ S) → (CofiberSeqExt₋ S'))
     (p : (g ∘ CofiberSeqInc₋ S) ≡ (CofiberSeqInc₋ S' ∘ f))
     → isConnectedFun n f
-    → isConnectedFun n g
-    → isConnectedFun n (fst (CofiberSeqMap₋ S S' f g p))
+    → isConnectedFun (1 + n) g
+    → isConnectedFun (1 + n) (fst (CofiberSeqMap₋ S S' f g p))
+
+  CofiberSeqMap-mix : {A B : Type ℓ} {C A' B' C' : Pointed ℓ}
+    (S : CofiberSeq₋ A B C) (S' : CofiberSeq A' B' C')
+    (f : (CofiberSeqDom₋ S) → typ (CofiberSeqDom S'))
+    (g : (CofiberSeqExt₋ S) → typ (CofiberSeqExt S'))
+    → (g ∘ CofiberSeqInc₋ S) ≡ ((fst (CofiberSeqInc S')) ∘ f)
+    → ((CofiberSeqCof₋ S) →∙ (CofiberSeqCof S'))
+
+  CofiberSeqMapConn-mix : (n : ℕ) {A B : Type ℓ} {C A' B' C' : Pointed ℓ}
+    (S : CofiberSeq₋ A B C) (S' : CofiberSeq A' B' C')
+    (f : (CofiberSeqDom₋ S) → typ (CofiberSeqDom S'))
+    (g : (CofiberSeqExt₋ S) → typ (CofiberSeqExt S'))
+    (p : (g ∘ CofiberSeqInc₋ S) ≡ ((fst (CofiberSeqInc S')) ∘ f))
+    → isConnectedFun n f
+    → isConnectedFun (1 + n) g
+    → isConnectedFun (1 + n) (fst (CofiberSeqMap-mix S S' f g p))
+
+  CofiberSeqMap-cofiber : {A B : Type ℓ} {A' B' C' : Pointed ℓ}
+    (m : A → B) (S' : CofiberSeq A' B' C')
+    (f : A → typ (CofiberSeqDom S'))
+    (g : B → typ (CofiberSeqExt S'))
+    → (g ∘ m) ≡ ((fst (CofiberSeqInc S')) ∘ f)
+    → ((CofiberSeqCof₋ (cofiber-CofiberSeq₋ m)) →∙ (CofiberSeqCof S'))
+
+  CofiberSeqMapConn-cofiber : (n : ℕ) {A B : Type ℓ} {A' B' C' : Pointed ℓ}
+    (m : A → B) (S' : CofiberSeq A' B' C')
+    (f : A → typ (CofiberSeqDom S'))
+    (g : B → typ (CofiberSeqExt S'))
+    (p : (g ∘ m) ≡ ((fst (CofiberSeqInc S')) ∘ f))
+    → isConnectedFun n f
+    → isConnectedFun (1 + n) g
+    → isConnectedFun (1 + n) (fst (CofiberSeqMap-cofiber m S' f g p))
+ 

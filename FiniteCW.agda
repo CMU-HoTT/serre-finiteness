@@ -15,6 +15,8 @@ open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.Homotopy.Connected
 open import Cubical.CW.Base renaming (isFinCW to isFinCW')
 
+--open import FiberOrCofiberSequences.CofiberBase
+
 private
   variable
     ℓ : Level
@@ -68,6 +70,9 @@ isNDimFinCW-isProp = squash₁
 postulate
   -- closure under pushouts, products, etc.
 
+  isNDimFinCW→isFinCW : {n : ℕ} {X : Type ℓ} → isNDimFinCW n X
+                                              → isFinCW X
+
   isFinCWUnit : isFinCW (Unit* {ℓ = ℓ})
 
   isFinCWSn : {n : ℕ} → isFinCW (S₊ n)
@@ -85,4 +90,4 @@ postulate
     → ∃[ l ∈ (X → Y) ] (f ∘ l ≡ g)
 
   mapFromNSkel : (X : Type ℓ) (hX : isFinCW X) (n : ℕ)
-    → ∃[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (Y → X) ] isConnectedFun n f
+    → ∃[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (Y → X) ] isConnectedFun (1 + n) f
