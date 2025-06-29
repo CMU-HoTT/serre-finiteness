@@ -24,14 +24,30 @@ open import HomotopyGroups
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
 
+open import Connectedness
+
 private
   variable
     ℓ : Level
 
 -- stably almost finite spaces
+
+-- silly postulates
 postulate
   isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
     → isEquiv (transport (λ i → p i → X) (λ x → x))
+
+  arithmetric : (M₁ M₂ k n m : ℕ)
+                 → (k ≤ n + m)
+                 → (M₁ + M₂ + k ≤ M₁ + n + (M₂ + m))
+
+  arithmetric' : (M₁ M₂ k n m : ℕ)
+                 → (k ≤ n + m)
+                 → (M₂ + M₁ + k ≤ M₁ + n + (M₂ + m))
+
+  isConnectedTrnspConnected : {X Y Z : Type ℓ} {n : ℕ} (p : Y ≡ Z) (f : X → Y)
+    → isConnectedFun n f
+    → isConnectedFun n (transport (λ i → X → (p i)) f)
 
 -- spheres with arbitrary universe level?
 postulate
@@ -143,8 +159,29 @@ cofNFinite {ℓ} {n} CS hX hY =
 stablyNFinite : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))) ∥₁
 
+stablyNFinite' : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
+stablyNFinite' {ℓ} n X =
+  ∥ (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X))) ]
+     isConnectedFun (m + n) f)) ∥₁
+
 stablyNFinite-isProp : {n : HLevel} {X : Pointed ℓ} → isProp (stablyNFinite n X)
 stablyNFinite-isProp = squash₁
+
+stablyNFinite'-isProp : {n : HLevel} {X : Pointed ℓ} → isProp (stablyNFinite' n X)
+stablyNFinite'-isProp = squash₁
+
+stablyNFinite→stablyNFinite' : {n : HLevel} {X : Pointed ℓ}
+  → stablyNFinite n X → stablyNFinite' n X
+stablyNFinite→stablyNFinite' {X = X} hX =
+  PT.rec (stablyNFinite'-isProp {X = X})
+  (λ hX' → PT.rec (stablyNFinite'-isProp {X = X})
+  (λ hX'' → ∣ (fst hX') , hX'' ∣₁) (snd hX')) hX
+
+stablyNFinite'→stablyNFinite : {n : HLevel} {X : Pointed ℓ}
+  → stablyNFinite' n X → stablyNFinite n X
+stablyNFinite'→stablyNFinite {X = X} hX =
+  PT.rec squash₁ (λ hX' → ∣ (fst hX') , ∣ snd hX' ∣₁ ∣₁) hX
 
 saf : Pointed ℓ → Type (ℓ-suc ℓ)
 saf X = (n : ℕ) → stablyNFinite n X
@@ -209,13 +246,81 @@ postulate
 
   safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
 
-  -- TODO: Most likely the inequalities on `k` are not quite right
-  stablyNFiniteJoin : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)
-    (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite n₁ X₁)
-      (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
-    (k : HLevel) (hk₁ : n₁ + m₂ ≤ k) (hk₂ : m₁ + n₂ ≤ k)
-    → stablyNFinite k (join∙ X₁ X₂)
 
+stablyNFiniteJoin' : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)
+  (hmn₁ : m₁ ≤ n₁)
+  (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite' n₁ X₁)
+    (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite' n₂ X₂)
+  (k : HLevel) (hk₁ : k ≤ n₁ + m₂) (hk₂ : k ≤ n₂ + m₁)
+  → stablyNFinite' k (join∙ X₁ X₂)
+stablyNFiniteJoin' {ℓ} {X₁} {X₂}
+  m₁ n₁ m₂ n₂ (a , p) hXm₁ hXn₁ hXm₂ hXn₂ k hk₁ hk₂ =
+  PT.rec (stablyNFinite'-isProp {ℓ} {k} {join∙ X₁ X₂})
+     γ hXn₁
+  where
+    postulate
+      joinSuspTrick : (M₁ M₂ : ℕ) → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
+                                     ≡ join (Susp^ M₁ (typ X₁))
+                                            (Susp^ M₂ (typ X₂))
+
+      arithmetic : (M₁ : ℕ) → (a + (M₁ + m₁)) ≡ (M₁ + n₁)
+
+    connectivityC₁ : (M₁ : ℕ) (C₁ : Type ℓ)
+                     (f : C₁ → (Susp^ M₁ (typ X₁)))
+                     (cf : isConnectedFun (M₁ + n₁) f)
+                  → isConnected (M₁ + m₁) C₁
+    connectivityC₁ M₁ C₁ f cf = 
+                  isConnectedFun→isConnected (M₁ + m₁)
+                    (isConnectedComp (λ _ → tt) f (M₁ + m₁)
+                      (isConnected→isConnectedFun (M₁ + m₁)
+                        (Susp^-conn m₁ M₁ (typ X₁) hXm₁))
+                      (isConnectedFunSubtr (M₁ + m₁) a f
+                      (transport (λ i → isConnectedFun (arithmetic M₁ (~ i)) f)
+                                 cf)))
+
+
+    β : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₁))) ]
+     isConnectedFun (m + n₁) f))
+      → (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₂))) ]
+     isConnectedFun (m + n₂) f))
+      → stablyNFinite' k (join∙ X₁ X₂)
+    β (M₁ , C₁ , f₁ , cf₁) (M₂ , C₂ , f₂ , cf₂) =
+      ∣ M₁ + M₂ , ((join (typ C₁) (typ C₂)) , isFinCWJoin (snd C₁) (snd C₂))
+               , transport (λ i → join (typ C₁) (typ C₂)
+                                → joinSuspTrick M₁ M₂ (~ i)) (join→ f₁ f₂)
+               , isConnectedTrnspConnected (sym (joinSuspTrick M₁ M₂))
+                                           (join→ f₁ f₂)
+                   (isConnectedFunJoin f₁ f₂ (M₁ + n₁) (M₂ + n₂) (M₁ + m₁)
+                                       (M₂ + m₂) (M₁ + M₂ + k)
+                                       (arithmetric M₁ M₂ k n₁ m₂ hk₁)
+                                       (arithmetric' M₂ M₁ k n₂ m₁ hk₂)
+                                       cf₁ cf₂ (connectivityC₁ M₁ (typ C₁) f₁ cf₁)
+                                       (Susp^-conn m₂ M₂ (typ X₂) hXm₂)) ∣₁
+
+
+    γ : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₁))) ]
+     isConnectedFun (m + n₁) f))
+        → stablyNFinite' k (join∙ X₁ X₂)
+    γ hX₁ = PT.rec (stablyNFinite'-isProp {ℓ} {k} {join∙ X₁ X₂})
+                   (β hX₁)
+                   hXn₂
+
+stablyNFiniteJoin : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)
+  (hmn₁ : m₁ ≤ n₁)
+  (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite n₁ X₁)
+    (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
+  (k : HLevel) (hk₁ : k ≤ n₁ + m₂) (hk₂ : k ≤ n₂ + m₁)
+  → stablyNFinite k (join∙ X₁ X₂)
+stablyNFiniteJoin {ℓ} {X₁} {X₂} m₁ n₁ m₂ n₂ hmn₁ hXm₁ hXn₁ hXm₂ hXn₂ k hk₁ hk₂ =
+  stablyNFinite'→stablyNFinite {X = join∙ X₁ X₂}
+  (stablyNFiniteJoin' {ℓ} {X₁} {X₂} m₁ n₁ m₂ n₂ hmn₁ hXm₁
+  (stablyNFinite→stablyNFinite' {X = X₁} hXn₁) hXm₂
+  (stablyNFinite→stablyNFinite' {X = X₂} hXn₂) k hk₁ hk₂)
+
+postulate
   stablyNFiniteApprox : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun n (fst f))
     → stablyNFinite (1 + n) X → stablyNFinite n Y
