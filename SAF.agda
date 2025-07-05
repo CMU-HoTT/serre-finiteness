@@ -7,6 +7,7 @@ open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Fin.Inductive
+open import Cubical.Data.Sigma
 open import Cubical.Homotopy.Connected
 open import Cubical.HITs.Join
 open import Cubical.HITs.Truncation
@@ -32,6 +33,15 @@ private
 
 -- stably almost finite spaces
 
+-- probably this is defined elsewhere
+Susp→^ : {X Y : Type ℓ} (n : ℕ) (f : X → Y) → Susp^ n X → Susp^ n Y
+Susp→^ zero f = f
+Susp→^ (suc n) f = Susp→^ n (suspFun f)
+
+postulate
+  Susp→^-conn : {X Y : Type ℓ} (n m : ℕ) (f : X → Y) → isConnectedFun m f
+              → isConnectedFun (n + m) (Susp→^ n f)
+
 -- silly postulates
 postulate
   isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
@@ -52,6 +62,7 @@ postulate
 -- spheres with arbitrary universe level?
 postulate
   S : ℕ → Pointed ℓ
+--S {ℓ} n = {!!} ×∙ (Unit* {ℓ} , tt*) 
 
 
 -- (n-1)-finite, perhaps?
@@ -74,6 +85,13 @@ nFinite-nDim' {ℓ} n X =
 
 nFinite-nDim-isProp : {n : HLevel} {X : Type ℓ} → isProp (nFinite-nDim n X)
 nFinite-nDim-isProp = squash₁
+
+nDim'→nFinite : {n : HLevel} {X : Type ℓ} → nFinite-nDim' n X → nFinite (1 + n) X
+nDim'→nFinite {ℓ} {n} {X} hX =
+  PT.rec nFinite-isProp
+  (λ hX' → ∣ (fst hX' , isNDimFinCW→isFinCW (fst (snd hX')))
+                      , (snd (snd hX')) ∣₁)
+  hX
 
 nFinite→nDim' : {n : HLevel} {X : Type ℓ} → nFinite (1 + n) X → nFinite-nDim' n X
 nFinite→nDim' {ℓ} {n} {X} hX = PT.rec squash₁ γ hX
@@ -152,6 +170,52 @@ cofNFinite {ℓ} {n} CS hX hY =
               (transport (λ i → nFinite (1 + n) (typ (CofiberSeqDom-Id {S = CS} (~ i)))) hX)
               (transport (λ i → nFinite (2 + n) (typ (CofiberSeqExt-Id {S = CS} (~ i)))) hY))
 
+postulate
+  susp-nFinite : {X : Type ℓ} (n : ℕ) → nFinite n X → nFinite (suc n) (Susp X)
+
+nFiniteApprox :  {X Y : Type ℓ} (f : X → Y)
+    (n : HLevel) (hf : isConnectedFun n f)
+    → nFinite n X → nFinite n Y
+nFiniteApprox f n hf = PT.rec squash₁ (λ hX → ∣ (fst hX) , ((f ∘ fst (snd hX)) , (isConnectedComp f (fst (snd hX)) n hf (snd (snd hX)))) ∣₁)
+
+nFiniteApprox' :  {X Y : Type ℓ} (f : X → Y)
+  (n : HLevel) (hf : isConnectedFun (2 + n) f)
+  → nFinite (1 + n) Y → nFinite (1 + n) X
+nFiniteApprox' {ℓ} {X} {Y} f n hf hY = PT.rec nFinite-isProp γ (nFinite→nDim' hY)
+  where
+    α : (hY : Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
+          Σ[ g ∈ (C → Y) ] isConnectedFun (1 + n) g)
+       → ∃[ l ∈ ((fst hY) → X) ] (f ∘ l ≡ (fst (snd (snd hY))))
+    α (C , hC , g , cg) =
+      liftFromNDimFinCW n C hC f hf g
+
+    β :  (hY : Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
+          Σ[ g ∈ (C → Y) ] isConnectedFun (1 + n) g)
+         → (hl : Σ[ l ∈ ((fst hY) → X) ] (f ∘ l ≡ (fst (snd (snd hY)))))
+         → (isConnectedFun (1 + n) (fst hl))
+    β (C , hC , g , cg) (l , hl) =
+      isConnectedFunCancel' l f (1 + n) hf
+        (transport (λ i → isConnectedFun (1 + n) (hl (~ i)))
+                   cg)
+
+    γ : (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
+          Σ[ g ∈ (C → Y) ] isConnectedFun (1 + n) g)
+        → nFinite (suc n) X
+    γ (C , hC , g , cg) =
+      nDim'→nFinite
+        (PT.rec
+           squash₁
+           (λ hl → ∣ C , (hC , ((fst hl) , (β (C , hC , g , cg) hl))) ∣₁)
+           (α (C , hC , g , cg)))
+
+nFiniteDrop : {X : Type ℓ} (n : HLevel)
+  → nFinite (1 + n) X → nFinite n X
+nFiniteDrop n = PT.rec nFinite-isProp
+                       (λ hX → ∣ (fst hX)
+                                , ((fst (snd hX))
+                                , isConnectedFunSubtr n 1 (fst (snd hX)) (snd (snd hX))) ∣₁)
+
+
 -- should change to use pointed suspension
 stablyNFinite : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))) ∥₁
@@ -228,6 +292,10 @@ stablyNFiniteOfSusp n A = PT.rec (stablyNFinite-isProp {X = A})
                         transport (λ i → isConnectedFun (+-suc (fst p) n i)
                                                          (fst (snd x)))
                                   (snd (snd x)) ∣₁) (snd p) ∣₁
+
+postulate
+  susp-stablyNFinite : (n : HLevel) (A : Pointed ℓ)
+    → stablyNFinite n A → stablyNFinite (suc n) (S∙ A) 
 
 -- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
 postulate
@@ -325,13 +393,54 @@ stablyNFiniteJoin {ℓ} {X₁} {X₂} m₁ n₁ m₂ n₂ hmn₁ hXm₁ hXn₁ h
   (stablyNFinite→stablyNFinite' {X = X₂} hXn₂) k hk₁ hk₂)
 
 postulate
-  stablyNFiniteApprox : {X Y : Pointed ℓ} (f : X →∙ Y)
-    (n : HLevel) (hf : isConnectedFun n (fst f))
-    → stablyNFinite (1 + n) X → stablyNFinite n Y
+  srthmetic : (m n : ℕ) → (m + suc n) ≡ (suc (m + n))
 
-  stablyNFiniteDrop : {X : Pointed ℓ} (n : HLevel)
+stablyNFiniteApprox : {X Y : Pointed ℓ} (f : X →∙ Y)
+    (n : HLevel) (hf : isConnectedFun n (fst f))
+    → stablyNFinite n X → stablyNFinite n Y
+stablyNFiniteApprox f n hf hX =
+  PT.rec squash₁ (λ hX' → ∣ (fst hX') ,
+  (nFiniteApprox (Susp→^ (fst hX') (fst f))
+  (fst hX' + n)
+  (Susp→^-conn (fst hX') n (fst f) hf)
+  (snd hX')) ∣₁) hX
+
+
+
+stablyNFiniteDrop : {X : Pointed ℓ} (n : HLevel)
     → stablyNFinite (1 + n) X → stablyNFinite n X
+stablyNFiniteDrop {X = X} n =
+  PT.rec (stablyNFinite-isProp {n = n} {X = X})
+         λ hX → ∣ (fst hX) ,
+                  nFiniteDrop (fst hX + n)
+                  (transport (λ i → nFinite (srthmetic (fst hX) n i) (Susp^ (fst hX) (typ X))) (snd hX)) ∣₁
 
-  stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
-    (n : HLevel) (hf : isConnectedFun n (fst f))
+stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
+    (n : HLevel) (hf : isConnectedFun (1 + n) (fst f))
     → stablyNFinite n Y → stablyNFinite n X
+stablyNFiniteApprox' {ℓ} {X} {Y} f n cf hY =
+  PT.rec squash₁ (λ hY' → ∣ γ hY' ∣₁) hY
+  where
+    postulate
+      drthmtc : (m n : ℕ) → (m + (1 + n)) ≡ (1 + (m + n))
+      
+    susp-f : (m : ℕ) → Susp^ m (typ X) → Susp^ m (typ Y)
+    susp-f m = Susp→^ m (fst f)
+
+    susp-f-conn : (m : ℕ) → isConnectedFun (1 + (m + n)) (susp-f m)
+    susp-f-conn m = transport (λ i → isConnectedFun (drthmtc m n i) (susp-f m))
+                              (Susp→^-conn m (1 + n) (fst f) cf)
+
+    α : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
+        → nFinite (1 + ((fst hY') + n)) (Susp^ (1 + (fst hY')) (typ Y))
+    α (m , hY') = transport (λ i → nFinite (1 + (m + n)) (Susp^-comm m (typ Y) (~ i))) (susp-nFinite (m + n) hY')
+
+
+    β : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
+      → nFinite (1 + ((fst hY') + n)) (Susp^ (1 + (fst hY')) (typ X))
+    β (m , hY') = nFiniteApprox' (susp-f (1 + m)) (m + n)
+                  (susp-f-conn (1 + m)) (α (m , hY'))
+
+    γ : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
+       → Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))
+    γ (m , hY') = (1 + m) , β (m , hY')

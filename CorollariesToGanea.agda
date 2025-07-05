@@ -18,6 +18,7 @@ open import Cubical.HITs.Truncation
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.EilenbergMacLane.Base
 open import Cubical.Homotopy.EilenbergMacLane.Properties
+open import Cubical.Homotopy.Freudenthal
 open import Cubical.Homotopy.Loopspace
 
 open import Connectedness
@@ -72,6 +73,9 @@ module _ (F G : Pointed ℓ) where
        order3 : suc (suc (m + n)) ≤ suc (n + suc m)
        order3 = suc-≤-suc (transport (λ i → suc (m + n) ≤ (+-comm (suc m) n i))
                                     ≤-refl)
+
+  postulate
+    join∙^-saf : (n : ℕ) → saf F → saf G → saf (join∙^ n F G)
               
 
 -- sillyy
@@ -209,10 +213,19 @@ saf→safΩ {ℓ} {B} scB hB = γ
   where
     open Ganea^ ((λ (_ : Unit*) → (pt B)) , refl)
 
-    ΩB-stably2Finite : stablyNFinite 2 (Ω B)
-    ΩB-stably2Finite = stablyNFiniteApprox' ((λ _ → tt*) , refl) 2
-      (isConnected→isConnectedFun* 2 (isConnectedPath 2 scB (pt B) (pt B)))
-                                      (saf-Unit 2)
+    postulate
+      order-silly : (n : ℕ) → (3 + n) ≤ suc (n + 2)
+
+      order-silly' : (n : ℕ) → (3 + n) ≤ suc (n + 1)
+
+    ΩB-connected : isConnected 2 (typ (Ω B))
+    ΩB-connected = isConnectedPath 2 scB (pt B) (pt B)
+
+    ΩB-stably1Finite : stablyNFinite 1 (Ω B)
+    ΩB-stably1Finite =
+      stablyNFiniteApprox' ((λ _ → tt*) , refl) 1
+      (isConnected→isConnectedFun* 2 ΩB-connected)
+      (saf-Unit 1)
 
     F0-Iso : Iso (typ (F 0)) (typ (Ω B))
     Iso.fun F0-Iso (tt* , p) = p
@@ -228,8 +241,7 @@ saf→safΩ {ℓ} {B} scB hB = γ
     F0-≡ = ua∙ (fst F0-Eq∙) (snd F0-Eq∙)
 
     connected-join-F : (k : ℕ) → isConnected 2 (typ (join-F k))
-    connected-join-F zero =
-      transport (λ i → isConnected 2 (typ (F0-≡ (~ i))))
+    connected-join-F 0 = transport (λ i → isConnected 2 (typ (F0-≡ (~ i))))
                 (isConnectedPath 2 scB (pt B) (pt B))
     connected-join-F (suc k) =
       isConnectedJoin 1 1 2 ≤-refl
@@ -238,10 +250,11 @@ saf→safΩ {ℓ} {B} scB hB = γ
 
     connected-join-F' : (k : ℕ) → isConnected (suc (suc k))
                                                (typ (join-F (suc k)))
-    connected-join-F' k = join∙^-connected (F 0) (Ω B) (suc k)
-      (transport (λ i → isConnected 1 (typ (F0-≡ (~ i))))
-                 (isConnectedSubtr 1 1 (isConnectedPath 2 scB (pt B) (pt B))))
-                   (isConnectedSubtr 1 1 (isConnectedPath 2 scB (pt B) (pt B)))
+    connected-join-F' k =
+      join∙^-connected (F 0) (Ω B) (suc k)
+        (transport (λ i → isConnected 1 (typ (F0-≡ (~ i))))
+                  (isConnectedSubtr 1 1 ΩB-connected))
+                  (isConnectedSubtr 1 1 ΩB-connected)
 
     connected-p : (k : ℕ) → isConnectedFun (suc (suc k))
                                             (fst (p (suc k)))
@@ -253,47 +266,42 @@ saf→safΩ {ℓ} {B} scB hB = γ
        (Ganea^≡ (suc k) (~ i))) (connected-join-F' k)))
        (isConnected→mere-path scB (pt B) b)
 
-    ΩB→Fn-stablyNFinite : (n : ℕ) → stablyNFinite (2 + n) (Ω B)
-      → (k : ℕ) → stablyNFinite (4 + n) (F (1 + k))
+    ΩB→Fn-stablyNFinite : (n : ℕ) → stablyNFinite (1 + n) (Ω B)
+      → (k : ℕ) → stablyNFinite (3 + n) (F (1 + k))
     ΩB→Fn-stablyNFinite n sΩB zero =
-      transport (λ i → stablyNFinite (4 + n) (Ganea^≡∙ 1 (~ i)))
-                (stablyNFiniteJoin 2 (2 + n) 2 (2 + n)
-                (suc-≤-suc (suc-≤-suc zero-≤))
-                (transport (λ i → isConnected 2 (typ (F0-≡ (~ i))))
-                           (isConnectedPath 2 scB (pt B) (pt B)))
-                (transport (λ i → stablyNFinite (2 + n) (F0-≡ (~ i)))
+      transport (λ i → stablyNFinite (3 + n) (Ganea^≡∙ 1 (~ i)))
+                (stablyNFiniteJoin 1 (1 + n) 2 (1 + n)
+                (suc-≤-suc zero-≤)
+                (transport (λ i → isConnected 1 (typ (F0-≡ (~ i))))
+                           (isConnectedSubtr 1 1 (isConnectedPath 2 scB (pt B) (pt B))))
+                (transport (λ i → stablyNFinite (1 + n) (F0-≡ (~ i)))
                            sΩB)
-                (isConnectedPath 2 scB (pt B) (pt B)) sΩB (4 + n)
-                (suc-≤-suc (suc-≤-suc
-                  (transport (λ i → 2 + n ≤ (+-comm 2 n i)) ≤-refl)))
-                (suc-≤-suc (suc-≤-suc
-                  (transport (λ i → 2 + n ≤ (+-comm 2 n i)) ≤-refl))))
+                (isConnectedPath 2 scB (pt B) (pt B)) sΩB (3 + n)
+                (order-silly n)
+                (order-silly' n))
     ΩB→Fn-stablyNFinite n sΩB (suc k) =
-      transport (λ i → stablyNFinite (4 + n) (Ganea^≡∙ (2 + k) (~ i)))
-                (stablyNFiniteJoin 2 (2 + n) 2 (2 + n)
-                (suc-≤-suc (suc-≤-suc zero-≤))
-                (connected-join-F (suc k))
-                (stablyNFiniteDrop (2 + n)
-                 (stablyNFiniteDrop (1 + (2 + n))
-                  (transport (λ i → stablyNFinite (suc (suc (suc (suc n))))
+      transport (λ i → stablyNFinite (3 + n) (Ganea^≡∙ (2 + k) (~ i)))
+                (stablyNFiniteJoin 1 (1 + n) 2 (1 + n)
+                (suc-≤-suc zero-≤)
+                (isConnectedSubtr 1 1 (connected-join-F (suc k)))
+                (stablyNFiniteDrop (1 + n)
+                 (stablyNFiniteDrop (1 + (1 + n))
+                  (transport (λ i → stablyNFinite (suc (suc (suc n)))
                                      (Ganea^≡∙ (1 + k) i))
                              (ΩB→Fn-stablyNFinite n sΩB k))))
-                (isConnectedPath 2 scB (pt B) (pt B)) sΩB (4 + n)
-                (suc-≤-suc (suc-≤-suc
-                  (transport (λ i → 2 + n ≤ (+-comm 2 n i)) ≤-refl)))
-                (suc-≤-suc (suc-≤-suc
-                  (transport (λ i → 2 + n ≤ (+-comm 2 n i)) ≤-refl))))
+                (isConnectedPath 2 scB (pt B) (pt B)) sΩB (3 + n)
+                (order-silly n) (order-silly' n))
 
 
-    eventuallySNFnt : (n k : ℕ) → stablyNFinite (2 + n) (Ω B)
-                                → stablyNFinite (4 + n) (E (suc k))
-                                → stablyNFinite (4 + n) (E 1)
+    eventuallySNFnt : (n k : ℕ) → stablyNFinite (1 + n) (Ω B)
+                                → stablyNFinite (3 + n) (E (suc k))
+                                → stablyNFinite (3 + n) (E 1)
     eventuallySNFnt n zero sΩB hyp = hyp
     eventuallySNFnt n (suc k) sΩB hyp =
       eventuallySNFnt n k sΩB
         (stablyNFiniteExtension
           (GaneaCofiberSeq (suc k))
-           (transport (λ i → stablyNFinite (suc (suc (suc (suc n))))
+           (transport (λ i → stablyNFinite (suc (suc (suc n)))
                               (Ganea^≡∙ (suc k) i))
                       (ΩB→Fn-stablyNFinite n sΩB k))
             hyp)
@@ -325,15 +333,13 @@ saf→safΩ {ℓ} {B} scB hB = γ
       (snd (E 1))} (isoToEquiv E1-Iso) (refl) i)) hyp)
 
     γ : saf (Ω B)
-    γ 0 = stablyNFiniteDrop 0 (stablyNFiniteDrop 1 ΩB-stably2Finite)
-    γ 1 = stablyNFiniteDrop 1 ΩB-stably2Finite
-    γ 2 = ΩB-stably2Finite
-    γ (suc (suc (suc n))) =
-      stablyNFiniteOfSusp (3 + n) (Ω B)
-       (E1→SuspΩB-SNFnt (4 + n)
-         (eventuallySNFnt n (2 + n) (γ (suc (suc n)))
-           (stablyNFiniteApprox' (p (3 + n)) (4 + n)
-            (connected-p (2 + n)) (hB (4 + n)))))
+    γ 0 = stablyNFiniteDrop 0 (ΩB-stably1Finite)
+    γ 1 = ΩB-stably1Finite
+    γ (suc (suc n)) =
+      stablyNFiniteOfSusp (2 + n) (Ω B)
+       (E1→SuspΩB-SNFnt (3 + n)
+         (eventuallySNFnt n (suc (suc n)) (γ (suc n))
+           (stablyNFiniteApprox' (p (3 + n)) (3 + n) (connected-p (2 + n)) (hB (3 + n)))))
     
 
 postulate

@@ -29,6 +29,9 @@ Susp^ (suc n) X = Susp^ n (Susp X)
 postulate
   arithmetricky : (n m : ℕ) → suc (n + m) ≡ n + (suc m)
 
+  Susp^-comm : (n : ℕ) (X : Type ℓ) → Susp^ (1 + n) X
+                                     ≡ Susp (Susp^ n X)
+
 Susp^-conn : (m n : ℕ) (X : Type ℓ) → isConnected m X
              → isConnected (n + m) (Susp^ n X)
 Susp^-conn m zero X hX = hX
