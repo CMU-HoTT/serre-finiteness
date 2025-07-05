@@ -89,17 +89,26 @@ postulate
   CofiberSeqDom₋ : {A B : Type ℓ} {C : Pointed ℓ}
                    → CofiberSeq₋ A B C → Type ℓ
 
+  CofiberSeqDom-Eq₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
+                      → CofiberSeqDom₋ S ≃ A
+
   CofiberSeqDom-Id₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
                       → CofiberSeqDom₋ S ≡ A
 
   CofiberSeqExt₋ : {A B : Type ℓ} {C : Pointed ℓ}
                    → CofiberSeq₋ A B C → Type ℓ
 
+  CofiberSeqExt-Eq₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
+                      → CofiberSeqExt₋ S ≃ B
+
   CofiberSeqExt-Id₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
                      → CofiberSeqExt₋ S ≡ B
 
   CofiberSeqCof₋ : {A B : Type ℓ} {C : Pointed ℓ}
                    → CofiberSeq₋ A B C → Pointed ℓ
+
+  CofiberSeqCof-Eq₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
+                      → CofiberSeqCof₋ S ≃∙ C
 
   CofiberSeqCof-Id₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
                      → CofiberSeqCof₋ S ≡ C
@@ -116,6 +125,11 @@ postulate
 
   cofiber-CofiberSeq₋ : {A B : Type ℓ} (f : A → B)
     → CofiberSeq₋ A B (cofib f , inl tt)
+
+  cofiber-CofiberSeqInc₋ : {A B : Type ℓ} (f : A → B)
+    → f ≡ equivFun CofiberSeqExt-Eq₋
+           ∘ CofiberSeqInc₋ (cofiber-CofiberSeq₋ f)
+           ∘ invEq CofiberSeqDom-Eq₋
 
   isFinCWCofiberSeq₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
                       → (isFinCW (CofiberSeqDom₋ S))
@@ -181,3 +195,9 @@ postulate
     → isConnectedFun (1 + n) g
     → isConnectedFun (1 + n) (fst (CofiberSeqMap-cofiber m S' f g p))
  
+  CofiberSeq₋→CofiberSeq : {A B C : Pointed ℓ}
+    (S : CofiberSeq₋ (typ A) (typ B) C)
+    (p : equivFun CofiberSeqExt-Eq₋
+           (CofiberSeqInc₋ S
+            (invEq CofiberSeqDom-Eq₋ (pt A))) ≡ pt B)
+    → CofiberSeq A B C

@@ -8,6 +8,7 @@ open import Cubical.Data.NatMinusOne
 open import Cubical.HITs.Join
 open import Cubical.HITs.Pushout
 open import Cubical.HITs.Sn
+open import Cubical.HITs.Truncation
 open import Cubical.Homotopy.Connected
 
 open import PointedHITs
@@ -16,8 +17,30 @@ private
   variable
     ℓ : Level
 
+-- silly
+postulate
+  conUnit : (n : ℕ) → isConnected n Unit
+
+-- join of Unit
+joinUnit : Iso (join Unit Unit) Unit
+Iso.fun joinUnit (inl tt) = tt
+Iso.fun joinUnit (inr tt) = tt
+Iso.fun joinUnit (push tt tt i) = tt
+Iso.inv joinUnit tt = inl tt
+Iso.rightInv joinUnit tt = refl
+Iso.leftInv joinUnit (inl tt) = refl
+Iso.leftInv joinUnit (inr tt) = push tt tt
+Iso.leftInv joinUnit (push tt tt i) = λ j → push tt tt (i ∧ j)
+
+join→Unit : {X₀ X₁ : Type ℓ}
+             → (Iso.fun joinUnit) ∘ (join→ {A = X₀} {B = X₁}
+                                             (λ _ → tt)
+                                             (λ _ → tt))
+              ≡ (λ _ → tt)
+join→Unit = refl
+
 -- functoriality of join
-joinFunctExt : {X₀ X₁ Y₀ Y₁ Z₀ Z₁ : Type ℓ} (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
+joinFunctExt : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ ℓ₅ : Level} {X₀ : Type ℓ} {X₁ : Type ℓ₁} {Y₀ : Type ℓ₂} {Y₁ : Type ℓ₃} {Z₀ : Type ℓ₄} {Z₁ : Type ℓ₅} (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
               (g₀ : Y₀ → Z₀) (g₁ : Y₁ → Z₁) (x : join X₀ X₁)
            → (join→ (g₀ ∘ f₀) (g₁ ∘ f₁)) x
             ≡ ((join→ g₀ g₁) ∘ (join→ f₀ f₁)) x
@@ -26,24 +49,24 @@ joinFunctExt f₀ f₁ g₀ g₁ (inr x) = refl
 joinFunctExt f₀ f₁ g₀ g₁ (push a b i) = refl
 
 -- commutativity of join→
-join→-commExt : {W X Y Z : Type ℓ} (f : W → Y) (g : X → Z) (x : join X W)
+join→-commExt : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level} {W : Type ℓ₁} {X : Type ℓ₂} {Y : Type ℓ₃} {Z : Type ℓ₄} (f : W → Y) (g : X → Z) (x : join X W)
   → (join-commFun ∘ (join→ f g) ∘ join-commFun) x ≡ (join→ g f) x
 join→-commExt f g (inl x) = refl
 join→-commExt f g (inr x) = refl
 join→-commExt f g (push a b i) = refl
 
-join→-comm : {W X Y Z : Type ℓ} (f : W → Y) (g : X → Z)
+join→-comm : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level} {W : Type ℓ₁} {X : Type ℓ₂} {Y : Type ℓ₃} {Z : Type ℓ₄} (f : W → Y) (g : X → Z)
   → join-commFun ∘ (join→ f g) ∘ join-commFun ≡ (join→ g f)
 join→-comm f g = funExt (join→-commExt f g)
 
-joinFunct : {X₀ X₁ Y₀ Y₁ Z₀ Z₁ : Type ℓ} (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
+joinFunct : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ ℓ₅ : Level} {X₀ : Type ℓ} {X₁ : Type ℓ₁} {Y₀ : Type ℓ₂} {Y₁ : Type ℓ₃} {Z₀ : Type ℓ₄} {Z₁ : Type ℓ₅} (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
               (g₀ : Y₀ → Z₀) (g₁ : Y₁ → Z₁)
            → (join→ (g₀ ∘ f₀) (g₁ ∘ f₁))
             ≡ (join→ g₀ g₁) ∘ (join→ f₀ f₁)
 joinFunct f₀ f₁ g₀ g₁ = funExt (joinFunctExt f₀ f₁ g₀ g₁)
 
 -- connectivity facts
-connectedMin : (n₁ n₂ : ℕ) {X Y Z : Type ℓ} (f : X → Y) (g : Y → Z)
+connectedMin : {ℓ₁ ℓ₂ ℓ₃ : Level} (n₁ n₂ : ℕ) {X : Type ℓ₁} {Y : Type ℓ₂} {Z : Type ℓ₃} (f : X → Y) (g : Y → Z)
             → isConnectedFun n₁ f → isConnectedFun n₂ g
             → (k : ℕ) → k ≤ n₁ → k ≤ n₂
             → isConnectedFun k (g ∘ f)
@@ -69,7 +92,7 @@ isConnectedFunS∙ : {X Y : Pointed ℓ} (f : X →∙ Y) (n : HLevel)
 isConnectedFunS∙ f n con b =
   isConnectedSubtr n 1 (isConnectedSuspFun (fst f) n con b)
 
-joinConnected' : (m n : ℕ) → {A A' : Type ℓ} (B : Type ℓ) (v : A → A')
+joinConnected' : {ℓ₁ ℓ₂ ℓ₃ : Level} (m n : ℕ) → {A : Type ℓ₁} {A' : Type ℓ₂} (B : Type ℓ₃) (v : A → A')
                → isConnectedFun m v
                → isConnected n B
                → isConnectedFun (m + n) (join→ (idfun B) v)
@@ -90,13 +113,13 @@ joinConnected' m n B v hv hB =
                                 (isIsoToIsEquiv (IsoToIsIso join-comm))
                                 (m + n)))
 
-isConnectedFunJoin : {X₁ Y₁ X₂ Y₂ : Type ℓ} (f₁ : X₁ → Y₁) (f₂ : X₂ → Y₂)
+isConnectedFunJoin : {ℓ' : Level} {X₁ X₂ : Type ℓ} {Y₁ Y₂ : Type ℓ'} (f₁ : X₁ → Y₁) (f₂ : X₂ → Y₂)
     (n₁ n₂ m₁ m₂ : HLevel)
     (k : HLevel) (hk₁ : k ≤ n₁ + m₂) (hk₂ : k ≤ n₂ + m₁)
     → isConnectedFun n₁ f₁ → isConnectedFun n₂ f₂
     → isConnected m₁ X₁ → isConnected m₂ Y₂
     → isConnectedFun k (join→ f₁ f₂)
-isConnectedFunJoin f₁ f₂ n₁ n₂ m₁ m₂ k hk₁ hk₂ hf₁ hf₂ hX₁ hY₂ =
+isConnectedFunJoin {ℓ} {ℓ'} f₁ f₂ n₁ n₂ m₁ m₂ k hk₁ hk₂ hf₁ hf₂ hX₁ hY₂ =
   transport (λ i → isConnectedFun k
                     (joinFunct (idfun _) f₂ f₁ (idfun _) (~ i)))
             (connectedMin (n₂ + m₁) (n₁ + m₂)
@@ -104,6 +127,24 @@ isConnectedFunJoin f₁ f₂ n₁ n₂ m₁ m₂ k hk₁ hk₂ hf₁ hf₂ hX₁
               (joinConnected' n₂ m₁ _ _ hf₂ hX₁)
               (joinConnected n₁ m₂ hf₁ hY₂)
               k hk₂ hk₁)
+
+isConnectedJoin : {X₁ X₂ : Type ℓ} (n₁ n₂ : HLevel) (k : HLevel)
+                  (hk : k ≤ n₁ + n₂)
+                  → isConnected n₁ X₁ → isConnected n₂ X₂
+                  → isConnected k (join X₁ X₂)
+isConnectedJoin {ℓ} {X₁} {X₂} n₁ n₂ k hk cX₁ cX₂ =
+  isConnectedFun→isConnected k
+    (transport (λ i → isConnectedFun k (join→Unit {X₀ = X₁} {X₁ = X₂} i))
+       (isConnectedComp (Iso.fun (joinUnit)) (join→ (λ _ → tt) (λ _ → tt))
+                        k (isEquiv→isConnected (Iso.fun (joinUnit))
+                             (isIsoToIsEquiv (IsoToIsIso joinUnit))
+                             k)
+                       (isConnectedFunJoin _ _ n₁ n₂ n₁ n₂ k hk
+                         (transport (λ i → k ≤ (+-comm n₁ n₂ i))
+                                    hk)
+                       (isConnected→isConnectedFun n₁ cX₁)
+                       (isConnected→isConnectedFun n₂ cX₂)
+                       cX₁ (conUnit n₂))))
 
 postulate
   wlp : {A B X Y : Type ℓ} (f : A → B) (g : X → Y) → Type ℓ

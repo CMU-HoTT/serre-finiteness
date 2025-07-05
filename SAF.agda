@@ -91,9 +91,6 @@ nFinite→nDim' {ℓ} {n} {X} hX = PT.rec squash₁ γ hX
         → nFinite-nDim' n X
     γ (C , f , cf) = PT.rec squash₁ (β (C , f , cf)) (mapFromNSkel (typ C) (snd C) n)
 
-{-nFinite→nDim' : {n : HLevel} {X : Type ℓ} → nFinite n X → nFinite-nDim' n X
-nFinite→nDim' {ℓ} {n} {X} hX = ?-}
-
 -- closure of n-finiteness
 
 cofNFinite'' : {n : ℕ} {X Y Z : Pointed ℓ} (CS : CofiberSeq X Y Z)
@@ -159,6 +156,11 @@ cofNFinite {ℓ} {n} CS hX hY =
 stablyNFinite : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))) ∥₁
 
+pointIrrelSNFnt : (n : ℕ) (X : Pointed ℓ) (x : typ X)
+                  → stablyNFinite n X → stablyNFinite n (typ X , x)
+pointIrrelSNFnt n X x hyp = hyp
+ 
+
 stablyNFinite' : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite' {ℓ} n X =
   ∥ (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
@@ -207,6 +209,8 @@ isFinCW→saf {ℓ = ℓ }{X = X} hX =
 postulate
   -- silly
   saf-Fin : ∀ n (b : Fin n) → saf (Fin n , b)
+
+  saf-Unit : saf {ℓ} (Unit* , tt*)
 
   EMDirProd : (H K : AbGroup ℓ) (n : ℕ)
     → (EM∙ (AbDirProd H K) n)
@@ -324,6 +328,9 @@ postulate
   stablyNFiniteApprox : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun n (fst f))
     → stablyNFinite (1 + n) X → stablyNFinite n Y
+
+  stablyNFiniteDrop : {X : Pointed ℓ} (n : HLevel)
+    → stablyNFinite (1 + n) X → stablyNFinite n X
 
   stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun n (fst f))
