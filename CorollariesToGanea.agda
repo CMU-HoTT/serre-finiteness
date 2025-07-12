@@ -58,7 +58,6 @@ module _ (F G : Pointed ℓ) where
   join∙^-SNFnt (suc m) n cF sF cG sG =
     stablyNFiniteJoin (suc m) (suc m + n) 1 (suc n) order1 (join∙^-connected m cF cG) (join∙^-SNFnt m n cF sF cG sG) cG sG (suc (suc m + n)) order2 order3
      where
-       -- i hate pink floyd
 
        order1 : suc m ≤ suc (m + n)
        order1 = suc-≤-suc ≤SumLeft
@@ -74,8 +73,15 @@ module _ (F G : Pointed ℓ) where
        order3 = suc-≤-suc (transport (λ i → suc (m + n) ≤ (+-comm (suc m) n i))
                                     ≤-refl)
 
-  postulate
-    join∙^-saf : (n : ℕ) → saf F → saf G → saf (join∙^ n F G)
+  
+  join∙^-saf : (n : ℕ) → saf F
+                       → isConnected 1 (fst F)
+                       → saf G
+                       → isConnected 1 (fst G)
+                       → saf (join∙^ n F G)
+  join∙^-saf n hF cF hG cG k = stablyNFiniteLower (suc n) k
+                               (join∙^-SNFnt n k cF (hF (suc k)) cG
+                                                    (hG (suc k)))
               
 
 -- sillyy
@@ -83,6 +89,10 @@ postulate
   isConnected→mere-path : {X : Type ℓ} → isConnected 3 X
                                     → (x y : X)
                                     → ∥ x ≡ y ∥ 1
+
+  isConnected→mere-path' : {X : Type ℓ} → isConnected 2 X
+                                     → (x y : X)
+                                     → ∥ x ≡ y ∥ 1
 
   isConnected→isConnectedFun* : (n : ℕ) {X : Type ℓ}
     → isConnected n X → isConnectedFun {ℓ} {ℓ} n (λ (_ : X) → tt*)
@@ -204,8 +214,70 @@ module Ganea^ {A : Pointed ℓ} {B : Pointed ℓ} (f : A →∙ B) where
                          (E n) (E (1 + n)))
       (GaneaCofiberSeq'' n)
 
-postulate
-  safΩ→saf : {B : Pointed ℓ} (cB : isConnected 2 (typ B)) → saf (Ω B) → saf B
+safΩ→saf : {B : Pointed ℓ} (cB : isConnected 2 (typ B)) → saf (Ω B) → saf B
+safΩ→saf {ℓ} {B} cB hB = γ
+  where
+    open Ganea^ ((λ (_ : Unit*) → (pt B)) , refl)
+
+    ΩB-connected : isConnected 1 (typ (Ω B))
+    ΩB-connected = isConnectedPath 1 cB (pt B) (pt B)
+
+    F0-Iso : Iso (typ (F 0)) (typ (Ω B))
+    Iso.fun F0-Iso (tt* , p) = p
+    Iso.inv F0-Iso p = tt* , p
+    Iso.rightInv F0-Iso = λ _ → refl
+    Iso.leftInv F0-Iso = λ _ → refl
+
+    F0-Eq∙ : (F 0) ≃∙ (Ω B)
+    fst F0-Eq∙ = isoToEquiv F0-Iso
+    snd F0-Eq∙ = refl
+
+    F0-≡ : (F 0) ≡ (Ω B)
+    F0-≡ = ua∙ (fst F0-Eq∙) (snd F0-Eq∙)
+
+    connected-join-F' : (k : ℕ) → isConnected (suc (suc k))
+                                               (typ (join-F (suc k)))
+    connected-join-F' k =
+      join∙^-connected (F 0) (Ω B) (suc k)
+        (transport (λ i → isConnected 1 (typ (F0-≡ (~ i))))
+                  (ΩB-connected))
+                  (ΩB-connected)
+
+    connected-p : (k : ℕ) → isConnectedFun (suc (suc k))
+                                            (fst (p (suc k)))
+    connected-p k b =
+      rec isPropIsContr
+       (λ q → transport (λ i → isConnected (suc (suc k))
+       (fiber (fst (p (suc k))) (q i)))
+       (transport (λ i → isConnected (suc (suc k))
+       (Ganea^≡ (suc k) (~ i))) (connected-join-F' k)))
+       (isConnected→mere-path' cB (pt B) b)
+
+    postulate
+      frthmetic : (k : ℕ) → ((suc k) + 1) ≡ (suc (suc k))
+    
+    sNFnt-join-F : (k : ℕ) → saf (join-F k)
+    sNFnt-join-F k = join∙^-saf (F 0) (Ω B) k
+                     (transport (cong saf (F0-≡ ⁻¹)) hB)
+                     (transport (cong (isConnected 1) (cong fst (F0-≡ ⁻¹)))
+                                (ΩB-connected))
+                     hB ΩB-connected
+
+
+    sNFnt-E : (k : ℕ) → saf (E k)
+    sNFnt-E zero = saf-Unit
+    sNFnt-E (suc k) = safCofiber (GaneaCofiberSeq k) (sNFnt-join-F k)
+                                 (sNFnt-E k)
+
+    γ : saf B
+    γ n = stablyNFiniteLower 2 n
+          (stablyNFiniteApprox (p (suc n)) (suc (suc n)) (connected-p n)
+           (sNFnt-E (suc n) (suc (suc n))))
+
+
+    
+
+    
 
 
 saf→safΩ : {B : Pointed ℓ} (scB : isConnected 3 (typ B)) → saf B → saf (Ω B)

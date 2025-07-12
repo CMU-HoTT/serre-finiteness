@@ -415,6 +415,12 @@ stablyNFiniteDrop {X = X} n =
                   nFiniteDrop (fst hX + n)
                   (transport (λ i → nFinite (srthmetic (fst hX) n i) (Susp^ (fst hX) (typ X))) (snd hX)) ∣₁
 
+stablyNFiniteLower : {X : Pointed ℓ} (m n : HLevel)
+  → stablyNFinite (m + n) X → stablyNFinite n X
+stablyNFiniteLower zero n hX = hX
+stablyNFiniteLower {X = X} (suc m) n hX =
+  stablyNFiniteLower {X = X} m n (stablyNFiniteDrop {X = X} (m + n) hX)
+
 stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun (1 + n) (fst f))
     → stablyNFinite n Y → stablyNFinite n X
