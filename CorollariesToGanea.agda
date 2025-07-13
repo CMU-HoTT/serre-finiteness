@@ -11,6 +11,7 @@ open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to �
 
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
+open import Cubical.Data.Sigma
 open import Cubical.HITs.Join renaming (inl to inlj ; inr to inrj)
 open import Cubical.HITs.Pushout
 open import Cubical.HITs.Susp
@@ -40,47 +41,41 @@ join∙^ (suc n) F G = join∙ (join∙^ n F G) G
 
 module _ (F G : Pointed ℓ) where
   join∙^-connected : (n : ℕ)
-                  → isConnected 1 (typ F)
                   → isConnected 1 (typ G)
-                  → isConnected (suc n) (typ (join∙^ n F G))
-  join∙^-connected zero cF cG = cF
-  join∙^-connected (suc n) cF cG =
-    transport (λ i → isConnected (+-comm (suc n) 1 i) (typ (join∙^ (suc n) F G)))
-    (isConnectedJoin (suc n) 1 ((suc n) + 1) ≤-refl (join∙^-connected n cF cG) cG)
+                  → isConnected n (typ (join∙^ n F G))
+  join∙^-connected zero cG = isConnectedZero (typ F)
+  join∙^-connected (suc n) cG =
+    transport (λ i → isConnected (+-comm n 1 i) (typ (join∙^ (suc n) F G)))
+              (isConnectedJoin n 1 (n + 1) ≤-refl (join∙^-connected n cG) cG)
 
   join∙^-SNFnt : (m n : ℕ)
-                 → isConnected 1 (typ F)
-                 → stablyNFinite (suc n) F
+                 → stablyNFinite n F
                  → isConnected 1 (typ G)
                  → stablyNFinite (suc n) G
-                 → stablyNFinite (suc m + n) (join∙^ m F G)
-  join∙^-SNFnt zero n cF sF cG sG = sF
-  join∙^-SNFnt (suc m) n cF sF cG sG =
-    stablyNFiniteJoin (suc m) (suc m + n) 1 (suc n) order1 (join∙^-connected m cF cG) (join∙^-SNFnt m n cF sF cG sG) cG sG (suc (suc m + n)) order2 order3
+                 → stablyNFinite (m + n) (join∙^ m F G)
+  join∙^-SNFnt zero n sF cG sG = sF
+  join∙^-SNFnt (suc m) n sF cG sG =
+    stablyNFiniteJoin m (m + n) 1 (suc n) ≤SumLeft (join∙^-connected m cG) (join∙^-SNFnt m n sF cG sG) cG sG (suc (m + n)) order2 order3
      where
-
-       order1 : suc m ≤ suc (m + n)
-       order1 = suc-≤-suc ≤SumLeft
 
        postulate
          arthritis : suc (m + n) ≡ (m + n + 1)
 
-       order2 : suc (suc (m + n)) ≤ suc (m + n + 1)
-       order2 = suc-≤-suc (transport (λ i → suc (m + n) ≤ (arthritis i))
-                                     ≤-refl)
+       order2 : suc (m + n) ≤ (m + n + 1)
+       order2 = transport (λ i → suc (m + n) ≤ (arthritis i))
+                          ≤-refl
 
-       order3 : suc (suc (m + n)) ≤ suc (n + suc m)
-       order3 = suc-≤-suc (transport (λ i → suc (m + n) ≤ (+-comm (suc m) n i))
+       order3 : (suc (m + n)) ≤ suc (n + m)
+       order3 = suc-≤-suc (transport (λ i → (m + n) ≤ (+-comm m n i))
                                     ≤-refl)
 
   
   join∙^-saf : (n : ℕ) → saf F
-                       → isConnected 1 (fst F)
                        → saf G
                        → isConnected 1 (fst G)
                        → saf (join∙^ n F G)
-  join∙^-saf n hF cF hG cG k = stablyNFiniteLower (suc n) k
-                               (join∙^-SNFnt n k cF (hF (suc k)) cG
+  join∙^-saf n hF hG cG k = stablyNFiniteLower n k
+                               (join∙^-SNFnt n k (hF k) cG
                                                     (hG (suc k)))
               
 
@@ -235,23 +230,18 @@ safΩ→saf {ℓ} {B} cB hB = γ
     F0-≡ : (F 0) ≡ (Ω B)
     F0-≡ = ua∙ (fst F0-Eq∙) (snd F0-Eq∙)
 
-    connected-join-F' : (k : ℕ) → isConnected (suc (suc k))
+    connected-join-F' : (k : ℕ) → isConnected (suc k)
                                                (typ (join-F (suc k)))
-    connected-join-F' k =
-      join∙^-connected (F 0) (Ω B) (suc k)
-        (transport (λ i → isConnected 1 (typ (F0-≡ (~ i))))
-                  (ΩB-connected))
-                  (ΩB-connected)
+    connected-join-F' k = join∙^-connected (F 0) (Ω B) (suc k) ΩB-connected
 
-    connected-p : (k : ℕ) → isConnectedFun (suc (suc k))
+    connected-p : (k : ℕ) → isConnectedFun (suc k)
                                             (fst (p (suc k)))
     connected-p k b =
       rec isPropIsContr
-       (λ q → transport (λ i → isConnected (suc (suc k))
-       (fiber (fst (p (suc k))) (q i)))
-       (transport (λ i → isConnected (suc (suc k))
-       (Ganea^≡ (suc k) (~ i))) (connected-join-F' k)))
-       (isConnected→mere-path' cB (pt B) b)
+          (λ q → transport (λ i → isConnected (suc k) (fiber (fst (p (suc k))) (q (~ i))))
+          (transport (λ i → isConnected (suc k) (Ganea^≡ (suc k) (~ i)))
+                     (connected-join-F' k)))
+          (isConnected→mere-path' cB b (pt B))
 
     postulate
       frthmetic : (k : ℕ) → ((suc k) + 1) ≡ (suc (suc k))
@@ -259,8 +249,6 @@ safΩ→saf {ℓ} {B} cB hB = γ
     sNFnt-join-F : (k : ℕ) → saf (join-F k)
     sNFnt-join-F k = join∙^-saf (F 0) (Ω B) k
                      (transport (cong saf (F0-≡ ⁻¹)) hB)
-                     (transport (cong (isConnected 1) (cong fst (F0-≡ ⁻¹)))
-                                (ΩB-connected))
                      hB ΩB-connected
 
 
@@ -270,9 +258,9 @@ safΩ→saf {ℓ} {B} cB hB = γ
                                  (sNFnt-E k)
 
     γ : saf B
-    γ n = stablyNFiniteLower 2 n
-          (stablyNFiniteApprox (p (suc n)) (suc (suc n)) (connected-p n)
-           (sNFnt-E (suc n) (suc (suc n))))
+    γ n = stablyNFiniteLower 1 n
+          (stablyNFiniteApprox (p (suc n)) (suc n) (connected-p n)
+           (sNFnt-E (suc n) (suc n)))
 
 
     
@@ -320,23 +308,21 @@ saf→safΩ {ℓ} {B} scB hB = γ
         (isConnectedSubtr 1 1 (connected-join-F k))
         (isConnectedSubtr 1 1 (isConnectedPath 2 scB (pt B) (pt B)))
 
-    connected-join-F' : (k : ℕ) → isConnected (suc (suc k))
+    connected-join-F' : (k : ℕ) → isConnected (suc k)
                                                (typ (join-F (suc k)))
-    connected-join-F' k =
-      join∙^-connected (F 0) (Ω B) (suc k)
-        (transport (λ i → isConnected 1 (typ (F0-≡ (~ i))))
-                  (isConnectedSubtr 1 1 ΩB-connected))
-                  (isConnectedSubtr 1 1 ΩB-connected)
+    connected-join-F' k = join∙^-connected (F 0) (Ω B) (suc k)
+                          (isConnectedSubtr 1 1 ΩB-connected)
 
-    connected-p : (k : ℕ) → isConnectedFun (suc (suc k))
+    connected-p : (k : ℕ) → isConnectedFun (suc k)
                                             (fst (p (suc k)))
     connected-p k b =
       rec isPropIsContr
-       (λ q → transport (λ i → isConnected (suc (suc k))
-       (fiber (fst (p (suc k))) (q i)))
-       (transport (λ i → isConnected (suc (suc k))
-       (Ganea^≡ (suc k) (~ i))) (connected-join-F' k)))
-       (isConnected→mere-path scB (pt B) b)
+          (λ q → transport (λ i → isConnected (suc k) (fiber (fst (p (suc k))) (q (~ i))))
+          (transport (λ i → isConnected (suc k) (Ganea^≡ (suc k) (~ i)))
+                     (connected-join-F' k)))
+          (isConnected→mere-path scB b (pt B))
+
+   
 
     ΩB→Fn-stablyNFinite : (n : ℕ) → stablyNFinite (1 + n) (Ω B)
       → (k : ℕ) → stablyNFinite (3 + n) (F (1 + k))
@@ -407,16 +393,58 @@ saf→safΩ {ℓ} {B} scB hB = γ
     γ : saf (Ω B)
     γ 0 = stablyNFiniteDrop 0 (ΩB-stably1Finite)
     γ 1 = ΩB-stably1Finite
-    γ (suc (suc n)) =
-      stablyNFiniteOfSusp (2 + n) (Ω B)
+    γ (suc (suc n)) = stablyNFiniteOfSusp (2 + n) (Ω B)
        (E1→SuspΩB-SNFnt (3 + n)
-         (eventuallySNFnt n (suc (suc n)) (γ (suc n))
-           (stablyNFiniteApprox' (p (3 + n)) (3 + n) (connected-p (2 + n)) (hB (3 + n)))))
+         (eventuallySNFnt n (suc (suc (suc n))) (γ (suc n))
+         (stablyNFiniteApprox' (p (4 + n)) (3 + n) (connected-p (3 + n))
+          (hB (3 + n)))))
     
 
-postulate
-  safTotal : {F E B : Pointed ℓ} (S : FiberSeq F E B) (scB : isConnected 3 (typ B))
+safTotal : {F E B : Pointed ℓ} (S : FiberSeq F E B) (scB : isConnected 3 (typ B))
     → saf B → saf F → saf E
+safTotal {ℓ} {F'} {E'} {B} S scB hB hF' k = saf-E k (suc k) (saf-En k)
+  where
+    open Ganea^ (FiberSeqProj S)
+
+    ΩB-connected : isConnected 2 (typ (Ω B))
+    ΩB-connected = isConnectedPath 2 scB (pt B) (pt B)
+
+
+    F0-≡ : F 0 ≡ F'
+    F0-≡ = fst (PathPΣ (FibsEqOfFibSeq (FiberFiberSeq (FiberSeqProj S)) S refl))
+
+    saf-ΩB : saf (Ω B)
+    saf-ΩB = saf→safΩ scB hB
+
+    saf-Fn : (n : ℕ) → saf (join-F n)
+    saf-Fn n = join∙^-saf (F 0) (Ω B) n
+               (transport (λ i → saf (F0-≡ (~ i))) hF')
+               saf-ΩB (isConnectedSubtr 1 1 ΩB-connected)
+
+    connected-join-F' : (k : ℕ) → isConnected (suc k)
+                                               (typ (join-F (suc k)))
+    connected-join-F' k = join∙^-connected (F 0) (Ω B) (suc k)
+                          (isConnectedSubtr 1 1 ΩB-connected)
+
+    connected-p : (k : ℕ) → isConnectedFun (suc k)
+                                            (fst (p (suc k)))
+    connected-p k b =
+      rec isPropIsContr
+          (λ q → transport (λ i → isConnected (suc k) (fiber (fst (p (suc k))) (q (~ i))))
+          (transport (λ i → isConnected (suc k) (Ganea^≡ (suc k) (~ i)))
+                     (connected-join-F' k)))
+          (isConnected→mere-path scB b (pt B))
+
+    saf-En : (k : ℕ) → stablyNFinite k (E (suc k))
+    saf-En k = stablyNFiniteApprox' (p (suc k)) k (connected-p k) (hB k)
+
+    saf-E : (n k : ℕ) → stablyNFinite n (E k) → stablyNFinite n (E 0)
+    saf-E n zero hE = hE
+    saf-E n (suc k) hE =
+      saf-E n k (stablyNFiniteExtension (GaneaCofiberSeq k) (saf-Fn k n)
+                hE)
+
+   
 
 EMℤMod-saf : (n m : ℕ) → saf {ℓ = ℓ-zero} (EM∙ (ℤMod (suc n)) (suc m))
 EMℤMod-saf n zero = safΩ→saf (isConnectedEM 1)
