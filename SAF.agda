@@ -65,7 +65,8 @@ postulate
 --S {ℓ} n = {!!} ×∙ (Unit* {ℓ} , tt*) 
 
 
--- (n-1)-finite, perhaps?
+-- `nFinite n X` corresponds to "X is (n-1)-finite" on paper,
+-- because `isConnectedFun n f` corresponds to "f is (n-2)-connected".
 nFinite : HLevel → Type ℓ → Type (ℓ-suc ℓ)
 nFinite {ℓ} n X =
   ∥ (Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f) ∥₁
@@ -73,136 +74,133 @@ nFinite {ℓ} n X =
 nFinite-isProp : {n : HLevel} {X : Type ℓ} → isProp (nFinite n X)
 nFinite-isProp = squash₁
 
+-- "X admits an (n-2)-connected map from an (n-1)-dimensional CW complex"
 nFinite-nDim : HLevel → Type ℓ → Type (ℓ-suc ℓ)
 nFinite-nDim {ℓ} n X =
   ∥ (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ] Σ[ f ∈ (C → X) ] isConnectedFun n f) ∥₁
 
-nFinite-nDim' : HLevel → Type ℓ → Type (ℓ-suc ℓ)
-nFinite-nDim' {ℓ} n X =
-  ∥ (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ] Σ[ f ∈ (C → X) ] isConnectedFun (1 + n) f) ∥₁
-
- 
-
 nFinite-nDim-isProp : {n : HLevel} {X : Type ℓ} → isProp (nFinite-nDim n X)
 nFinite-nDim-isProp = squash₁
 
-nDim'→nFinite : {n : HLevel} {X : Type ℓ} → nFinite-nDim' n X → nFinite (1 + n) X
-nDim'→nFinite {ℓ} {n} {X} hX =
+nDim→nFinite : {n : HLevel} {X : Type ℓ} → nFinite-nDim n X → nFinite n X
+nDim→nFinite {ℓ} {n} {X} hX =
   PT.rec nFinite-isProp
   (λ hX' → ∣ (fst hX' , isNDimFinCW→isFinCW (fst (snd hX')))
                       , (snd (snd hX')) ∣₁)
   hX
 
-nFinite→nDim' : {n : HLevel} {X : Type ℓ} → nFinite (1 + n) X → nFinite-nDim' n X
-nFinite→nDim' {ℓ} {n} {X} hX = PT.rec squash₁ γ hX
+nFinite→nDim : {n : HLevel} {X : Type ℓ} → nFinite n X → nFinite-nDim n X
+nFinite→nDim {ℓ} {n} {X} hX = PT.rec squash₁ γ hX
   where
 
-    β :(C : Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun (1 + n) f)
+    β :(C : Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f)
        → Σ[ Y ∈ Type ℓ ] (Σ[ hY ∈ (isNDimFinCW n Y) ]
-                            Σ[ g ∈ (Y → typ (fst C)) ] isConnectedFun (1 + n) g)
-       → nFinite-nDim' n X
+                            Σ[ g ∈ (Y → typ (fst C)) ] isConnectedFun n g)
+       → nFinite-nDim n X
     β (C , f , cf) (Y , hY , g , cg) =
-      ∣ Y , hY , ((f ∘ g) , (isConnectedComp f g (1 + n) cf cg)) ∣₁
+      ∣ Y , hY , ((f ∘ g) , (isConnectedComp f g n cf cg)) ∣₁
     
 
-    γ : (Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun (1 + n) f)
-        → nFinite-nDim' n X
+    γ : (Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f)
+        → nFinite-nDim n X
     γ (C , f , cf) = PT.rec squash₁ (β (C , f , cf)) (mapFromNSkel (typ C) (snd C) n)
 
--- closure of n-finiteness
+-- closure of n-finiteness under cofibers
 
 cofNFinite'' : {n : ℕ} {X Y Z : Pointed ℓ} (CS : CofiberSeq X Y Z)
-  → nFinite-nDim' n (typ (CofiberSeqDom CS))
-  → nFinite (2 + n) (typ (CofiberSeqExt CS))
-  → nFinite (2 + n) (typ (CofiberSeqCof CS))
+  → nFinite-nDim n (typ (CofiberSeqDom CS))
+  → nFinite (1 + n) (typ (CofiberSeqExt CS))
+  → nFinite (1 + n) (typ (CofiberSeqCof CS))
 cofNFinite'' {ℓ} {n} CS hDom hExt =
   PT.rec squash₁ step2 hDom
  where
    step0 :  (C1 : Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
                                   Σ[ f ∈ (C → (typ (CofiberSeqDom CS))) ]
-                                  isConnectedFun (1 + n) f)
+                                  isConnectedFun n f)
          → (D1 : Σ[ C ∈ FinCW ℓ ]
                   Σ[ f ∈ (decodeFinCW C → (typ (CofiberSeqExt CS))) ]
-                    isConnectedFun (2 + n) f)
+                    isConnectedFun (1 + n) f)
          → (Σ[ l ∈ ((fst C1) → (typ (fst D1))) ]
              ((fst (snd D1)) ∘ l
                ≡ (fst (CofiberSeqInc CS) ∘ (fst (snd (snd C1))))))
-         → nFinite (2 + n) (typ (CofiberSeqCof CS))
+         → nFinite (1 + n) (typ (CofiberSeqCof CS))
    step0 (C , hC , f , cf) (D , g , cg) (l , p) =
      ∣ ((typ (CofiberSeqCof₋ (cofiber-CofiberSeq₋ l))) ,
        isFinCWCofiberSeq₋
          (cofiberDom-isFinCWCofiberSeq₋ l (isNDimFinCW→isFinCW hC))
          (cofiberExt-isFinCWCofiberSeq₋ l (snd D))) ,
        (fst (CofiberSeqMap-cofiber l CS f g p)) ,
-       CofiberSeqMapConn-cofiber (1 + n) l CS f g p cf cg ∣₁
+       CofiberSeqMapConn-cofiber n l CS f g p cf cg ∣₁
 
    step1 : (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
                             Σ[ f ∈ (C → (typ (CofiberSeqDom CS))) ]
-                            isConnectedFun (1 + n) f)
+                            isConnectedFun n f)
          → (Σ[ C ∈ FinCW ℓ ]
              Σ[ f ∈ (decodeFinCW C → (typ (CofiberSeqExt CS))) ]
-             isConnectedFun (2 + n) f)
-         → nFinite (2 + n) (typ (CofiberSeqCof CS))
+             isConnectedFun (1 + n) f)
+         → nFinite (1 + n) (typ (CofiberSeqCof CS))
    step1 (C , hC , f , cf) (D , g , cg) =
-     PT.rec squash₁ (step0 (C , hC , f , cf) (D , g , cg)) (liftFromNDimFinCW n C hC g cg ((fst (CofiberSeqInc CS)) ∘ f))
+     PT.rec squash₁ (step0 (C , hC , f , cf) (D , g , cg))
+       (liftFromNDimFinCW n C hC g (isConnectedFunSubtr n 1 g cg) ((fst (CofiberSeqInc CS)) ∘ f))
 
    step2 : (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
                             Σ[ f ∈ (C → (typ (CofiberSeqDom CS))) ]
-                            isConnectedFun (1 + n) f)
-           → nFinite (2 + n) (typ (CofiberSeqCof CS))
+                            isConnectedFun n f)
+           → nFinite (1 + n) (typ (CofiberSeqCof CS))
    step2 (C , hC , f , cf) =
      PT.rec squash₁ (step1 (C , hC , f , cf)) hExt
 
 cofNFinite' : {n : ℕ} {X Y Z : Pointed ℓ} (CS : CofiberSeq X Y Z)
-  → nFinite (1 + n) (typ (CofiberSeqDom CS))
-  → nFinite (2 + n) (typ (CofiberSeqExt CS))
-  → nFinite (2 + n) (typ (CofiberSeqCof CS))
+  → nFinite n (typ (CofiberSeqDom CS))
+  → nFinite (1 + n) (typ (CofiberSeqExt CS))
+  → nFinite (1 + n) (typ (CofiberSeqCof CS))
 cofNFinite' {ℓ = ℓ} {n = n} CS hDom hExt =
-  cofNFinite'' CS (nFinite→nDim' hDom) hExt
+  cofNFinite'' CS (nFinite→nDim hDom) hExt
 
 cofNFinite : {n : ℕ} {X Y Z : Pointed ℓ} → CofiberSeq X Y Z
-    → nFinite (1 + n) (typ X)
-    → nFinite (2 + n) (typ Y)
-    → nFinite (2 + n) (typ Z)
+    → nFinite n (typ X)
+    → nFinite (1 + n) (typ Y)
+    → nFinite (1 + n) (typ Z)
 cofNFinite {ℓ} {n} CS hX hY =
-  transport (λ i → nFinite (2 + n) (typ (CofiberSeqCof-Id {S = CS} i)))
+  transport (λ i → nFinite (1 + n) (typ (CofiberSeqCof-Id {S = CS} i)))
             (cofNFinite' CS
-              (transport (λ i → nFinite (1 + n) (typ (CofiberSeqDom-Id {S = CS} (~ i)))) hX)
-              (transport (λ i → nFinite (2 + n) (typ (CofiberSeqExt-Id {S = CS} (~ i)))) hY))
+              (transport (λ i → nFinite n (typ (CofiberSeqDom-Id {S = CS} (~ i)))) hX)
+              (transport (λ i → nFinite (1 + n) (typ (CofiberSeqExt-Id {S = CS} (~ i)))) hY))
 
 postulate
   susp-nFinite : {X : Type ℓ} (n : ℕ) → nFinite n X → nFinite (suc n) (Susp X)
 
+-- If X is (n-1)-finite and f : X -> Y is (n-2)-connected then Y is (n-1)-finite.
 nFiniteApprox :  {X Y : Type ℓ} (f : X → Y)
     (n : HLevel) (hf : isConnectedFun n f)
     → nFinite n X → nFinite n Y
 nFiniteApprox f n hf = PT.rec squash₁ (λ hX → ∣ (fst hX) , ((f ∘ fst (snd hX)) , (isConnectedComp f (fst (snd hX)) n hf (snd (snd hX)))) ∣₁)
 
 nFiniteApprox' :  {X Y : Type ℓ} (f : X → Y)
-  (n : HLevel) (hf : isConnectedFun (2 + n) f)
-  → nFinite (1 + n) Y → nFinite (1 + n) X
-nFiniteApprox' {ℓ} {X} {Y} f n hf hY = PT.rec nFinite-isProp γ (nFinite→nDim' hY)
+  (n : HLevel) (hf : isConnectedFun (1 + n) f)
+  → nFinite n Y → nFinite n X
+nFiniteApprox' {ℓ} {X} {Y} f n hf hY = PT.rec nFinite-isProp γ (nFinite→nDim hY)
   where
     α : (hY : Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
-          Σ[ g ∈ (C → Y) ] isConnectedFun (1 + n) g)
+          Σ[ g ∈ (C → Y) ] isConnectedFun n g)
        → ∃[ l ∈ ((fst hY) → X) ] (f ∘ l ≡ (fst (snd (snd hY))))
     α (C , hC , g , cg) =
-      liftFromNDimFinCW n C hC f hf g
+      liftFromNDimFinCW n C hC f (isConnectedFunSubtr n 1 f hf) g
 
     β :  (hY : Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
-          Σ[ g ∈ (C → Y) ] isConnectedFun (1 + n) g)
+          Σ[ g ∈ (C → Y) ] isConnectedFun n g)
          → (hl : Σ[ l ∈ ((fst hY) → X) ] (f ∘ l ≡ (fst (snd (snd hY)))))
-         → (isConnectedFun (1 + n) (fst hl))
+         → (isConnectedFun n (fst hl))
     β (C , hC , g , cg) (l , hl) =
-      isConnectedFunCancel' l f (1 + n) hf
-        (transport (λ i → isConnectedFun (1 + n) (hl (~ i)))
+      isConnectedFunCancel' l f n hf
+        (transport (λ i → isConnectedFun n (hl (~ i)))
                    cg)
 
     γ : (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW n C ]
-          Σ[ g ∈ (C → Y) ] isConnectedFun (1 + n) g)
-        → nFinite (suc n) X
+          Σ[ g ∈ (C → Y) ] isConnectedFun n g)
+        → nFinite n X
     γ (C , hC , g , cg) =
-      nDim'→nFinite
+      nDim→nFinite
         (PT.rec
            squash₁
            (λ hl → ∣ C , (hC , ((fst hl) , (β (C , hC , g , cg) hl))) ∣₁)
@@ -444,7 +442,7 @@ stablyNFiniteApprox' {ℓ} {X} {Y} f n cf hY =
 
     β : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
       → nFinite (1 + ((fst hY') + n)) (Susp^ (1 + (fst hY')) (typ X))
-    β (m , hY') = nFiniteApprox' (susp-f (1 + m)) (m + n)
+    β (m , hY') = nFiniteApprox' (susp-f (1 + m)) (1 + m + n)
                   (susp-f-conn (1 + m)) (α (m , hY'))
 
     γ : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
