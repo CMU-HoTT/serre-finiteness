@@ -176,6 +176,7 @@ nFiniteApprox :  {X Y : Type ℓ} (f : X → Y)
     → nFinite n X → nFinite n Y
 nFiniteApprox f n hf = PT.rec squash₁ (λ hX → ∣ (fst hX) , ((f ∘ fst (snd hX)) , (isConnectedComp f (fst (snd hX)) n hf (snd (snd hX)))) ∣₁)
 
+-- If Y is (n-1)-finite and f : X -> Y is (n-1)-connected then Y is (n-1)-finite.
 nFiniteApprox' :  {X Y : Type ℓ} (f : X → Y)
   (n : HLevel) (hf : isConnectedFun (1 + n) f)
   → nFinite n Y → nFinite n X
@@ -215,6 +216,7 @@ nFiniteDrop n = PT.rec nFinite-isProp
 
 
 -- should change to use pointed suspension
+-- `stablyNFinite n X` means "X is stably (n-1)-finite".
 stablyNFinite : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))) ∥₁
 
@@ -222,7 +224,7 @@ pointIrrelSNFnt : (n : ℕ) (X : Pointed ℓ) (x : typ X)
                   → stablyNFinite n X → stablyNFinite n (typ X , x)
 pointIrrelSNFnt n X x hyp = hyp
  
-
+-- alternative version of `stablyNFinite` with a single existential
 stablyNFinite' : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite' {ℓ} n X =
   ∥ (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
@@ -247,6 +249,7 @@ stablyNFinite'→stablyNFinite : {n : HLevel} {X : Pointed ℓ}
 stablyNFinite'→stablyNFinite {X = X} hX =
   PT.rec squash₁ (λ hX' → ∣ (fst hX') , ∣ snd hX' ∣₁ ∣₁) hX
 
+-- `saf X` means "X is stably almost finite".
 saf : Pointed ℓ → Type (ℓ-suc ℓ)
 saf X = (n : ℕ) → stablyNFinite n X
 
@@ -316,7 +319,9 @@ postulate
 
   safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
 
-
+-- If Xᵢ is stably (nᵢ-1)-finite and (mᵢ-2)-connected (i = 1, 2)
+-- then the join X₁ * X₂ is stably min(n₁+m₂-1, n₂+m₁-1)-connected
+-- provided that m₁ ≤ n₁ (i.e., that m₁-2 < n₁-1).
 stablyNFiniteJoin' : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)
   (hmn₁ : m₁ ≤ n₁)
   (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite' n₁ X₁)
@@ -333,6 +338,7 @@ stablyNFiniteJoin' {ℓ} {X₁} {X₂}
                                      ≡ join (Susp^ M₁ (typ X₁))
                                             (Susp^ M₂ (typ X₂))
 
+      -- p : a + m₁ ≡ n₁
       arithmetic : (M₁ : ℕ) → (a + (M₁ + m₁)) ≡ (M₁ + n₁)
 
     connectivityC₁ : (M₁ : ℕ) (C₁ : Type ℓ)
@@ -435,16 +441,6 @@ stablyNFiniteApprox' {ℓ} {X} {Y} f n cf hY =
     susp-f-conn m = transport (λ i → isConnectedFun (drthmtc m n i) (susp-f m))
                               (Susp→^-conn m (1 + n) (fst f) cf)
 
-    α : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
-        → nFinite (1 + ((fst hY') + n)) (Susp^ (1 + (fst hY')) (typ Y))
-    α (m , hY') = transport (λ i → nFinite (1 + (m + n)) (Susp^-comm m (typ Y) (~ i))) (susp-nFinite (m + n) hY')
-
-
-    β : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
-      → nFinite (1 + ((fst hY') + n)) (Susp^ (1 + (fst hY')) (typ X))
-    β (m , hY') = nFiniteApprox' (susp-f (1 + m)) (1 + m + n)
-                  (susp-f-conn (1 + m)) (α (m , hY'))
-
     γ : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
        → Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))
-    γ (m , hY') = (1 + m) , β (m , hY')
+    γ (m , hY') = m , nFiniteApprox' (susp-f m) (m + n) (susp-f-conn m) hY'
