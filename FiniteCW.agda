@@ -70,10 +70,10 @@ isFinCW-def {ℓ = ℓ} {X = X} = propBiimpl→Equiv squash₁ squash₁
 isFinCW-def-fun : {X : Type ℓ} → isFinCW X → (∥ (Σ[ C ∈ FinCW ℓ ] X ≡ decodeFinCW C) ∥₁)
 isFinCW-def-fun = fst isFinCW-def
 
-  -- `isNDimFinCW n X` = "X is a finite (n-1)-dimensional CW complex".
 hasNDimFinCW : ℕ → Type ℓ → Type (ℓ-suc ℓ)
 hasNDimFinCW {ℓ = ℓ} n X = Σ[ X' ∈ finCWskel ℓ n ] X ≃ realise (finCWskel→CWskel n X')
 
+-- `isNDimFinCW n X` = "X is a finite (n-1)-dimensional CW complex".
 isNDimFinCW : ℕ → Type ℓ → Type (ℓ-suc ℓ)
 isNDimFinCW n X = ∥ hasNDimFinCW n X ∥₁
 
@@ -97,10 +97,14 @@ postulate
 
   isFinCWJoin : {X Y : Type ℓ} → isFinCW X → isFinCW Y → isFinCW (join X Y)
 
--- "Obstruction theory".
+  -- "Obstruction theory".
+  -- If X is an (n-1)-dim. finite CW complex
+  -- and f : Y -> Z is an (n-2)-conn. map
+  -- then we can lift any map g : X -> Z to Y.
   liftFromNDimFinCW : (n : ℕ) (X : Type ℓ) (hX : isNDimFinCW n X)
-    {Y Z : Type ℓ} (f : Y → Z) (hf : isConnectedFun (2 + n) f) (g : X → Z)
+    {Y Z : Type ℓ} (f : Y → Z) (hf : isConnectedFun n f) (g : X → Z)
     → ∃[ l ∈ (X → Y) ] (f ∘ l ≡ g)
 
+  -- A finite CW complex admits an (n-2)-connected map from an (n-1)-dimensional finite CW complex.
   mapFromNSkel : (X : Type ℓ) (hX : isFinCW X) (n : ℕ)
-    → ∃[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (Y → X) ] isConnectedFun (1 + n) f
+    → ∃[ Y ∈ Type ℓ ] Σ[ hY ∈ isNDimFinCW n Y ] Σ[ f ∈ (Y → X) ] isConnectedFun n f
