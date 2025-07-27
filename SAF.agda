@@ -14,6 +14,7 @@ open import Cubical.HITs.Truncation
 open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.HITs.Susp
 open import Cubical.Homotopy.EilenbergMacLane.Base
+open import Cubical.CW.Base
 --open import Cubical.HITs.Sphere
 open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 
@@ -38,9 +39,14 @@ Susp→^ : {X Y : Type ℓ} (n : ℕ) (f : X → Y) → Susp^ n X → Susp^ n Y
 Susp→^ zero f = f
 Susp→^ (suc n) f = Susp→^ n (suspFun f)
 
-postulate
-  Susp→^-conn : {X Y : Type ℓ} (n m : ℕ) (f : X → Y) → isConnectedFun m f
-              → isConnectedFun (n + m) (Susp→^ n f)
+Susp→^-conn : {X Y : Type ℓ} (n m : ℕ) (f : X → Y) → isConnectedFun m f
+            → isConnectedFun (n + m) (Susp→^ n f)
+Susp→^-conn zero m f con = con
+Susp→^-conn (suc n) m f con =
+  subst (λ k → isConnectedFun k (Susp→^ n (suspFun f)))
+        (+-suc n m)
+        (Susp→^-conn n (suc m) (suspFun f)
+          (isConnectedSuspFun f m con))
 
 -- silly postulates
 postulate
