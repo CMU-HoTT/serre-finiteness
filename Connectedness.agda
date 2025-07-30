@@ -146,10 +146,3 @@ isConnectedJoin {ℓ} {X₁} {X₂} n₁ n₂ k hk cX₁ cX₂ =
                        (isConnected→isConnectedFun n₂ cX₂)
                        cX₁ (conUnit n₂))))
 
-postulate
-  wlp : {A B X Y : Type ℓ} (f : A → B) (g : X → Y) → Type ℓ
-  -- wlp f g = ∀ (h : A → X) (k : B → Y) (e : h ∘ g ≡ k ∘ f), ∥ Σ ... ∥₁
-  wlp-isProp : {A B X Y : Type ℓ} {f : A → B} {g : X → Y} → isProp (wlp f g)
-
-  liftCell : {X Y : Type ℓ} (f : X → Y) (n : HLevel) (hf : isConnectedFun n f)
-    (m : ℕ₋₁) (hm : 1+ m < n) → wlp (λ (_ : Lift (S m)) → lift tt) f
