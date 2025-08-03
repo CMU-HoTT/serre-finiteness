@@ -219,7 +219,10 @@ altIteratedPuppeEqIteratedPuppe F =
     cong
     ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
     , snd (FibsIsoFiberFiberSeq F)) ∘∙_)
-    ( FiberIsoFiberSeqProj _ _ _)
+    ( FiberIsoFiberSeqProj
+      ( fst (puppeFiberIso (FiberSeqProj F)))
+      ( snd (puppeFiberIso (FiberSeqProj F)))
+      ( TotalIsoFiberSeq _ _ _))
   ⟩
   ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
   , snd (FibsIsoFiberFiberSeq F))
@@ -229,7 +232,11 @@ altIteratedPuppeEqIteratedPuppe F =
     cong
     ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
     , snd (FibsIsoFiberFiberSeq F)) ∘∙_)
-    ( TotalIsoFiberSeqProj _ _ _)
+    ( TotalIsoFiberSeqProj _ _
+      ( FiberFiberSeq
+         ( inclOfFiberFiberSeq
+           ( inclOfFiberFiberSeq
+             ( FiberSeqProj F)))))
   ⟩
   ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
   , snd (FibsIsoFiberFiberSeq F))
@@ -317,7 +324,7 @@ twiceIteratedPuppeIncl F =
    fst (FiberSeqIncl (alternativeIteratedPuppe (puppe F)))
   ≡⟨
      cong fst
-     ( BaseIsoFiberSeqIncl _
+     ( BaseIsoFiberSeqIncl ( fst (FibsIsoFiberFiberSeq (puppe F)))
        ( snd (FibsIsoFiberFiberSeq (puppe F)))
        ( alternativeIteratedPuppeFiberFiberCase
          ( FiberSeqProj (puppe F))))
@@ -467,11 +474,25 @@ twiceIteratedPuppeProj F =
   ⟩
   fst (FiberSeqIncl (alternativeIteratedPuppe F))
  ≡⟨
-    cong fst (BaseIsoFiberSeqIncl _ _ _)
+    cong fst
+     ( BaseIsoFiberSeqIncl ( fst (FibsIsoFiberFiberSeq F))
+     ( snd (FibsIsoFiberFiberSeq F))
+     ( alternativeIteratedPuppeFiberFiberCase
+       ( FiberSeqProj F)))
   ⟩
   fst (FiberSeqIncl (alternativeIteratedPuppeFiberFiberCase (FiberSeqProj F)))
  ≡⟨
-    cong fst (FiberIsoFiberSeqIncl _ _ _)
+   cong fst
+   ( FiberIsoFiberSeqIncl
+     ( fst (puppeFiberIso (FiberSeqProj F)))
+     ( snd (puppeFiberIso (FiberSeqProj F)))
+     ( TotalIsoFiberSeq
+       ( fst (puppeTotalIso (FiberSeqProj F)))
+       ( snd (puppeTotalIso (FiberSeqProj F)))
+       ( FiberFiberSeq
+         ( inclOfFiberFiberSeq
+           ( inclOfFiberFiberSeq
+             ( FiberSeqProj F))))))
   ⟩
   fst (FiberSeqIncl
        ( TotalIsoFiberSeq

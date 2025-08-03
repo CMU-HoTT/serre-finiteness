@@ -51,6 +51,15 @@ Susp→^-conn (suc n) m f con =
         (Susp→^-conn n (suc m) (suspFun f)
           (isConnectedSuspFun f m con))
 
+isConnectedPoint* : ∀ (n : HLevel) {A : Type ℓ}
+  → isConnected (suc n) A
+  → (a : A) → isConnectedFun n (λ(_ : Unit* {ℓ}) → a)
+isConnectedPoint* n connA a₀ a =
+  isConnectedRetract n
+    snd (_ ,_) (λ _ → refl)
+    (isConnectedPath n connA a₀ a)
+
+
 -- silly postulates
 isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
   → isEquiv (transport (λ i → p i → X) (λ x → x))
@@ -58,6 +67,9 @@ isEquivTrnspId {X = X} p =
   transport (λ j → isEquiv (transp (λ i → p (i ∧ j) → X)
                                     (~ j) (λ x → x)))
     (idIsEquiv X)
+
+postulate
+  isConnectedUnit* : (n : ℕ) → isConnected n (Unit* {ℓ})
 
 arithmetric : (M₁ M₂ k n m : ℕ)
                → (k ≤ n + m)
@@ -352,6 +364,64 @@ postulate
 
   safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
 
+stablyNFiniteJoin'-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
+  (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite' 1 X₁)
+  (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite' n₂ X₂)
+  (k : HLevel) (hk₁ : k ≤ 1 + m₂) (hk₂ : k ≤ n₂ + (m₁ + 2))
+  → stablyNFinite' k (join∙ X₁ X₂)
+stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hXn₂ k hk₁ hk₂ =
+  γ α
+  where
+    postulate
+      
+
+      joinSuspTrick : (M₁ M₂ : ℕ) → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
+                                     ≡ join (Susp^ M₁ (typ X₁))
+                                            (Susp^ M₂ (typ X₂))
+
+    -- notice, the following construction is only possible because X₁ is pointed
+    -- we could weaken this hypothesis
+    -- but then we would only have an `α' up to propositional truncation
+    α : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₁))) ]
+     (isConnectedFun (m + 1) f) × (isConnected (m + (m₁ + 2)) (decodeFinCW C))))
+    fst α = 0
+    fst (snd α) = Unit* , isFinCWUnit
+    fst (snd (snd α)) = λ _ → pt X₁
+    fst (snd (snd (snd α))) = isConnectedPoint* 1 (isConnectedSubtr 2 m₁ hXm₁) (pt X₁)
+    snd (snd (snd (snd α))) = isConnectedUnit* (m₁ + 2)
+
+
+    β : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₁))) ]
+     (isConnectedFun (m + 1) f) × (isConnected (m + (m₁ + 2)) (decodeFinCW C))))
+      → (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₂))) ]
+     isConnectedFun (m + n₂) f))
+      → stablyNFinite' k (join∙ X₁ X₂)
+    β (M₁ , C₁ , f₁ , cf₁ , cC₁) (M₂ , C₂ , f₂ , cf₂) =
+      ∣ (M₁ + M₂)
+       , (((join (typ C₁) (typ C₂))
+       , (isFinCWJoin (snd C₁) (snd C₂)))
+       , (transport (λ i → join (typ C₁) (typ C₂)
+                                → joinSuspTrick M₁ M₂ (~ i)) (join→ f₁ f₂))
+       , isConnectedTrnspConnected (sym (joinSuspTrick M₁ M₂)) (join→ f₁ f₂)
+           (isConnectedFunJoin f₁ f₂ (M₁ + 1) (M₂ + n₂)
+              (M₁ + (m₁ + 2)) (M₂ + m₂) (M₁ + M₂ + k)
+              (arithmetric M₁ M₂ k 1 m₂ hk₁)
+              (arithmetric' M₂ M₁ k n₂ (m₁ + 2) hk₂)
+              cf₁ cf₂ cC₁ (Susp^-conn m₂ M₂ (typ X₂) hXm₂))) ∣₁
+
+    γ : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₁))) ]
+     (isConnectedFun (m + 1) f) × (isConnected (m + (m₁ + 2)) (decodeFinCW C))))
+        → stablyNFinite' k (join∙ X₁ X₂)
+    γ hX₁ = PT.rec (stablyNFinite'-isProp {ℓ} {k} {join∙ X₁ X₂})
+                   (β hX₁)
+                   hXn₂
+
+  
+
 -- If Xᵢ is stably (nᵢ-1)-finite and (mᵢ-2)-connected (i = 1, 2)
 -- then the join X₁ * X₂ is stably min(n₁+m₂-1, n₂+m₁-1)-connected
 -- provided that m₁ ≤ n₁ (i.e., that m₁-2 < n₁-1).
@@ -417,6 +487,17 @@ stablyNFiniteJoin' {ℓ} {X₁} {X₂}
                    (β hX₁)
                    hXn₂
 
+stablyNFiniteJoin-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
+  (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite 1 X₁)
+  (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
+  (k : HLevel) (hk₁ : k ≤ 1 + m₂) (hk₂ : k ≤ n₂ + (m₁ + 2))
+  → stablyNFinite k (join∙ X₁ X₂)
+stablyNFiniteJoin-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hXn₂ k hk₁ hk₂ =
+  stablyNFinite'→stablyNFinite {X = join∙ X₁ X₂}
+   (stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁
+     (stablyNFinite→stablyNFinite' {X = X₁} hX₁) hXm₂
+     (stablyNFinite→stablyNFinite' {X = X₂} hXn₂) k hk₁ hk₂)
+ 
 stablyNFiniteJoin : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)
   (hmn₁ : m₁ ≤ n₁)
   (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite n₁ X₁)
