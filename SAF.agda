@@ -111,7 +111,7 @@ isConnectedTrnspConnected {X = X} {n = n} p f conf  =
 
 -- spheres with arbitrary universe level?
 S : ℕ → Pointed ℓ
-S {ℓ = ℓ} n = S₊∙ n ×∙ (Unit* {ℓ} , tt*) 
+S {ℓ = ℓ} n = S₊∙ n ×∙ (Unit* {ℓ} , tt*)
 
 -- `nFinite n X` corresponds to "X is (n-1)-finite" on paper,
 -- because `isConnectedFun n f` corresponds to "f is (n-2)-connected".
@@ -147,7 +147,7 @@ nFinite→nDim {ℓ} {n} {X} hX = PT.rec squash₁ γ hX
        → nFinite-nDim n X
     β (C , f , cf) (Y , hY , g , cg) =
       ∣ Y , hY , ((f ∘ g) , (isConnectedComp f g n cf cg)) ∣₁
-    
+
 
     γ : (Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f)
         → nFinite-nDim n X
@@ -271,7 +271,7 @@ stablyNFinite {ℓ} n X = ∥ (Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))
 pointIrrelSNFnt : (n : ℕ) (X : Pointed ℓ) (x : typ X)
                   → stablyNFinite n X → stablyNFinite n (typ X , x)
 pointIrrelSNFnt n X x hyp = hyp
- 
+
 -- alternative version of `stablyNFinite` with a single existential
 stablyNFinite' : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 stablyNFinite' {ℓ} n X =
@@ -341,7 +341,7 @@ stablyNFiniteOfSusp n A = PT.rec (stablyNFinite-isProp {X = A})
 
 postulate
   susp-stablyNFinite : (n : HLevel) (A : Pointed ℓ)
-    → stablyNFinite n A → stablyNFinite (suc n) (S∙ A) 
+    → stablyNFinite n A → stablyNFinite (suc n) (S∙ A)
 
 -- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
 postulate
@@ -373,7 +373,7 @@ stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hX
   γ α
   where
     postulate
-      
+
 
       joinSuspTrick : (M₁ M₂ : ℕ) → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
                                      ≡ join (Susp^ M₁ (typ X₁))
@@ -420,7 +420,7 @@ stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hX
                    (β hX₁)
                    hXn₂
 
-  
+
 
 -- If Xᵢ is stably (nᵢ-1)-finite and (mᵢ-2)-connected (i = 1, 2)
 -- then the join X₁ * X₂ is stably min(n₁+m₂-1, n₂+m₁-1)-connected
@@ -448,7 +448,7 @@ stablyNFiniteJoin' {ℓ} {X₁} {X₂}
                      (f : C₁ → (Susp^ M₁ (typ X₁)))
                      (cf : isConnectedFun (M₁ + n₁) f)
                   → isConnected (M₁ + m₁) C₁
-    connectivityC₁ M₁ C₁ f cf = 
+    connectivityC₁ M₁ C₁ f cf =
                   isConnectedFun→isConnected (M₁ + m₁)
                     (isConnectedComp (λ _ → tt) f (M₁ + m₁)
                       (isConnected→isConnectedFun (M₁ + m₁)
@@ -497,7 +497,7 @@ stablyNFiniteJoin-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hXn
    (stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁
      (stablyNFinite→stablyNFinite' {X = X₁} hX₁) hXm₂
      (stablyNFinite→stablyNFinite' {X = X₂} hXn₂) k hk₁ hk₂)
- 
+
 stablyNFiniteJoin : {X₁ X₂ : Pointed ℓ} (m₁ n₁ m₂ n₂ : HLevel)
   (hmn₁ : m₁ ≤ n₁)
   (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite n₁ X₁)
@@ -547,7 +547,7 @@ stablyNFiniteApprox' {ℓ} {X} {Y} f n cf hY =
   where
     postulate
       drthmtc : (m n : ℕ) → (m + (1 + n)) ≡ (1 + (m + n))
-      
+
     susp-f : (m : ℕ) → Susp^ m (typ X) → Susp^ m (typ Y)
     susp-f m = Susp→^ m (fst f)
 
