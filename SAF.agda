@@ -13,6 +13,7 @@ open import Cubical.HITs.Join
 open import Cubical.HITs.Truncation
 open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.HITs.Susp
+open import Cubical.HITs.Sn hiding (S)
 open import Cubical.Homotopy.EilenbergMacLane.Base
 open import Cubical.CW.Base
 --open import Cubical.HITs.Sphere
@@ -27,6 +28,8 @@ open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
 
 open import Connectedness
+
+open import AxelStuff.EM
 
 private
   variable
@@ -49,27 +52,54 @@ Susp→^-conn (suc n) m f con =
           (isConnectedSuspFun f m con))
 
 -- silly postulates
-postulate
-  isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
-    → isEquiv (transport (λ i → p i → X) (λ x → x))
+isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
+  → isEquiv (transport (λ i → p i → X) (λ x → x))
+isEquivTrnspId {X = X} p =
+  transport (λ j → isEquiv (transp (λ i → p (i ∧ j) → X)
+                                    (~ j) (λ x → x)))
+    (idIsEquiv X)
 
-  arithmetric : (M₁ M₂ k n m : ℕ)
-                 → (k ≤ n + m)
-                 → (M₁ + M₂ + k ≤ M₁ + n + (M₂ + m))
+arithmetric : (M₁ M₂ k n m : ℕ)
+               → (k ≤ n + m)
+               → (M₁ + M₂ + k ≤ M₁ + n + (M₂ + m))
+arithmetric M₁ M₂ k n m p =
+  subst2 (_≤_)
+    (+-comm k (M₁ + M₂))
+    (+-comm (n + m) (M₁ + M₂)
+    ∙ sym (+-assoc M₁ M₂ (n + m))
+    ∙ cong (M₁ +_) (+-assoc M₂ n m
+                   ∙ cong (_+ m) (+-comm M₂ n)
+                   ∙ sym (+-assoc n M₂ m))
+    ∙ +-assoc M₁ n (M₂ + m))
+    (≤-+k {k = M₁ + M₂} p)
 
-  arithmetric' : (M₁ M₂ k n m : ℕ)
-                 → (k ≤ n + m)
-                 → (M₂ + M₁ + k ≤ M₁ + n + (M₂ + m))
+arithmetric' : (M₁ M₂ k n m : ℕ)
+               → (k ≤ n + m)
+               → (M₂ + M₁ + k ≤ M₁ + n + (M₂ + m))
+arithmetric' M₁ M₂ k n m p =
+  subst2 (_≤_)
+    (+-comm k (M₂ + M₁))
+    (sym (+-assoc n m (M₂ + M₁))
+    ∙ cong (n +_) (+-comm m (M₂ + M₁)
+                ∙ (sym (+-assoc M₂ M₁ m)
+                ∙ cong (M₂ +_) (+-comm M₁ m)
+                ∙ +-assoc M₂ m M₁)
+                ∙ +-comm (M₂ + m) M₁)
+    ∙ +-assoc n M₁ (M₂ + m)
+    ∙ sym (cong (_+ (M₂ + m)) (+-comm M₁ n)))
+    (≤-+k {k = M₂ + M₁} p)
 
-  isConnectedTrnspConnected : {X Y Z : Type ℓ} {n : ℕ} (p : Y ≡ Z) (f : X → Y)
-    → isConnectedFun n f
-    → isConnectedFun n (transport (λ i → X → (p i)) f)
+isConnectedTrnspConnected : {X Y Z : Type ℓ} {n : ℕ} (p : Y ≡ Z) (f : X → Y)
+  → isConnectedFun n f
+  → isConnectedFun n (transport (λ i → X → (p i)) f)
+isConnectedTrnspConnected {X = X} {n = n} p f conf  =
+  transport (λ i → isConnectedFun n
+                    (transp (λ j → X → (p (j ∧ i))) (~ i) f))
+    conf
 
 -- spheres with arbitrary universe level?
-postulate
-  S : ℕ → Pointed ℓ
---S {ℓ} n = {!!} ×∙ (Unit* {ℓ} , tt*) 
-
+S : ℕ → Pointed ℓ
+S {ℓ = ℓ} n = S₊∙ n ×∙ (Unit* {ℓ} , tt*) 
 
 -- `nFinite n X` corresponds to "X is (n-1)-finite" on paper,
 -- because `isConnectedFun n f` corresponds to "f is (n-2)-connected".
@@ -283,11 +313,8 @@ postulate
 
   saf-Unit : saf {ℓ} (Unit* , tt*)
 
-  EMDirProd : (H K : AbGroup ℓ) (n : ℕ)
-    → (EM∙ (AbDirProd H K) n)
-       ≡ (EM∙ H n) ×∙ (EM∙ K n)
 
-  EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1 --S¹
+  EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1
 
   saf-Sn : ∀ n → saf (S {ℓ} n)
 

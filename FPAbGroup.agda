@@ -27,29 +27,20 @@ private
 
 AbGroup₀ = AbGroup ℓ-zero
 
--- finite sets, arbitrary hLevel
--- postulate
---   Fin : ℕ → Type
-
--- postulate
---  ℤMod : ℕ → AbGroup₀
---  ℤ : AbGroup₀
-
-
 ℤMod-finite : (n : ℕ) → fst (ℤMod (suc n)) ≃ (Fin (suc n))
 ℤMod-finite n = isoToEquiv (Iso-Fin-InductiveFin (suc n))
 
 -- finitely presented abelian groups
--- postulate
 isFP : AbGroup ℓ → Type ℓ
 isFP A = ∥ FinitePresentation A ∥₁
 
 isFP-prop : {A : AbGroup ℓ} → isProp (isFP A)
 isFP-prop = squash₁
 
+open FinitePresentation
 postulate
   indFP : (P : AbGroup₀ → Type ℓ) → (∀ A → isProp (P A))
      → (∀ n → P (ℤMod n))
      → (∀ H K → P H → P K → P (AbDirProd H K))
      → (∀ A → isFP A → (P A))
-  
+  -- indFP P pr bas prod A FP = {!!}
