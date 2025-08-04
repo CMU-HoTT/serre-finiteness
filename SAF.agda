@@ -10,7 +10,7 @@ open import Cubical.Data.Fin.Inductive
 open import Cubical.Data.Sigma
 open import Cubical.Homotopy.Connected
 open import Cubical.HITs.Join
-open import Cubical.HITs.Truncation
+open import Cubical.HITs.Truncation as TR
 open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.HITs.Susp
 open import Cubical.HITs.Sn hiding (S)
@@ -29,7 +29,7 @@ open import FiberOrCofiberSequences.CofiberBase
 
 open import Connectedness
 
-open import AxelStuff.EM
+open import LastMinuteLemmas.EM
 
 private
   variable
@@ -59,8 +59,6 @@ isConnectedPoint* n connA a₀ a =
     snd (_ ,_) (λ _ → refl)
     (isConnectedPath n connA a₀ a)
 
-
--- silly postulates
 isEquivTrnspId : {X Y : Type ℓ} (p : X ≡ Y)
   → isEquiv (transport (λ i → p i → X) (λ x → x))
 isEquivTrnspId {X = X} p =
@@ -68,8 +66,12 @@ isEquivTrnspId {X = X} p =
                                     (~ j) (λ x → x)))
     (idIsEquiv X)
 
-postulate
-  isConnectedUnit* : (n : ℕ) → isConnected n (Unit* {ℓ})
+isConnectedUnit* : (n : ℕ) → isConnected n (Unit* {ℓ})
+isConnectedUnit* zero = tt* , (λ _ → refl)
+isConnectedUnit* (suc n) .fst = ∣ tt* ∣
+isConnectedUnit* (suc n) .snd =
+  TR.elim (λ _ → isOfHLevelPath (suc n) (isOfHLevelTrunc (suc n)) _ _)
+          λ _ → refl
 
 arithmetric : (M₁ M₂ k n m : ℕ)
                → (k ≤ n + m)
@@ -325,10 +327,52 @@ postulate
 
   saf-Unit : saf {ℓ} (Unit* , tt*)
 
-
-  EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1
-
   saf-Sn : ∀ n → saf (S {ℓ} n)
+
+open import Cubical.Functions.Embedding
+open import Cubical.Functions.Surjection
+open import Cubical.HITs.S1
+open import Cubical.HITs.EilenbergMacLane1 as EM1
+open import Cubical.HITs.Sn hiding (S)
+
+
+EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1
+EM₁ℤ = sym (ua∙ (isoToEquiv (compIso rUnit*×Iso S¹≅EM)) refl)
+  where
+  open import Cubical.Data.Int renaming (ℤ to Int ; _+_ to _+ℤ_)
+  S¹→EM : S¹ → EM ℤ 1
+  S¹→EM base = embase
+  S¹→EM (loop i) = emloop 1 i
+
+  S¹→EM-intLoop : (g : _) → cong S¹→EM (intLoop g) ≡ emloop g
+  S¹→EM-intLoop (pos zero) = sym (emloop-1g _)
+  S¹→EM-intLoop (pos (suc n)) =
+    cong-∙ S¹→EM (intLoop (pos n)) loop
+    ∙ cong₂ _∙_ (S¹→EM-intLoop (pos n)) refl
+    ∙ sym (emloop-comp _ (pos n) (pos 1))
+  S¹→EM-intLoop (negsuc zero) = sym (emloop-sym _ _)
+  S¹→EM-intLoop (negsuc (suc n)) =
+      cong-∙ S¹→EM (intLoop (negsuc n)) (sym loop)
+    ∙ cong₂ _∙_ (S¹→EM-intLoop (negsuc n)) (sym (emloop-sym _ _))
+    ∙ sym (emloop-comp _ (negsuc n) -1)
+
+  EM→S¹ : EM ℤ 1 → S¹
+  EM→S¹ = EM1.rec _ isGroupoidS¹ base intLoop λ g h
+    → compPathL→PathP (sym (lUnit _) ∙ (intLoop-hom g h))
+
+  S¹≅EM : Iso S¹ (EM {ℓ-zero} ℤ 1)
+  S¹≅EM .Iso.fun = S¹→EM
+  S¹≅EM .Iso.inv = EM→S¹
+  S¹≅EM .Iso.rightInv = EM1.elimSet _ (λ _ → emsquash _ _) refl
+    λ g i j → S¹→EM-intLoop g j i
+  S¹≅EM .Iso.leftInv base = refl
+  S¹≅EM .Iso.leftInv (loop i) j = lUnit loop (~ j) i
+
+EMDirProd : {ℓ : Level} (H K : AbGroup ℓ) (n : ℕ)
+  → EM∙ (AbDirProd H K) n ≡ (EM∙ H n) ×∙ (EM∙ K n)
+EMDirProd H K n =
+  ua∙ (EMDirProdEquiv H K n)
+      (EMProd→ProdEM∙ H K n .snd)
 
 -- all just arithmetic
 stablyNFiniteOfSusp : (n : HLevel) (A : Pointed ℓ)
@@ -356,7 +400,23 @@ postulate
   safExtension : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf C → saf B
 
--- hmm
+joinSuspTrick : ∀ {ℓ} (X₁ X₂ : Pointed ℓ) (M₁ M₂ : ℕ)
+  → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
+   ≡ join (Susp^ M₁ (typ X₁)) (Susp^ M₂ (typ X₂))
+joinSuspTrick X₁ X₂ zero zero = refl
+joinSuspTrick X₁ X₂ zero (suc M₂) =
+    cong (Susp^ M₂)
+      (isoToPath
+       (compIso (congSuspIso join-comm)
+        (compIso (invIso (Iso-joinSusp-suspJoin {A = X₂} {X₁}))
+         join-comm)))
+  ∙ joinSuspTrick X₁ (Susp∙ (typ X₂)) zero M₂
+joinSuspTrick X₁ X₂ (suc M₁) M₂ =
+    sym (cong (Susp^ (M₁ + M₂))
+              (isoToPath (Iso-joinSusp-suspJoin {A = X₁} {X₂})))
+  ∙ joinSuspTrick (Susp∙ (X₁ .fst)) X₂ M₁ M₂
+  ∙ cong₂ join refl refl
+
 postulate
   saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
 
@@ -372,12 +432,7 @@ stablyNFiniteJoin'-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
 stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hXn₂ k hk₁ hk₂ =
   γ α
   where
-    postulate
 
-
-      joinSuspTrick : (M₁ M₂ : ℕ) → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
-                                     ≡ join (Susp^ M₁ (typ X₁))
-                                            (Susp^ M₂ (typ X₂))
 
     -- notice, the following construction is only possible because X₁ is pointed
     -- we could weaken this hypothesis
@@ -404,8 +459,8 @@ stablyNFiniteJoin'-alt {ℓ} {X₁} {X₂} m₁ m₂ n₂ hXm₁ hX₁ hXm₂ hX
        , (((join (typ C₁) (typ C₂))
        , (isFinCWJoin (snd C₁) (snd C₂)))
        , (transport (λ i → join (typ C₁) (typ C₂)
-                                → joinSuspTrick M₁ M₂ (~ i)) (join→ f₁ f₂))
-       , isConnectedTrnspConnected (sym (joinSuspTrick M₁ M₂)) (join→ f₁ f₂)
+                                → joinSuspTrick X₁ X₂ M₁ M₂ (~ i)) (join→ f₁ f₂))
+       , isConnectedTrnspConnected (sym (joinSuspTrick X₁ X₂ M₁ M₂)) (join→ f₁ f₂)
            (isConnectedFunJoin f₁ f₂ (M₁ + 1) (M₂ + n₂)
               (M₁ + (m₁ + 2)) (M₂ + m₂) (M₁ + M₂ + k)
               (arithmetric M₁ M₂ k 1 m₂ hk₁)
@@ -436,13 +491,11 @@ stablyNFiniteJoin' {ℓ} {X₁} {X₂}
   PT.rec (stablyNFinite'-isProp {ℓ} {k} {join∙ X₁ X₂})
      γ hXn₁
   where
-    postulate
-      joinSuspTrick : (M₁ M₂ : ℕ) → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
-                                     ≡ join (Susp^ M₁ (typ X₁))
-                                            (Susp^ M₂ (typ X₂))
-
-      -- p : a + m₁ ≡ n₁
-      arithmetic : (M₁ : ℕ) → (a + (M₁ + m₁)) ≡ (M₁ + n₁)
+    arithmetic : (M₁ : ℕ) → (a + (M₁ + m₁)) ≡ (M₁ + n₁)
+    arithmetic M₁ = cong (a +_) (+-comm M₁ m₁)
+                 ∙ +-assoc a m₁ M₁
+                 ∙ cong (_+ M₁) p
+                 ∙ +-comm n₁ M₁
 
     connectivityC₁ : (M₁ : ℕ) (C₁ : Type ℓ)
                      (f : C₁ → (Susp^ M₁ (typ X₁)))
@@ -454,9 +507,7 @@ stablyNFiniteJoin' {ℓ} {X₁} {X₂}
                       (isConnected→isConnectedFun (M₁ + m₁)
                         (Susp^-conn m₁ M₁ (typ X₁) hXm₁))
                       (isConnectedFunSubtr (M₁ + m₁) a f
-                      (transport (λ i → isConnectedFun (arithmetic M₁ (~ i)) f)
-                                 cf)))
-
+                      (transport (λ i → isConnectedFun (arithmetic M₁ (~ i)) f) cf)))
 
     β : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
      Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ X₁))) ]
@@ -468,8 +519,8 @@ stablyNFiniteJoin' {ℓ} {X₁} {X₂}
     β (M₁ , C₁ , f₁ , cf₁) (M₂ , C₂ , f₂ , cf₂) =
       ∣ M₁ + M₂ , ((join (typ C₁) (typ C₂)) , isFinCWJoin (snd C₁) (snd C₂))
                , transport (λ i → join (typ C₁) (typ C₂)
-                                → joinSuspTrick M₁ M₂ (~ i)) (join→ f₁ f₂)
-               , isConnectedTrnspConnected (sym (joinSuspTrick M₁ M₂))
+                                → joinSuspTrick X₁ X₂ M₁ M₂ (~ i)) (join→ f₁ f₂)
+               , isConnectedTrnspConnected (sym (joinSuspTrick X₁ X₂ M₁ M₂))
                                            (join→ f₁ f₂)
                    (isConnectedFunJoin f₁ f₂ (M₁ + n₁) (M₂ + n₂) (M₁ + m₁)
                                        (M₂ + m₂) (M₁ + M₂ + k)
@@ -510,8 +561,9 @@ stablyNFiniteJoin {ℓ} {X₁} {X₂} m₁ n₁ m₂ n₂ hmn₁ hXm₁ hXn₁ h
   (stablyNFinite→stablyNFinite' {X = X₁} hXn₁) hXm₂
   (stablyNFinite→stablyNFinite' {X = X₂} hXn₂) k hk₁ hk₂)
 
-postulate
-  srthmetic : (m n : ℕ) → (m + suc n) ≡ (suc (m + n))
+
+srthmetic : (m n : ℕ) → (m + suc n) ≡ (suc (m + n))
+srthmetic m n = +-suc m n
 
 stablyNFiniteApprox : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun n (fst f))
@@ -545,8 +597,8 @@ stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
 stablyNFiniteApprox' {ℓ} {X} {Y} f n cf hY =
   PT.rec squash₁ (λ hY' → ∣ γ hY' ∣₁) hY
   where
-    postulate
-      drthmtc : (m n : ℕ) → (m + (1 + n)) ≡ (1 + (m + n))
+    drthmtc : (m n : ℕ) → (m + (1 + n)) ≡ (1 + (m + n))
+    drthmtc m n = +-suc m n
 
     susp-f : (m : ℕ) → Susp^ m (typ X) → Susp^ m (typ Y)
     susp-f m = Susp→^ m (fst f)

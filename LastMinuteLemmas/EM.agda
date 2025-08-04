@@ -1,4 +1,4 @@
-module AxelStuff.EM where
+module LastMinuteLemmas.EM where
 
 open import Everything
 
@@ -120,9 +120,3 @@ EMDirProdEquiv : {ℓ : Level} (H K : AbGroup ℓ) (n : ℕ)
   → EM (AbDirProd H K) n ≃ (EM H n) × (EM K n)
 EMDirProdEquiv H K n .fst = EMProd→ProdEM H K n
 EMDirProdEquiv H K n .snd = isEquiv-EMProd→ProdEM H K n
-
-EMDirProd : {ℓ : Level} (H K : AbGroup ℓ) (n : ℕ)
-  → EM∙ (AbDirProd H K) n ≡ (EM∙ H n) ×∙ (EM∙ K n)
-EMDirProd H K n =
-  ua∙ (EMDirProdEquiv H K n)
-    (EMProd→ProdEM∙ H K n .snd)
