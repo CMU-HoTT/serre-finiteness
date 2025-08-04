@@ -1,6 +1,6 @@
 name: serre-finiteness
 include: .
          ../cubical
-flags: --cubical --no-import-sorts --guardedness
+flags: --cubical --no-import-sorts --guardedness -WnoUnsupportedIndexedMatch
 
 depend: cubical

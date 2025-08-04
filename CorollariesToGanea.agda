@@ -3,12 +3,13 @@ module CorollariesToGanea where
 
 open import Everything
 
+open import Cubical.Foundations.Equiv.HalfAdjoint
+
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
 open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to ℤMod)
-
 
 open import Cubical.Relation.Nullary
 open import Cubical.Data.Sum as ⊎ hiding (rec)
@@ -30,6 +31,7 @@ open import Connectedness
 open import SAF
 open import FPAbGroup
 open import PointedHITs
+open import LastMinuteLemmas.EM
 
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
@@ -38,8 +40,8 @@ private
   variable
     ℓ : Level
 
-postulate
-  join∙-comm : {X Y : Pointed ℓ} → join∙ X Y ≡ join∙ Y X
+join∙-comm : {X Y : Pointed ℓ} → join∙ X Y ≡ join∙ Y X
+join∙-comm = ua∙ (isoToEquiv join-comm) (sym (push _ _))
 
 join∙^ : ℕ → (Pointed ℓ) → Pointed ℓ → Pointed ℓ
 join∙^ zero F G = F
@@ -54,7 +56,7 @@ module _ (F G : Pointed ℓ) where
   join∙^-connected (suc n) cG =
     transport (λ i → isConnected (+-comm n 1 i) (typ (join∙^ (suc n) F G)))
               (isConnectedJoin n 1 (n + 1) ≤-refl (join∙^-connected n cG) cG)
-  
+
   join∙^-connected' : (n : ℕ)
                   → isConnected 1 (typ F)
                   → isConnected 2 (typ G)
@@ -74,8 +76,9 @@ module _ (F G : Pointed ℓ) where
     stablyNFiniteJoin m (m + n) 1 (suc n) ≤SumLeft (join∙^-connected m cG) (join∙^-SNFnt m n sF cG sG) cG sG (suc (m + n)) order2 order3
      where
 
-       postulate
-         arthritis : suc (m + n) ≡ (m + n + 1)
+
+       arthritis : suc (m + n) ≡ (m + n + 1)
+       arthritis = +-comm 1 (m + n)
 
        order2 : suc (m + n) ≤ (m + n + 1)
        order2 = transport (λ i → suc (m + n) ≤ (arthritis i))
@@ -99,14 +102,15 @@ module _ (F G : Pointed ℓ) where
     (join∙^-SNFnt m (1 + n) (stablyNFiniteDrop (1 + n) sF)
     (isConnectedSubtr 1 1 cG) sG)) cG sG (2 + suc m + n) order2 order3
      where
+       arthritis : suc (m + n) ≡ (m + (suc n))
+       arthritis = sym (+-suc m n)
 
-       postulate
-         arthritis : suc (m + n) ≡ (m + (suc n))
+       order2 : suc (suc (suc (m + n))) ≤ suc (m + n + 2)
+       order2 = 0 , +-comm 2 (suc (m + n))
 
-         order2 : suc (suc (suc (m + n))) ≤ suc (m + n + 2)
-       
-         order3 : suc (suc (suc (m + n))) ≤ suc (suc (n + (suc m)))
-       
+       order3 : suc (suc (suc (m + n))) ≤ suc (suc (n + (suc m)))
+       order3 = 0 , cong suc (cong suc (+-comm (suc m) n))
+
   join∙^-saf : (n : ℕ) → saf F
                        → saf G
                        → isConnected 1 (fst G)
@@ -114,48 +118,73 @@ module _ (F G : Pointed ℓ) where
   join∙^-saf n hF hG cG k = stablyNFiniteLower n k
                                (join∙^-SNFnt n k (hF k) cG
                                                     (hG (suc k)))
-              
+
 
 -- sillyy
-postulate
-  isConnected→mere-path : {X : Type ℓ} → isConnected 3 X
-                                    → (x y : X)
-                                    → ∥ x ≡ y ∥ 1
+isConnected→mere-path : {X : Type ℓ} → isConnected 3 X
+                                  → (x y : X)
+                                  → ∥ x ≡ y ∥ 1
+isConnected→mere-path isCon x y =
+  rec (isProp→isSet (isOfHLevelTrunc 1))
+      ∣_∣ (isConnectedPath 2 isCon x y .fst)
 
-  isConnected→mere-path' : {X : Type ℓ} → isConnected 2 X
-                                     → (x y : X)
-                                     → ∥ x ≡ y ∥ 1
+isConnected→mere-path' : {X : Type ℓ} → isConnected 2 X
+                                   → (x y : X)
+                                   → ∥ x ≡ y ∥ 1
+isConnected→mere-path' isC x y =
+  rec (isOfHLevelTrunc 1)
+      ∣_∣ (isConnectedPath 1 isC x y .fst)
 
-  isConnected→isConnectedFun* : (n : ℕ) {X : Type ℓ}
-    → isConnected n X → isConnectedFun {ℓ} {ℓ} n (λ (_ : X) → tt*)
-
-  pushoutFunEqIso : {A A' C : Type ℓ} {B : Type₀}
-    (f : A → B) (g : A → C) (h : A' → B) (k : A' → C)
-    (K : Iso A A')
-    (q : f ≡ h ∘ Iso.fun K)
-    (p : g ∘ Iso.inv K ≡ k)
-    → Iso (Pushout f g) (Pushout h k)
+isConnected→isConnectedFun* : (n : ℕ) {X : Type ℓ}
+  → isConnected n X → isConnectedFun {ℓ} {ℓ} n (λ (_ : X) → tt*)
+isConnected→isConnectedFun* n isC (lift b) =
+  isConnectedRetractFromIso n
+    (Σ-cong-iso idIso λ x
+      → invIso (congIso LiftIso))
+    (isConnected→isConnectedFun n isC b)
 
 
-  pushoutLevelMix : {ℓ' : Level} {A C : Type ℓ} {B C' : Type ℓ'}
-     (f : A → B) (g : A → C) (g' : A → C')
-     (K : Iso C C')
-     (q : Iso.fun K ∘ g ≡ g')
-     → Iso (Pushout f g) (Pushout f g')
+pushoutFunEqIso : ∀ {ℓA ℓA' ℓC ℓB}
+  {A : Type ℓA} {A' : Type ℓA'}
+  {C : Type ℓC} {B : Type ℓB}
+  (f : A → B) (g : A → C) (h : A' → B) (k : A' → C)
+  (K : Iso A A')
+  (q : f ≡ h ∘ Iso.fun K)
+  (p : g ∘ Iso.inv K ≡ k)
+  → Iso (Pushout f g) (Pushout h k)
+pushoutFunEqIso f g h k K q p =
+  pushoutIso f g h k (isoToEquiv K) (idEquiv _) (idEquiv _)
+    q (funExt (λ x → cong g (sym (Iso.leftInv K x)))
+    ∙ cong (_∘ Iso.fun K) p)
 
-  unitLevelMix : Iso (Unit* {ℓ}) (Unit)
+pushoutLevelMix : ∀ {ℓA ℓB ℓC ℓC'}
+  {A : Type ℓA} {C : Type ℓC} {B : Type ℓB} {C' : Type ℓC'}
+   (f : A → B) (g : A → C) (g' : A → C')
+   (K : Iso C C')
+   (q : Iso.fun K ∘ g ≡ g')
+   → Iso (Pushout f g) (Pushout f g')
+pushoutLevelMix f g g' K q =
+  pushoutIso f g f g' (idEquiv _) (idEquiv _) (isoToEquiv K) refl q
 
-  unitLevelMix' : {B : Type ℓ}
-    → (λ (x : B) → (Iso.fun (unitLevelMix {ℓ})) ((λ (_ : B) → tt*) x))
-    ≡ (λ (_ : B) → tt)
-  
-  join-iso-join : (X X' Y : Type ℓ)
-    → Iso X X' → Iso (join X Y) (join X' Y)
+unitLevelMix : Iso (Unit* {ℓ}) (Unit)
+unitLevelMix = invIso LiftIso
 
-  join-iso-join∙ : (X X' Y : Pointed ℓ) (H : Iso (typ X) (typ X'))
-    (p : Iso.fun H (pt X) ≡ (pt X'))
-    → Iso.fun (join-iso-join (typ X) (typ X') (typ Y) H) (pt (join∙ X Y))
-       ≡ (pt (join∙ X' Y))
+unitLevelMix' : {B : Type ℓ}
+  → (λ (x : B) → (Iso.fun (unitLevelMix {ℓ})) ((λ (_ : B) → tt*) x))
+  ≡ (λ (_ : B) → tt)
+unitLevelMix' = refl
+
+
+
+join-iso-join : (X X' Y : Type ℓ)
+  → Iso X X' → Iso (join X Y) (join X' Y)
+join-iso-join X X' Y is = Iso→joinIso is idIso
+
+join-iso-join∙ : (X X' Y : Pointed ℓ) (H : Iso (typ X) (typ X'))
+  (p : Iso.fun H (pt X) ≡ (pt X'))
+  → Iso.fun (join-iso-join (typ X) (typ X') (typ Y) H) (pt (join∙ X Y))
+     ≡ (pt (join∙ X' Y))
+join-iso-join∙ X X' Y H p = cong inlj p
 
 module Ganea^ {A : Pointed ℓ} {B : Pointed ℓ} (f : A →∙ B) where
 
@@ -280,9 +309,9 @@ safΩ→saf {ℓ} {B} cB hB = γ
                      (connected-join-F' k)))
           (isConnected→mere-path' cB b (pt B))
 
-    postulate
-      frthmetic : (k : ℕ) → ((suc k) + 1) ≡ (suc (suc k))
-    
+    frthmetic : (k : ℕ) → ((suc k) + 1) ≡ (suc (suc k))
+    frthmetic k = +-comm (suc k) 1
+
     sNFnt-join-F : (k : ℕ) → saf (join-F k)
     sNFnt-join-F k = join∙^-saf (F 0) (Ω B) k
                      (transport (cong saf (F0-≡ ⁻¹)) hB)
@@ -300,9 +329,9 @@ safΩ→saf {ℓ} {B} cB hB = γ
            (sNFnt-E (suc n) (suc n)))
 
 
-    
 
-    
+
+
 
 
 saf→safΩ : {B : Pointed ℓ} (scB : isConnected 3 (typ B)) → saf B → saf (Ω B)
@@ -314,7 +343,7 @@ saf→safΩ {ℓ} {B} scB hB = γ
     order-silly n = transport (λ i → (3 + n) ≤ suc (+-comm 2 n i))
                                ≤-refl
 
-      
+
     ΩB-connected : isConnected 2 (typ (Ω B))
     ΩB-connected = isConnectedPath 2 scB (pt B) (pt B)
 
@@ -432,14 +461,14 @@ saf→safΩ {ℓ} {B} scB hB = γ
       eventuallySNFnt n k hypF
         (stablyNFiniteExtension (GaneaCofiberSeq' (suc n))
           (hypF n) hypE)
-      
+
 
     E1-Iso'' : Iso (typ (E 1)) (Pushout {C = Unit* {ℓ}}
                                         (λ (_ : typ (Ω B)) → tt)
                                         (λ _ → tt*))
     E1-Iso'' = pushoutFunEqIso (λ _ → tt) (λ _ → tt*)
                  (λ _ → tt) (λ r → tt*) F0-Iso refl refl
-    
+
     E1-Iso' : Iso (typ (E 1)) (PushoutSusp (typ (Ω B)))
     E1-Iso' = compIso E1-Iso''
               (pushoutLevelMix (λ _ → tt) (λ _ → tt*) (λ _ → tt)
@@ -467,7 +496,7 @@ saf→safΩ {ℓ} {B} scB hB = γ
         (E1→SuspΩB-SNFnt (3 + n)
          (eventuallySNFnt (3 + n) (3 + n) (ΩB→Fn-stablyNFinite n (γ (suc n)))
            (stablyNFiniteApprox' (p (4 + n)) (3 + n) (connected-p' (3 + n)) (hB (3 + n)))))
-    
+
 
 safTotal : {F E B : Pointed ℓ} (S : FiberSeq F E B) (scB : isConnected 3 (typ B))
     → saf B → saf F → saf E
@@ -513,7 +542,7 @@ safTotal {ℓ} {F'} {E'} {B} S scB hB hF' k = saf-E k (suc k) (saf-En k)
       saf-E n k (stablyNFiniteExtension (GaneaCofiberSeq k) (saf-Fn k n)
                 hE)
 
-   
+
 
 EMℤMod-saf : (n m : ℕ) → saf {ℓ = ℓ-zero} (EM∙ (ℤMod (suc n)) (suc m))
 EMℤMod-saf n zero = safΩ→saf (isConnectedEM 1)
