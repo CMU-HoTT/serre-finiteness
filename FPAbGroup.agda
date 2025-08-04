@@ -10,6 +10,7 @@ open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
 open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to ℤMod)
+open import Cubical.Algebra.AbGroup.FinitePresentation
 open import Cubical.Algebra.Group
 open import Cubical.Algebra.Group.Morphisms
 open import Cubical.Data.Fin.Inductive
@@ -37,14 +38,6 @@ AbGroup₀ = AbGroup ℓ-zero
 
 ℤMod-finite : (n : ℕ) → fst (ℤMod (suc n)) ≃ (Fin (suc n))
 ℤMod-finite n = isoToEquiv (Iso-Fin-InductiveFin (suc n))
-
-record FinitePresentation (A : AbGroup ℓ) : Type ℓ where
-  field
-    nGens : ℕ
-    nRels : ℕ
-    rels : AbGroupHom ℤ[Fin nRels ] ℤ[Fin nGens ]
-    equiv : GroupEquiv (AbGroup→Group A)
-                       (AbGroup→Group ℤ[Fin nGens ] / (imSubgroup rels , isNormalIm rels λ f g → funExt (λ _ → +Comm _ _)))
 
 -- finitely presented abelian groups
 -- postulate

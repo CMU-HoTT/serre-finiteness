@@ -16,6 +16,7 @@ open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.Loopspace
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Group.LES
+open import Cubical.CW.Base
 
 open import PointedHITs
 
@@ -141,7 +142,7 @@ postulate
                                   → isFinCW (CofiberSeqDom₋
                                        (cofiber-CofiberSeq₋ f))
 
-  
+
   cofiberExt-isFinCWCofiberSeq₋ : {A B : Type ℓ} (f : A → B)
                                   → isFinCW B
                                   → isFinCW (CofiberSeqExt₋
@@ -194,7 +195,7 @@ postulate
     → isConnectedFun n f
     → isConnectedFun (1 + n) g
     → isConnectedFun (1 + n) (fst (CofiberSeqMap-cofiber m S' f g p))
- 
+
   CofiberSeq₋→CofiberSeq : {A B C : Pointed ℓ}
     (S : CofiberSeq₋ (typ A) (typ B) C)
     (p : equivFun CofiberSeqExt-Eq₋

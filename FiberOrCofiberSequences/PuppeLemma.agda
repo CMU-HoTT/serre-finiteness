@@ -24,7 +24,7 @@ Iso.rightInv (puppeTotalIso2 B C f) tr = refl
 Iso.leftInv (puppeTotalIso2 B C f) tr = refl
 
 -- needs tidying up
--- try making this a ≡⟨ ⟩ type thing! 
+-- try making this a ≡⟨ ⟩ type thing!
 puppeTotalIso1 : (B C : Pointed ℓ) (f : B →∙ C) →
   Iso (Σ[ b ∈ (typ B) ] ((fst f) b ≡ pt C) × (b ≡ pt B)) (typ (Ω C))
 Iso.fun (puppeTotalIso1 B C f) (b , (p , q)) =
@@ -136,7 +136,7 @@ puppeFiberFiberCase {B = B} {C = C} f =
   ( snd (puppeTotalIso f))
   ( FiberFiberSeq
     ( inclOfFiberFiberSeq f))
-  
+
 puppe : {X Y Z : Pointed ℓ} → FiberSeq X Y Z → FiberSeq (Ω Z) X Y
 puppe F = TotalIsoFiberSeq
           ( fst (FibsIsoFiberFiberSeq F))
@@ -357,7 +357,7 @@ twiceIteratedPuppeIncl F =
       ( fst (puppeFiberIso
              ( FiberSeqProj (puppe F)))))
   ≡⟨
-     (λ i → 
+     (λ i →
          fst ( (TotalIsoFiberSeqIncl
                 ( fst (puppeTotalIso (FiberSeqProj (puppe F))))
                 ( snd (puppeTotalIso (FiberSeqProj (puppe F))))
@@ -529,7 +529,7 @@ twiceIteratedPuppeProj F =
                   ( inclOfFiberFiberSeq
                     ( inclOfFiberFiberSeq
                       ( FiberSeqProj F)))) i)
-        ∘ Iso.inv (fst (puppeFiberIso (FiberSeqProj F))))        
+        ∘ Iso.inv (fst (puppeFiberIso (FiberSeqProj F))))
   ⟩
   Iso.fun
   ( fst
