@@ -1,9 +1,12 @@
 module FiberOrCofiberSequences.ChainOfFibers where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.GroupoidLaws
 
 open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
+
 open import Cubical.Homotopy.Loopspace
 
 open import FiberOrCofiberSequences.Base

@@ -1,12 +1,23 @@
 module FiberOrCofiberSequences.ShortExactSequence where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Path
+open import Cubical.Foundations.Structure
+open import Cubical.Foundations.HLevels
 
 open import Cubical.Algebra.Group
 open import Cubical.Algebra.Group.Morphisms
+
 open import Cubical.Data.Sigma
+
 open import Cubical.HITs.PropositionalTruncation renaming (rec to propRec)
 open import Cubical.HITs.SetTruncation renaming (elim to setElim)
+
 open import Cubical.Homotopy.Loopspace
 open import Cubical.Homotopy.Group.Base
 
@@ -127,7 +138,7 @@ Auxiliary≡Iso F pb =
   conjReflSymIso
   ( cong (fst (FiberSeqProj F)) pb)
   ( snd (FiberSeqProj F))
-                                    
+
 iteratedPuppeUniversalEquiv : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   (pb : typ (Ω B))
   → (Σ[ pa ∈ typ (Ω A) ] sym (snd (FiberSeqIncl F))
@@ -207,4 +218,3 @@ FiberSeq→Exact {B = B} {C = C} F = setElim
  λ pb → propRec
  (isOfHLevelPath' 1 isSetSetTrunc (πFun 0 (FiberSeqProj F) ∣ pb ∣₂) ∣ refl ∣₂)
  (FiberSeq→ExactFst F pb) , (FiberSeq→ExactSnd F pb)
-

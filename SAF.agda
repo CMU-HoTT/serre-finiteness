@@ -1,33 +1,43 @@
 module SAF where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Path
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
+open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
+
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Fin.Inductive
 open import Cubical.Data.Sigma
+
+open import Cubical.CW.Base
+
 open import Cubical.Homotopy.Connected
+open import Cubical.Homotopy.EilenbergMacLane.Base
+
+open import Cubical.HITs.S1
+open import Cubical.HITs.EilenbergMacLane1 as EM1
 open import Cubical.HITs.Join
 open import Cubical.HITs.Truncation as TR
 open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.HITs.Susp
 open import Cubical.HITs.Sn hiding (S)
-open import Cubical.Homotopy.EilenbergMacLane.Base
-open import Cubical.CW.Base
---open import Cubical.HITs.Sphere
-open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 
+open import Connectedness
 open import FiniteCW
 open import PointedHITs
 open import FPAbGroup
 open import HomotopyGroups
-
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
-
-open import Connectedness
 
 open import LastMinuteLemmas.EM
 
@@ -328,13 +338,6 @@ postulate
   saf-Unit : saf {ℓ} (Unit* , tt*)
 
   saf-Sn : ∀ n → saf (S {ℓ} n)
-
-open import Cubical.Functions.Embedding
-open import Cubical.Functions.Surjection
-open import Cubical.HITs.S1
-open import Cubical.HITs.EilenbergMacLane1 as EM1
-open import Cubical.HITs.Sn hiding (S)
-
 
 EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1
 EM₁ℤ = sym (ua∙ (isoToEquiv (compIso rUnit*×Iso S¹≅EM)) refl)

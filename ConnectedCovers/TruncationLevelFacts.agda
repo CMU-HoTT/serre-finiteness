@@ -1,15 +1,25 @@
 module ConnectedCovers.TruncationLevelFacts where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.Path
 
 open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.Group.MorphismProperties
+
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Sigma.Properties
+
 open import Cubical.HITs.Truncation
+
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.Group.Base
+
 open import Cubical.Relation.Nullary.Base
 
 open import HomotopyGroups
@@ -56,7 +66,7 @@ swapPathltr : {X : Type ℓ} {x y : X} (p : x ≡ y) (q : x ≡ y)
   → (q ⁻¹ ∙ p ≡ refl) ≃ (p ≡ q)
 swapPathltr =
   J (λ y p → (q : _ ≡ y) → (q ⁻¹ ∙ p ≡ refl) ≃ (p ≡ q))
-    λ q → concatPathEq (q ⁻¹ ∙ refl) refl (q ⁻¹) 
+    λ q → concatPathEq (q ⁻¹ ∙ refl) refl (q ⁻¹)
     ∙ₑ compEquiv
        (compPathlEquiv ((lCancel (q ⁻¹)) ⁻¹ ∙ cong ((q ⁻¹) ⁻¹ ∙_) (rUnit _)))
        (compPathrEquiv ((rUnit _) ⁻¹ ∙ (symInvo _) ⁻¹))
@@ -132,7 +142,7 @@ AbGrpTruncEq X n =
        ( idIso)
      ⟩
        hLevelTrunc m (hLevelTrunc n X) ∎Iso
-  
+
 TruncCommutesIso : (X : Type ℓ) (m n : ℕ)
   → Iso
      ( hLevelTrunc n (hLevelTrunc m X))
@@ -220,5 +230,3 @@ module _ (A : Pointed ℓ) (a : typ A) (n m : ℕ) where
    equivToContr
    ( transportPathΣEquiv q)
    ( isContrSingl' (cong ∣_∣ₕ q))
-
-

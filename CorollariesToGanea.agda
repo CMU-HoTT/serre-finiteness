@@ -1,17 +1,21 @@
 {-# OPTIONS --lossy-unification #-}
 module CorollariesToGanea where
 
-open import Everything
-
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Equiv.HalfAdjoint
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Univalence
 
-open import Cubical.Algebra.AbGroup
+open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
-open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
 open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to ℤMod)
 
-open import Cubical.Relation.Nullary
 open import Cubical.Data.Sum as ⊎ hiding (rec)
 
 open import Cubical.Data.Nat
@@ -24,14 +28,12 @@ open import Cubical.HITs.Truncation
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.EilenbergMacLane.Base
 open import Cubical.Homotopy.EilenbergMacLane.Properties
-open import Cubical.Homotopy.Freudenthal
 open import Cubical.Homotopy.Loopspace
 
 open import Connectedness
 open import SAF
 open import FPAbGroup
 open import PointedHITs
-open import LastMinuteLemmas.EM
 
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
