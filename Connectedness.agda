@@ -1,15 +1,17 @@
 module Connectedness where
 
-open import Everything
-
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Pointed
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
-open import Cubical.Data.NatMinusOne
+open import Cubical.Data.Unit
 open import Cubical.HITs.Join
 open import Cubical.HITs.Pushout
-open import Cubical.HITs.Sn
-open import Cubical.HITs.Truncation
 open import Cubical.Homotopy.Connected
+open import Cubical.HITs.Truncation as Trunc
 
 open import PointedHITs
 
@@ -17,9 +19,14 @@ private
   variable
     ℓ : Level
 
--- silly
-postulate
-  conUnit : (n : ℕ) → isConnected n Unit
+-- TODO: the following is in a where-clause in "Cubical.Cohomology.EilenbergMacLane.Groups.Unit"
+--       This should be proved in full generality as below and then just instantiated
+-- isConnected2Unit : isConnected 2 Unit
+-- fst isConnected2Unit = ∣ tt ∣
+-- snd isConnected2Unit = Trunc.elim (λ _ → isOfHLevelPath 2 (isOfHLevelTrunc 2) _ _) λ _ → refl
+
+isConnectedUnit : (n : ℕ) → isConnected n Unit
+isConnectedUnit n = isContr→isContr∥ n isContrUnit
 
 -- join of Unit
 joinUnit : Iso (join Unit Unit) Unit
@@ -40,33 +47,46 @@ join→Unit : {X₀ X₁ : Type ℓ}
 join→Unit = refl
 
 -- functoriality of join
-joinFunctExt : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ ℓ₅ : Level} {X₀ : Type ℓ} {X₁ : Type ℓ₁} {Y₀ : Type ℓ₂} {Y₁ : Type ℓ₃} {Z₀ : Type ℓ₄} {Z₁ : Type ℓ₅} (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
-              (g₀ : Y₀ → Z₀) (g₁ : Y₁ → Z₁) (x : join X₀ X₁)
-           → (join→ (g₀ ∘ f₀) (g₁ ∘ f₁)) x
-            ≡ ((join→ g₀ g₁) ∘ (join→ f₀ f₁)) x
+joinFunctExt : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ ℓ₅ : Level}
+               {X₀ : Type ℓ} {X₁ : Type ℓ₁}
+               {Y₀ : Type ℓ₂} {Y₁ : Type ℓ₃}
+               {Z₀ : Type ℓ₄} {Z₁ : Type ℓ₅}
+               (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
+               (g₀ : Y₀ → Z₀) (g₁ : Y₁ → Z₁)
+               (x : join X₀ X₁)
+             → (join→ (g₀ ∘ f₀) (g₁ ∘ f₁)) x ≡ ((join→ g₀ g₁) ∘ (join→ f₀ f₁)) x
 joinFunctExt f₀ f₁ g₀ g₁ (inl x) = refl
 joinFunctExt f₀ f₁ g₀ g₁ (inr x) = refl
 joinFunctExt f₀ f₁ g₀ g₁ (push a b i) = refl
 
 -- commutativity of join→
-join→-commExt : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level} {W : Type ℓ₁} {X : Type ℓ₂} {Y : Type ℓ₃} {Z : Type ℓ₄} (f : W → Y) (g : X → Z) (x : join X W)
-  → (join-commFun ∘ (join→ f g) ∘ join-commFun) x ≡ (join→ g f) x
+join→-commExt : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level}
+                {W : Type ℓ₁} {X : Type ℓ₂} {Y : Type ℓ₃} {Z : Type ℓ₄}
+                (f : W → Y) (g : X → Z) (x : join X W)
+              → (join-commFun ∘ (join→ f g) ∘ join-commFun) x ≡ (join→ g f) x
 join→-commExt f g (inl x) = refl
 join→-commExt f g (inr x) = refl
 join→-commExt f g (push a b i) = refl
 
-join→-comm : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level} {W : Type ℓ₁} {X : Type ℓ₂} {Y : Type ℓ₃} {Z : Type ℓ₄} (f : W → Y) (g : X → Z)
-  → join-commFun ∘ (join→ f g) ∘ join-commFun ≡ (join→ g f)
+join→-comm : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ : Level}
+             {W : Type ℓ₁} {X : Type ℓ₂} {Y : Type ℓ₃} {Z : Type ℓ₄}
+             (f : W → Y) (g : X → Z)
+           → join-commFun ∘ (join→ f g) ∘ join-commFun ≡ (join→ g f)
 join→-comm f g = funExt (join→-commExt f g)
 
-joinFunct : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ ℓ₅ : Level} {X₀ : Type ℓ} {X₁ : Type ℓ₁} {Y₀ : Type ℓ₂} {Y₁ : Type ℓ₃} {Z₀ : Type ℓ₄} {Z₁ : Type ℓ₅} (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
-              (g₀ : Y₀ → Z₀) (g₁ : Y₁ → Z₁)
-           → (join→ (g₀ ∘ f₀) (g₁ ∘ f₁))
-            ≡ (join→ g₀ g₁) ∘ (join→ f₀ f₁)
+joinFunct : {ℓ₁ ℓ₂ ℓ₃ ℓ₄ ℓ₅ : Level}
+            {X₀ : Type ℓ} {X₁ : Type ℓ₁}
+            {Y₀ : Type ℓ₂} {Y₁ : Type ℓ₃}
+            {Z₀ : Type ℓ₄} {Z₁ : Type ℓ₅}
+            (f₀ : X₀ → Y₀) (f₁ : X₁ → Y₁)
+            (g₀ : Y₀ → Z₀) (g₁ : Y₁ → Z₁)
+          → join→ (g₀ ∘ f₀) (g₁ ∘ f₁) ≡ (join→ g₀ g₁) ∘ (join→ f₀ f₁)
 joinFunct f₀ f₁ g₀ g₁ = funExt (joinFunctExt f₀ f₁ g₀ g₁)
 
 -- connectivity facts
-connectedMin : {ℓ₁ ℓ₂ ℓ₃ : Level} (n₁ n₂ : ℕ) {X : Type ℓ₁} {Y : Type ℓ₂} {Z : Type ℓ₃} (f : X → Y) (g : Y → Z)
+connectedMin : {ℓ₁ ℓ₂ ℓ₃ : Level} (n₁ n₂ : ℕ)
+               {X : Type ℓ₁} {Y : Type ℓ₂} {Z : Type ℓ₃}
+               (f : X → Y) (g : Y → Z)
             → isConnectedFun n₁ f → isConnectedFun n₂ g
             → (k : ℕ) → k ≤ n₁ → k ≤ n₂
             → isConnectedFun k (g ∘ f)
@@ -92,7 +112,9 @@ isConnectedFunS∙ : {X Y : Pointed ℓ} (f : X →∙ Y) (n : HLevel)
 isConnectedFunS∙ f n con b =
   isConnectedSubtr n 1 (isConnectedSuspFun (fst f) n con b)
 
-joinConnected' : {ℓ₁ ℓ₂ ℓ₃ : Level} (m n : ℕ) → {A : Type ℓ₁} {A' : Type ℓ₂} (B : Type ℓ₃) (v : A → A')
+joinConnected' : {ℓ₁ ℓ₂ ℓ₃ : Level} (m n : ℕ)
+                 {A : Type ℓ₁} {A' : Type ℓ₂} (B : Type ℓ₃)
+                 (v : A → A')
                → isConnectedFun m v
                → isConnected n B
                → isConnectedFun (m + n) (join→ (idfun B) v)
@@ -113,7 +135,8 @@ joinConnected' m n B v hv hB =
                                 (isIsoToIsEquiv (IsoToIsIso join-comm))
                                 (m + n)))
 
-isConnectedFunJoin : {ℓ' : Level} {X₁ X₂ : Type ℓ} {Y₁ Y₂ : Type ℓ'} (f₁ : X₁ → Y₁) (f₂ : X₂ → Y₂)
+isConnectedFunJoin : {ℓ' : Level} {X₁ X₂ : Type ℓ} {Y₁ Y₂ : Type ℓ'}
+    (f₁ : X₁ → Y₁) (f₂ : X₂ → Y₂)
     (n₁ n₂ m₁ m₂ : HLevel)
     (k : HLevel) (hk₁ : k ≤ n₁ + m₂) (hk₂ : k ≤ n₂ + m₁)
     → isConnectedFun n₁ f₁ → isConnectedFun n₂ f₂
@@ -130,7 +153,8 @@ isConnectedFunJoin {ℓ} {ℓ'} f₁ f₂ n₁ n₂ m₁ m₂ k hk₁ hk₂ hf�
 
 isConnectedJoin : {X₁ X₂ : Type ℓ} (n₁ n₂ : HLevel) (k : HLevel)
                   (hk : k ≤ n₁ + n₂)
-                  → isConnected n₁ X₁ → isConnected n₂ X₂
+                  → isConnected n₁ X₁
+                  → isConnected n₂ X₂
                   → isConnected k (join X₁ X₂)
 isConnectedJoin {ℓ} {X₁} {X₂} n₁ n₂ k hk cX₁ cX₂ =
   isConnectedFun→isConnected k
@@ -144,5 +168,5 @@ isConnectedJoin {ℓ} {X₁} {X₂} n₁ n₂ k hk cX₁ cX₂ =
                                     hk)
                        (isConnected→isConnectedFun n₁ cX₁)
                        (isConnected→isConnectedFun n₂ cX₂)
-                       cX₁ (conUnit n₂))))
+                       cX₁ (isConnectedUnit n₂))))
 
