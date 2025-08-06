@@ -21,8 +21,8 @@ private
   variable
     ℓ : Level
 
-postulate
-  truncIsConnected : (X : Pointed ℓ) (n : ℕ) → isConnectedFun n (trunc {X = X} n)
+truncIsConnected : (X : Pointed ℓ) (n : ℕ) → isConnectedFun n (trunc {X = X} n)
+truncIsConnected X n = {!!}
 
 -- n+2 (or n, depending on the convention) connected cover
 _<_> : (X : Pointed ℓ) → ℕ → Pointed ℓ
