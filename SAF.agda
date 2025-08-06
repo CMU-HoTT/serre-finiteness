@@ -332,12 +332,13 @@ isFinCW→saf {ℓ = ℓ }{X = X} hX =
   lem p = isEquivTrnspId (snd p)
 
 postulate
-  -- silly
-  saf-Fin : ∀ n (b : Fin n) → saf (Fin n , b)
+  safFin : ∀ n (b : Fin n) → saf (Fin n , b)
 
-  saf-Unit : saf {ℓ} (Unit* , tt*)
+postulate
+  safUnit : saf {ℓ} (Unit* , tt*)
 
-  saf-Sn : ∀ n → saf (S {ℓ} n)
+postulate
+  safSn : ∀ n → saf (S {ℓ} n)
 
 EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1
 EM₁ℤ = sym (ua∙ (isoToEquiv (compIso rUnit*×Iso S¹≅EM)) refl)
@@ -400,9 +401,6 @@ postulate
   safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf B → saf C
 
-  safExtension : {A B C : Pointed ℓ} → CofiberSeq A B C
-    → saf A → saf C → saf B
-
 joinSuspTrick : ∀ {ℓ} (X₁ X₂ : Pointed ℓ) (M₁ M₂ : ℕ)
   → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
    ≡ join (Susp^ M₁ (typ X₁)) (Susp^ M₂ (typ X₂))
@@ -421,11 +419,14 @@ joinSuspTrick X₁ X₂ (suc M₁) M₂ =
   ∙ cong₂ join refl refl
 
 postulate
+  -- TODO: Maybe make more universe polymorphic?
   saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
 
-  safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
+safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
+safS1× {ℓ} {A} safA = saf× {A = S {ℓ} 1} {B = A} (safSn 1) safA
 
-  safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
+postulate
+  safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
 
 stablyNFiniteJoin'-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
   (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite' 1 X₁)
