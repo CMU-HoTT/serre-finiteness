@@ -1,6 +1,7 @@
 module CorollariesToHurewicz where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
 
 open import Cubical.Data.Nat
 open import Cubical.Homotopy.Connected

@@ -1,7 +1,13 @@
 {-# OPTIONS --lossy-unification #-}
 module FiberOrCofiberSequences.LongExactSequence where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Structure
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.Unit
@@ -11,8 +17,10 @@ open import Cubical.Algebra.Group.GroupPath
 open import Cubical.Algebra.Group.Instances.Unit
 open import Cubical.Algebra.Group.Morphisms
 open import Cubical.Algebra.Group.MorphismProperties
+
 open import Cubical.Data.Nat
 open import Cubical.Data.Sigma
+
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Group.LES
 open import Cubical.Homotopy.Loopspace
@@ -61,7 +69,10 @@ LES→isEquiv V E L n VnUn V3+nUn =
   SES→isEquiv' (V3+nUn ⁻¹) (VnUn ⁻¹) (E (suc (suc n))) (E (suc n)) (E n)
   (λ x → snd (L (suc n) x)) λ x → snd (L n x)
 
-LES→Equiv : (V : ℕ → Group ℓ) (E : (n : ℕ) → GroupHom (V (suc n)) (V n)) (L : isLES V E) (n : ℕ) → V n ≡ UnitGroup → V (suc (suc (suc n))) ≡ UnitGroup → GroupEquiv (V (suc (suc n))) (V (suc n))
+LES→Equiv : (V : ℕ → Group ℓ) (E : (n : ℕ)
+          → GroupHom (V (suc n)) (V n)) (L : isLES V E) (n : ℕ)
+          → V n ≡ UnitGroup → V (suc (suc (suc n))) ≡ UnitGroup
+          → GroupEquiv (V (suc (suc n))) (V (suc n))
 fst (fst (LES→Equiv V E L n VnUn V3+nUn)) = fst (E (suc n))
 snd (fst (LES→Equiv V E L n VnUn V3+nUn)) = LES→isEquiv V E L n VnUn V3+nUn
 snd (LES→Equiv V E L n VnUn V3+nUn) = snd (E (suc n))

@@ -1,13 +1,20 @@
 module ConnectedCovers.GeneralisingFreudnthl where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Univalence
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Sigma
 open import Cubical.Data.Unit
-open import Cubical.Homotopy.Connected
+
 open import Cubical.HITs.Susp
 open import Cubical.HITs.PropositionalTruncation renaming
                                                  (map to pMap; rec to pRec;
@@ -18,12 +25,13 @@ open import Cubical.HITs.SetTruncation renaming (map to sMap; rec to sRec;
                                                  elim to sElim;
                                                  elim2 to sElim2)
 open import Cubical.HITs.Truncation renaming (elim to hTElim)
+
+open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.EilenbergMacLane.Base renaming (elim2 to EMELim2)
 open import Cubical.Homotopy.EilenbergMacLane.Properties
 open import Cubical.Homotopy.Freudenthal
 open import Cubical.Homotopy.Loopspace
 open import Cubical.Homotopy.Group.Base
-
 open import Cubical.Homotopy.WhiteheadsLemma
 
 private
@@ -230,7 +238,7 @@ isConnectedSusp A n cA =
   ∙ p
 +∸' m n (suc k , p) =
   cong (λ l → (m + (l ∸ m))) (sym p)
-  ∙ cong (λ l → (m + (suc l ∸ m))) (+-assoc k 1 m) 
+  ∙ cong (λ l → (m + (suc l ∸ m))) (+-assoc k 1 m)
   ∙ cong (m +_) (+∸ (1 + k + 1) m)
   ∙ +-comm m (suc (k + 1))
   ∙ cong suc (sym (+-assoc k 1 m))
@@ -276,7 +284,7 @@ LoopSusp^AdjGambit' A B (suc n) f =
                                          (toSuspPointedω (Susp∙ (typ A)) n)))
   ∙ ∘∙-assoc (Ω^→ (2 + n) f)
              (Ω→ (toSuspPointedω (Susp∙ (typ A)) n))
-             (toSuspPointed A) 
+             (toSuspPointed A)
 
 ToSusp∙^ : (A : Pointed ℓ) (n : ℕ)
   → A →∙ (Ω^ (1 + n)) (Susp∙^ (1 + n) A)
@@ -398,7 +406,7 @@ LoopSuspIsoConnected A B (suc n) f hf hA =
 LoopSuspIsoπFunEquiv : (A B : Pointed ℓ) (n : ℕ)
   → (f : A →∙ (Ω^ (1 + n)) B) → isEquiv (fst f)
   → isConnected 2 (typ A)
-  → isEquiv (πFun (1 + n) (Iso.inv (Loop^Susp^AdjunctionIso A B (1 + n)) f)) 
+  → isEquiv (πFun (1 + n) (Iso.inv (Loop^Susp^AdjunctionIso A B (1 + n)) f))
 LoopSuspIsoπFunEquiv A B n f hf hA =
   connConnMap
     (fst ((Ω^→ (2 + n)) (Iso.inv (Loop^Susp^AdjunctionIso A B (1 + n)) f)))

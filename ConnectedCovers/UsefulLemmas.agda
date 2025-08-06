@@ -1,8 +1,16 @@
 {-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.UsefulLemmas where
 
-open import Everything hiding (isIsoToIso)
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
 open import Cubical.Foundations.Pointed.Homogeneous
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism hiding (isIsoToIso)
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.Path
 
 open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.Group.Base
@@ -10,12 +18,12 @@ open import Cubical.Algebra.Group.GroupPath
 open import Cubical.Algebra.Group.Instances.Unit
 open import Cubical.Algebra.Group.Morphisms
 open import Cubical.Algebra.Group.MorphismProperties
-open import Cubical.Algebra.Monoid.Base
-open import Cubical.Algebra.Semigroup.Base
+
 open import Cubical.Data.Nat renaming (elim to natElim)
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
+
 open import Cubical.HITs.EilenbergMacLane1 renaming (rec to recEM1)
 open import Cubical.HITs.SetTruncation
               renaming (rec to recSetTrunc ; elim to elimSetTrunc ;
@@ -24,6 +32,7 @@ open import Cubical.HITs.SetTruncation
 open import Cubical.HITs.Susp
 open import Cubical.HITs.Truncation
               renaming (rec to recTrunc ; elim to elimTrunc)
+
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.EilenbergMacLane.Base
               renaming (elim to elimEM)
@@ -31,16 +40,11 @@ open import Cubical.Homotopy.EilenbergMacLane.Properties
 open import Cubical.Homotopy.Freudenthal
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Loopspace
+open import Cubical.Homotopy.WhiteheadsLemma
 
 open import HomotopyGroups
 
---open import ConnectedCovers.GeneralisingFreudnthl
---open import ConnectedCovers.PointedEquivalences
-
 open import FiberOrCofiberSequences.Base
---open import FiberOrCofiberSequences.LongExactSequence
-
-open import Cubical.Homotopy.WhiteheadsLemma
 
 private
   variable
@@ -406,7 +410,7 @@ AppNatSet p = isSetℕ _ _ refl p
                ∘∙ id∙ (Ω (hLevelTrunc∙ n A)))
 Ω→NatComm'' {A = A} {B = B} f n p hB =
   Ω→NatComm''' f n p hB ∙ ∘∙-idˡ _ ⁻¹
-                                      
+
 
 Ω→NatComm : {A B : Pointed ℓ} (f : A →∙ B) (m n : ℕ)
                (hB : isOfHLevel (suc m + n) (typ B))
@@ -416,7 +420,7 @@ AppNatSet p = isSetℕ _ _ refl p
 Ω→NatComm f zero n hB =
   Ω→NatComm'' f (suc n) (1+m+n≡ zero n) hB
 Ω→NatComm f (suc m) n hB =
-  Ω→NatComm' f m ((suc (suc m)) + n) (1+m+n≡ (suc m) n) hB 
+  Ω→NatComm' f m ((suc (suc m)) + n) (1+m+n≡ (suc m) n) hB
 
 congRecFun : {A B : Type ℓ} {a : A} (n : ℕ) {b b' : B}
              (f : A → B) (hB : isOfHLevel (suc n) B) (a' : ∥ A ∥ (1 + n))
@@ -872,4 +876,3 @@ SpΩRecConcl {B = B} f n =
                  → isIso (πFun (suc n) f)
                  → isIso (πFun (suc n) (recTrunc∙ (4+n≡ n (~ i)) hB f))))
              (ΩRecConcl f (suc n) 0)
-

@@ -1,22 +1,25 @@
 {-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.EquivPreservation where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
 open import Cubical.Foundations.Pointed.Homogeneous
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Univalence using (pathToEquiv ; pathToEquivRefl)
 
 open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.Group.Base
 open import Cubical.Algebra.Group.GroupPath
-open import Cubical.Algebra.Group.Instances.Unit
 open import Cubical.Algebra.Group.Morphisms
-open import Cubical.Algebra.Group.MorphismProperties
-open import Cubical.Algebra.Monoid.Base
-open import Cubical.Algebra.Semigroup.Base
 open import Cubical.Data.Nat renaming (elim to natElim)
 open import Cubical.HITs.Susp
 open import Cubical.Homotopy.EilenbergMacLane.Base
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Loopspace
+open import Cubical.Homotopy.WhiteheadsLemma
 
 open import HomotopyGroups
 
@@ -26,7 +29,6 @@ open import ConnectedCovers.PointedEquivalences
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.LongExactSequence
 
-open import Cubical.Homotopy.WhiteheadsLemma
 
 private
   variable

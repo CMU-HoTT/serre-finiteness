@@ -1,22 +1,30 @@
 module LastMinuteLemmas.EM where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.HLevels
 
-open import Cubical.Algebra.AbGroup
-open import Cubical.Algebra.AbGroup.Instances.DirectProduct
-open import Cubical.Data.Nat
-open import Cubical.Data.Sigma
-open import Cubical.HITs.PropositionalTruncation as PT
-open import Cubical.Homotopy.EilenbergMacLane.Base
 open import Cubical.Algebra.Group.Base
 open import Cubical.Algebra.Group.Morphisms
 open import Cubical.Algebra.Group.MorphismProperties
 open import Cubical.Algebra.Group.DirProd
-open import Cubical.Homotopy.EilenbergMacLane.GroupStructure
-open import Cubical.Homotopy.EilenbergMacLane.Properties
+open import Cubical.Algebra.AbGroup
+open import Cubical.Algebra.AbGroup.Instances.DirectProduct
+
+open import Cubical.Data.Nat
+open import Cubical.Data.Sigma
+
 open import Cubical.Functions.Embedding
 open import Cubical.Functions.Surjection
-open import Cubical.Data.Sigma
+
+open import Cubical.HITs.PropositionalTruncation as PT
+
+open import Cubical.Homotopy.EilenbergMacLane.Base
+open import Cubical.Homotopy.EilenbergMacLane.GroupStructure
+open import Cubical.Homotopy.EilenbergMacLane.Properties
 open import Cubical.Homotopy.Loopspace
 
 module _ {ℓ ℓ' : Level} (G : Group ℓ) (H : Group ℓ') where

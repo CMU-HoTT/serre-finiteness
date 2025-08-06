@@ -1,6 +1,11 @@
 module HomotopyGroups where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.HLevels
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.Unit
@@ -8,19 +13,21 @@ open import Cubical.Algebra.Group
 open import Cubical.Algebra.Group.Instances.Unit
 open import Cubical.Algebra.Group.Morphisms
 open import Cubical.Algebra.Group.MorphismProperties
+
 open import Cubical.Data.Bool hiding (_≤_ ; _≥_)
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Unit
+
 open import Cubical.HITs.SetTruncation
 open import Cubical.HITs.Truncation hiding (rec2 ; elim2)
+
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Loopspace
 
 private
   variable
     ℓ : Level
-
 
 -- Essentially proven as EH-π in Cubical.Homotopy.Loopspace
 πGr-comm : (n : ℕ) (A : Pointed ℓ) → (a b : typ (πGr (suc n) A))
