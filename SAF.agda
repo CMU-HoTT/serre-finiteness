@@ -434,9 +434,6 @@ postulate
   safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf B → saf C
 
-  safExtension : {A B C : Pointed ℓ} → CofiberSeq A B C
-    → saf A → saf C → saf B
-
 joinSuspTrick : ∀ {ℓ} (X₁ X₂ : Pointed ℓ) (M₁ M₂ : ℕ)
   → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
    ≡ join (Susp^ M₁ (typ X₁)) (Susp^ M₂ (typ X₂))
@@ -683,6 +680,16 @@ saf× {ℓ = ℓ} {A} {B} sA sB m =
         (⋁Iso (isoToEquiv Iso-⋁Susp-Susp⋁ , refl)
               (idEquiv∙ _))))
         (SuspProduct A B)
+
+-- postulate
+--   -- TODO: Maybe make more universe polymorphic?
+--   saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
+
+-- safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
+-- safS1× {ℓ} {A} safA = saf× {A = S {ℓ} 1} {B = A} (safSn 1) safA
+
+-- postulate
+--   safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
 
 stablyNFiniteJoin'-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
   (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite' 1 X₁)
