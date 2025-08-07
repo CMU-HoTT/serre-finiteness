@@ -32,11 +32,19 @@ open import Cubical.HITs.Susp
 open import Cubical.Homotopy.Connected
 
 open import FiniteCW
--- open import LastMinuteLemmas.CWLemmas
+open import LastMinuteLemmas.SuspLemmas
 
 private
   variable
     ℓ : Level
+
+-- move to Cubical.Homotopy.Connected
+Susp^-conn : (m n : ℕ) (X : Type ℓ) → isConnected m X
+             → isConnected (n + m) (Susp^ n X)
+Susp^-conn m zero X hX = hX
+Susp^-conn m (suc n) X hX =
+  transport (λ i → isConnected (+-suc n m i) (Susp^ (suc n) X))
+             (Susp^-conn (suc m) n (Susp X) (isConnectedSusp m hX))
 
 -- move to Cubical.Homotopy.Connected
 isConnectedFunCompMin : ∀ {ℓA ℓB ℓC}

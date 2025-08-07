@@ -20,6 +20,7 @@ open import Cubical.Homotopy.Connected
 
 open import FiniteCW
 open import LastMinuteLemmas.ConnectedLemmas
+open import LastMinuteLemmas.SuspLemmas
 
 private
   variable
@@ -288,8 +289,8 @@ isConnected⋀→ nf ng nC nB cC cD f g cf cg =
 
 -- move to Cubical.HITs.SmashProducts
 Susp^⋀≃∙⋀Susp^ : (A B : Pointed ℓ) (nA nB : ℕ)
-   → (Susp^∙ (nA + nB) (A ⋀∙ B))
-   ≃∙ ((Susp^∙ nA A) ⋀∙ (Susp^∙ nB B))
+   → (Susp∙^ (nA + nB) (A ⋀∙ B))
+   ≃∙ ((Susp∙^ nA A) ⋀∙ (Susp∙^ nB B))
 Susp^⋀≃∙⋀Susp^ A B zero zero = idEquiv∙ _
 Susp^⋀≃∙⋀Susp^ A B zero (suc nB) =
   compEquiv∙ (Susp^Equiv∙ nB
@@ -305,7 +306,7 @@ Susp^⋀≃∙⋀Susp^ A B (suc nA) nB =
 
 -- move to Cubical.HITs.Susp.Properties
 Susp∙^Susp≡Susp^Susp∙ : {A : Pointed ℓ} (n : ℕ)
-  → Susp∙ (Susp^ n (typ A)) ≡ Susp^∙ n (Susp∙ (typ A))
+  → Susp∙ (Susp^ n (typ A)) ≡ Susp∙^ n (Susp∙ (typ A))
 Susp∙^Susp≡Susp^Susp∙ {A = A} zero = refl
 Susp∙^Susp≡Susp^Susp∙ {A = A} (suc n) =
   Susp∙^Susp≡Susp^Susp∙ {A = Susp∙ (typ A)} n

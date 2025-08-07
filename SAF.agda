@@ -496,8 +496,8 @@ saf⋀ {ℓ = ℓ} {A = A} {B = B} sA sB m =
                 ∙ +-assoc nA nB (suc m)) ∙ min-diag (nA + nB + suc m))
               (isConnected⋀→ (suc (m + nA)) (suc (m + nB)) (suc nB) (suc nA)
                 conXB conSuspXA (f , xId) (g , yId) cf cg))) ∣₁) ∣₁})
-        (cg (Susp^∙ nB B .snd) .fst)})
-      (cf (Susp^∙ nA A .snd) .fst)
+        (cg (Susp∙^ nB B .snd) .fst)})
+      (cf (Susp∙^ nA A .snd) .fst)
         where
         conSuspXA : isConnected (suc nA) (Susp^ nA (typ A))
         conSuspXA = subst (λ r → isConnected r (Susp^ nA (typ A)))
@@ -532,10 +532,10 @@ saf⋁ {ℓ = ℓ} {A} {B} sA sB (suc m) = PT.rec2 squash₁
           , main nA nB XA XB f g cf cg x y px py ∣₁})
           (subst (λ k → isConnectedFun k g)
                (+-suc nB m) cg
-               (Susp^∙ nB B .snd) .fst)})
+               (Susp∙^ nB B .snd) .fst)})
         (subst (λ k → isConnectedFun k f)
                (+-suc nA m) cf
-               (Susp^∙ nA A .snd) .fst)}}))
+               (Susp∙^ nA A .snd) .fst)}}))
   (sA (suc m)) (sB (suc m))
   where
   module _ (nA nB : ℕ) (XA XB : FinCW ℓ)
@@ -544,15 +544,15 @@ saf⋁ {ℓ = ℓ} {A} {B} sA sB (suc m) = PT.rec2 squash₁
     (cf : isConnectedFun (nA + suc m) f)
     (cg : isConnectedFun (nB + suc m) g)
     (x : fst XA) (y : fst XB)
-    (fp : f x ≡ Susp^∙ nA A .snd) (gp : g y ≡ Susp^∙ nB B .snd)
+    (fp : f x ≡ Susp∙^ nA A .snd) (gp : g y ≡ Susp∙^ nB B .snd)
     where
     ma = max nA nB
     mi = min nA nB
 
     P : FinCW ℓ
-    fst P = Susp^∙ nB (fst XA , x) ⋁ Susp^∙ nA (fst XB , y)
-    snd P = isFinCW⋁ {A = Susp^∙ nB (fst XA , x)}
-                     {B = Susp^∙ nA (fst XB , y)}
+    fst P = Susp∙^ nB (fst XA , x) ⋁ Susp∙^ nA (fst XB , y)
+    snd P = isFinCW⋁ {A = Susp∙^ nB (fst XA , x)}
+                     {B = Susp∙^ nA (fst XB , y)}
                      (isFinCWSusp {n = nB} (fst XA) (snd XA))
                      (isFinCWSusp {n = nA} (fst XB) (snd XB))
 
@@ -568,8 +568,8 @@ saf⋁ {ℓ = ℓ} {A} {B} sA sB (suc m) = PT.rec2 squash₁
         (Susp^+Iso n m)
 
     Susp^+Iso∙ : ∀ {ℓ} (A : Pointed ℓ) (n m : ℕ)
-      → Iso.fun (Susp^+Iso {A = typ A} n m) (Susp^∙ n (Susp^∙ m A) .snd)
-      ≡ snd (Susp^∙ (n + m) A)
+      → Iso.fun (Susp^+Iso {A = typ A} n m) (Susp∙^ n (Susp∙^ m A) .snd)
+      ≡ snd (Susp∙^ (n + m) A)
     Susp^+Iso∙ A zero m = refl
     Susp^+Iso∙ A (suc n) m =
         cong (Iso.fun (Susp^+Iso n m))
@@ -606,22 +606,22 @@ saf⋁ {ℓ = ℓ} {A} {B} sA sB (suc m) = PT.rec2 squash₁
                 ∙ +-assoc (suc nA) nB m )
                 (isConnectedSusp^Fun g _ nA cg))
 
-    e : (Susp^∙ d A ⋁ Susp^∙ d B) ≃ Susp^ d (typ (A ⋁∙ₗ B))
+    e : (Susp∙^ d A ⋁ Susp∙^ d B) ≃ Susp^ d (typ (A ⋁∙ₗ B))
     e = invEquiv (fst (⋁Susp^≃∙Susp^⋁ A B d))
 
-    t : Σ[ f ∈ (decodeFinCW P → Susp^∙ d A ⋁ Susp^∙ d B) ]
+    t : Σ[ f ∈ (decodeFinCW P → Susp∙^ d A ⋁ Susp∙^ d B) ]
          (isConnectedFun (suc (d + m)) f)
     t = _ , isConnectedPushout→
-             (λ _ → Susp^∙ nB (fst XA , x) .snd)
-             (λ _ → Susp^∙ nA (fst XB , y) .snd)
-             (λ _ → Susp^∙ d A .snd)
-             (λ _ → Susp^∙ d B .snd)
+             (λ _ → Susp∙^ nB (fst XA , x) .snd)
+             (λ _ → Susp∙^ nA (fst XB , y) .snd)
+             (λ _ → Susp∙^ d A .snd)
+             (λ _ → Susp∙^ d B .snd)
              (λ _ → tt) (fst f*) (fst g*)
              (funExt (λ x → cong (subst (λ k → Susp^ k (fst A)) (+-comm nB nA))
                (cong (Iso.fun (Susp^+Iso nB nA)) (Susp^Fun∙ (f , fp) nB .snd)
                ∙ Susp^+Iso∙ A nB nA)
                ∙ λ j → transp (λ i → Susp^ (+-comm nB nA (i ∨ j)) (fst A))
-                               j (snd (Susp^∙ (+-comm nB nA j) A))))
+                               j (snd (Susp∙^ (+-comm nB nA j) A))))
              (funExt (λ x →
                  cong (Iso.fun (Susp^+Iso nA nB)) (Susp^Fun∙ (g , gp) nA .snd)
                ∙ Susp^+Iso∙ B nA nB))
@@ -658,6 +658,7 @@ isNFinite↓ {A = A} n = PT.rec squash₁
     λ {(XA , f , cf) → (suc m) , ∣ XA
       , (f , subst (λ k → isConnectedFun k f) (+-suc m n) cf) ∣₁})
 
+-- TODO: Maybe make more universe polymorphic?
 saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
 saf× {ℓ = ℓ} {A} {B} sA sB m =
   TR.rec squash₁ (λ p →
@@ -681,15 +682,15 @@ saf× {ℓ = ℓ} {A} {B} sA sB m =
               (idEquiv∙ _))))
         (SuspProduct A B)
 
--- postulate
---   -- TODO: Maybe make more universe polymorphic?
---   saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
+safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
+safS1× {ℓ} {A} safA = saf× {A = S {ℓ} 1} {B = A} (saf-Sn 1) safA
 
--- safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
--- safS1× {ℓ} {A} safA = saf× {A = S {ℓ} 1} {B = A} (safSn 1) safA
-
--- postulate
---   safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
+safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
+safS¹× {ℓ = ℓ} {A = A} sA =
+  subst saf lem (safS1× {A = A} sA)
+  where
+  lem : ((S {ℓ} 1) ×∙ A) ≡ S¹∙ ×∙ A
+  lem = ua∙ (Σ-cong-equiv-fst (isoToEquiv rUnit*×Iso)) refl
 
 stablyNFiniteJoin'-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
   (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite' 1 X₁)

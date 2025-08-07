@@ -321,7 +321,7 @@ safΩ→saf {ℓ} {B} cB hB = γ
 
 
     sNFnt-E : (k : ℕ) → saf (E k)
-    sNFnt-E zero = safUnit
+    sNFnt-E zero = saf-Unit
     sNFnt-E (suc k) = safCofiber (GaneaCofiberSeq k) (sNFnt-join-F k)
                                  (sNFnt-E k)
 
@@ -353,7 +353,7 @@ saf→safΩ {ℓ} {B} scB hB = γ
     ΩB-stably1Finite =
       stablyNFiniteApprox' ((λ _ → tt*) , refl) 1
       (isConnected→isConnectedFun* 2 ΩB-connected)
-      (safUnit 1)
+      (saf-Unit 1)
 
     F0-Iso : Iso (typ (F 0)) (typ (Ω B))
     Iso.fun F0-Iso (tt* , p) = p
@@ -551,7 +551,7 @@ EMℤMod-saf n zero = safΩ→saf (isConnectedEM 1)
                     (transport (λ i → saf (EM≃ΩEM+1∙ {G = ℤMod (suc n)} 0 i))
                     (transport (λ i → saf (ua∙ {A = EM∙ (ℤMod (suc n)) 0}
                                                (ℤMod-finite n) refl (~ i)))
-                               (safFin (suc n) _)))
+                               (saf-Fin (suc n) _)))
 EMℤMod-saf n (suc m) =
   safΩ→saf (isConnectedSubtr 2 (1 + m)
                (transport (λ i → isConnected (+-comm 2 (1 + m) i)
@@ -562,7 +562,7 @@ EMℤMod-saf n (suc m) =
 
 EMℤ-saf : (m : ℕ) → saf {ℓ = ℓ-zero} (EM∙ ℤ (suc m))
 EMℤ-saf zero = transport (λ i → saf (EM₁ℤ (~ i)))
-                         (safSn 1)
+                         (saf-Sn 1)
 EMℤ-saf (suc m) =
   safΩ→saf (isConnectedSubtr 2 (1 + m)
                (transport (λ i → isConnected (+-comm 2 (1 + m) i)

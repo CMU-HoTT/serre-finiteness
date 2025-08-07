@@ -26,6 +26,7 @@ open import HomotopyGroups
 open import ConnectedCovers.GeneralisingFreudnthl
 open import ConnectedCovers.PointedEquivalences
 
+open import LastMinuteLemmas.SuspLemmas
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.LongExactSequence
 
