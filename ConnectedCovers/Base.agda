@@ -8,13 +8,14 @@ open import Cubical.Foundations.Equiv.Properties
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path
+open import Cubical.Foundations.Function
 
 open import Cubical.Data.Empty renaming (rec to rec⊥)
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Sigma
 
-open import Cubical.HITs.Truncation
+open import Cubical.HITs.Truncation as TR
 
 open import Cubical.Homotopy.Connected
 
@@ -31,8 +32,22 @@ private
   variable
     ℓ : Level
 
-postulate
-  truncIsConnected : (X : Pointed ℓ) (n : ℕ) → isConnectedFun n (trunc {X = X} n)
+-- This should be in library
+truncIsConnected : (X : Pointed ℓ) (n : ℕ) → isConnectedFun n (trunc {X = X} n)
+truncIsConnected X zero _ = tt* , λ _ → refl
+truncIsConnected X (suc n) =
+  TR.elim (λ _ → isProp→isOfHLevelSuc n isPropIsContr)
+    λ x → isOfHLevelRetractFromIso 0
+             (mapCompIso (Σ-cong-iso-snd λ w → PathIdTruncIso n))
+             (contrLem x n)
+  where
+  contrLem : (x : typ X) (n : ℕ) → isContr (∥ (Σ[ a ∈ fst X ] ∥ a ≡ x ∥ n) ∥ (suc n))
+  contrLem x n .fst = ∣ x , ∣ refl ∣ₕ ∣
+  contrLem x n .snd =
+    TR.elim (λ _ → isOfHLevelPath (suc n) (isOfHLevelTrunc (suc n)) _ _)
+      (uncurry λ a →
+        TR.elim (λ _ → isOfHLevelPath' n (isOfHLevelTrunc (suc n)) _ _)
+        (λ q → cong ∣_∣ₕ (ΣPathP (sym q , λ j → ∣ (λ i → q (~ j ∨ i)) ∣ₕ))))
 
 -- n+2 (or n, depending on the convention) connected cover
 _<_> : (X : Pointed ℓ) → ℕ → Pointed ℓ
