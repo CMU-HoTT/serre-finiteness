@@ -1,29 +1,29 @@
 {-# OPTIONS --lossy-unification #-}
---**** STOCKHOLM  ****
 module FPAbGroup where
 
-open import Everything
-
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
+
+open import Cubical.Algebra.Group
+open import Cubical.Algebra.Group.Morphisms
+open import Cubical.Algebra.Group.QuotientGroup
+open import Cubical.Algebra.Group.Subgroup
+open import Cubical.Algebra.Group.MorphismProperties
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
 open import Cubical.Algebra.AbGroup.Instances.Int
 open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to ℤMod)
 open import Cubical.Algebra.AbGroup.FinitePresentation
-open import Cubical.Algebra.Group
-open import Cubical.Algebra.Group.Morphisms
-open import Cubical.Data.Fin.Inductive
-open import Cubical.Data.Int using (+Comm)
-open import Cubical.Data.Nat
-open import Cubical.HITs.PropositionalTruncation
-open import Cubical.Algebra.Group.QuotientGroup
-open import Cubical.Algebra.Group.Subgroup
 open import Cubical.Algebra.AbGroup.Instances.IntMod
-open import Cubical.Algebra.Group.MorphismProperties
+
 open import Cubical.Data.List
+open import Cubical.Data.Fin.Inductive
 open import Cubical.Data.Fin as FinAlt using (isContrFin1)
+open import Cubical.Data.Nat
 open import Cubical.Data.Int
+
 open import Cubical.HITs.PropositionalTruncation as PT
 
 open import LastMinuteLemmas.Smith

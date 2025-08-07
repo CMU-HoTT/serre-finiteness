@@ -1,15 +1,13 @@
 {-# OPTIONS --lossy-unification #-}
 module SerreFinitenessTheorem where
 
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
-open import Everything
+
 open import Cubical.Homotopy.Connected
-
-
-private
-  variable
-    ℓ : Level
 
 open import SAF
 open import FPAbGroup
@@ -19,7 +17,11 @@ open import ConnectedCovers.EMIsFiber
 open import CorollariesToHurewicz
 open import CorollariesToGanea
 
-isFPId : (X : Pointed ℓ) (n : ℕ) → isFP (πAb n (X < (suc n) >)) ≡  isFP (πAb n X)
+private
+  variable
+    ℓ : Level
+
+isFPId : (X : Pointed ℓ) (n : ℕ) → isFP (πAb n (X < (suc n) >)) ≡ isFP (πAb n X)
 isFPId X n = λ i → isFP (πConnCovEq X n n ≤-refl i)
 
 mutual

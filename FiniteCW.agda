@@ -1,8 +1,12 @@
-
---**** STOCKHOLM ****
 module FiniteCW where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Univalence
 
 open import Cubical.Data.Nat
 open import Cubical.Data.Unit
@@ -31,10 +35,6 @@ open import Cubical.CW.Instances.Join renaming (isFinCWJoin to isFinCWJoin')
 open import Cubical.CW.Properties
 
 open import Cubical.Axiom.Choice
-
-
-
---open import FiberOrCofiberSequences.CofiberBase
 
 private
   variable

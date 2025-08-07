@@ -1,8 +1,15 @@
 {-# OPTIONS --lossy-unification #-}
 module ConnectedCovers.K-G-n-facts where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
 open import Cubical.Foundations.Pointed.Homogeneous
+open import Cubical.Foundations.HLevels
+open import Cubical.Foundations.Function
+open import Cubical.Foundations.GroupoidLaws
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Univalence
 
 open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.Group.Base
@@ -12,10 +19,12 @@ open import Cubical.Algebra.Group.Morphisms
 open import Cubical.Algebra.Group.MorphismProperties
 open import Cubical.Algebra.Monoid.Base
 open import Cubical.Algebra.Semigroup.Base
+
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Unit
 open import Cubical.Data.Sigma
+
 open import Cubical.HITs.EilenbergMacLane1 renaming (rec to recEM1)
 open import Cubical.HITs.SetTruncation
               renaming (rec to recSetTrunc ; elim to elimSetTrunc ;
@@ -24,6 +33,7 @@ open import Cubical.HITs.SetTruncation
 open import Cubical.HITs.Susp
 open import Cubical.HITs.Truncation
               renaming (rec to recTrunc ; elim to elimTrunc)
+
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.EilenbergMacLane.Base
               renaming (elim to elimEM)
@@ -310,7 +320,7 @@ GroupHomExt G H h k hyp =
 EM1UniversalPropertyAuxComp : (G : Group ℓ) (X : Pointed ℓ)
   → (hX : isOfHLevel 3 (typ X))
   → (h : fst G → fst (Ω X))
-  → IsGroupHom (G .snd) h (1TypHomGr X hX .snd) 
+  → IsGroupHom (G .snd) h (1TypHomGr X hX .snd)
   → (g k : fst G)
      → PathP (λ j → h g j ≡ h ((snd G GroupStr.· g) k) j) (λ _ → pt X) (h k)
 EM1UniversalPropertyAuxComp G X hX h
@@ -428,7 +438,7 @@ CharInvComp G X hX h =
                  (hf0 : isEquiv (mapSetTrunc f))
                  {b : B} (p : f a ≡ b)
               → isEquiv (fst (Ω→ {A = (A , a)} {B = (B , b)} (f , p)))
-              → isEquiv f                
+              → isEquiv f
 ΩEquiv→Equiv' {A = A} {B = B} {a = a} cA f hf0 p hfΩ =
   ΩEquiv→Equiv f hf0
     (λ a' → recTrunc (isPropIsEquiv _)
@@ -476,7 +486,7 @@ EM1UniversalPropertyInvPreservesEquiv G X hX cX =
                     (GroupHomEq'PreservesEquiv (πGr 0 X) (1TypHomGr X hX)
                                                (1TypHomGr≃πGr X hX) G)
                     (is2Conn→InvEM1UPAPreservesIsEquiv G X hX cX)
-  
+
 
 -- copied from Cubical.Algebra.Group.Instances.Unit with the universe level
 -- changed
@@ -728,7 +738,7 @@ KGnWhiteheadFun X n hX = fst (invEquiv (KGnUniversal (πAb n X) X n hX))
                                 → isConnected (suc (suc (suc k))) A
 3+h+1+kConn→3+kConn {A = A} h k hA =
   isConnectedSubtr (suc (suc (suc k))) (h + 1)
-  (transport (λ i → isConnected (3+h+1+k=h+1+3+k h k i) A) hA) 
+  (transport (λ i → isConnected (3+h+1+k=h+1+3+k h k i) A) hA)
 
 KGnWhthdFnHypTrLT : (X : Pointed ℓ) (n : ℕ)
   → isConnected (3 + n) (typ X) → (hX : isOfHLevel (4 + n) (typ X))
@@ -885,7 +895,7 @@ KGnWhthdFnHypTrGT X n hX k (suc h , p) =
                                   {A = typ ((Ω^ (1 + k))
                                             (EM∙ (πAb n X) (2 + n)))} (~ i)))
                   (inhProp→isContr
-                  ∣ pt ((Ω^ (1 + k)) (EM∙ (πAb n X) (2 + n))) ∣ₕ 
+                  ∣ pt ((Ω^ (1 + k)) (EM∙ (πAb n X) (2 + n))) ∣ₕ
                   (isOfHLevel→isOfHLevelTrunc
                    (typ ((Ω^ (1 + k)) (EM∙ (πAb n X) (2 + n)))) 2 1
                   (isOfHLevel→isPropΩ^ (EM∙ (πAb n X) (2 + n)) (1 + k)
@@ -946,4 +956,3 @@ EMUniqueness X n cX hX = sym (EMUniqueness' X n cX hX)
 EMAbGrpEq : (G G' : AbGroup ℓ) (n : ℕ) → AbGroupEquiv G G'
   → (EM∙ G n) ≡ (EM∙ G' n)
 EMAbGrpEq G G' n e = ua∙ (isoToEquiv (Iso→EMIso e n)) (Iso→EMIso∙ e n)
-

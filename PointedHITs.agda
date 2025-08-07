@@ -1,8 +1,8 @@
 module PointedHITs where
 
-open import Everything
+open import Cubical.Foundations.Prelude
+open import Cubical.Foundations.Pointed
 
-open import Cubical.HITs.Join
 open import Cubical.HITs.Susp
 open import Cubical.HITs.S1
 
@@ -11,9 +11,6 @@ private
     ℓ : Level
 
 -- Generalities
-
---join∙ : Pointed ℓ → Pointed ℓ → Pointed ℓ
---join∙ ( A , a ) ( B , b ) = ( join A B , inl a )
 
 -- Σ and Σ∙ are taken
 S∙ : Pointed ℓ → Pointed ℓ
