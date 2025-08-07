@@ -41,6 +41,46 @@ private
     ℓ : Level
 
 -- todo: is this needed?
+Susp^∙ : ℕ → Pointed ℓ → Pointed ℓ
+Susp^∙ n x .fst = Susp^ n (typ x)
+Susp^∙ zero x .snd = pt x
+Susp^∙ (suc n) x .snd = Susp^∙ n (Susp∙ (typ x)) .snd
+
+Susp^Fun : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B)
+  (n : ℕ) → Susp^ n A → Susp^ n B
+Susp^Fun f zero = f
+Susp^Fun f (suc n) = Susp^Fun (suspFun f) n
+
+Susp^Fun∙ : ∀ {ℓ ℓ'} {A : Pointed ℓ} {B : Pointed ℓ'} (f : A →∙ B)
+  (n : ℕ) → Susp^∙ n A →∙ Susp^∙ n B
+fst (Susp^Fun∙ f n) = Susp^Fun (fst f) n
+snd (Susp^Fun∙ f zero) = snd f
+snd (Susp^Fun∙ f (suc n)) = Susp^Fun∙ (suspFun∙ (fst f)) n .snd
+
+Susp^Equiv : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A ≃ B)
+  (n : ℕ) → Susp^ n A ≃ Susp^ n B
+Susp^Equiv f n .fst = Susp^Fun (fst f) n
+Susp^Equiv f zero .snd = snd f
+Susp^Equiv f (suc n) .snd =
+  Susp^Equiv (isoToEquiv (congSuspIso (equivToIso f))) n .snd
+
+Susp^Equiv∙ : {A B : Pointed ℓ} (n : ℕ)
+  → A ≃∙ B →  Susp^∙ n A ≃∙ Susp^∙ n B
+Susp^Equiv∙ n e .fst = Susp^Equiv (fst e) n
+Susp^Equiv∙ n e .snd = Susp^Fun∙ (≃∙map e) n .snd
+
+Susp^-comm-Iso : (n : ℕ) (X : Type ℓ)
+  → Iso (Susp^ (1 + n) X) (Susp (Susp^ n X))
+Susp^-comm-Iso zero X = idIso
+Susp^-comm-Iso (suc n) X = Susp^-comm-Iso n (Susp X)
+
+Susp^-comm-Equiv∙ : (n : ℕ) (X : Pointed ℓ)
+  → (Susp^∙ (1 + n) X) ≃∙ (Susp∙ (Susp^ n (typ X)))
+Susp^-comm-Equiv∙ n X .fst = isoToEquiv (Susp^-comm-Iso n (typ X))
+Susp^-comm-Equiv∙ zero X .snd = refl
+Susp^-comm-Equiv∙ (suc n) X .snd =
+  Susp^-comm-Equiv∙ n (Susp∙ (typ X)) .snd
+
 Susp^-comm : (n : ℕ) (X : Type ℓ) → Susp^ (1 + n) X
                                    ≡ Susp (Susp^ n X)
 Susp^-comm zero X = refl
