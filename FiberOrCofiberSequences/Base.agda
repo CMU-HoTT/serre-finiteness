@@ -32,6 +32,27 @@ private
   variable
     ℓ : Level
 
+transportPathLemmaLeft : {A : Type ℓ} {a b c : A} (p : b ≡ a) (q : b ≡ c)
+  → transport (λ i → p i ≡ c) q ≡ (p ⁻¹) ∙ q
+transportPathLemmaLeft {b = b} {c = c} =
+  J (λ a p → (q : b ≡ c) → transport (λ i → p i ≡ c) q ≡ (p ⁻¹) ∙ q)
+    (λ q → fromPathP (lUnit q ∙ cong (_∙ q) symRefl))
+
+
+fiber∙ : {A B : Pointed ℓ} → (A →∙ B) → Pointed ℓ
+fiber∙ {A = A} {B = B} f = fiber (fst f) (pt B) , (pt A) , (snd f)
+
+fiberMap∙ : {A B : Pointed ℓ} (f : A →∙ B) → (fiber∙ f →∙ A)
+fiberMap∙ {A = A} {B = B} f = fst , refl
+
+fiberMapCompEq : {A B : Pointed ℓ} (f : A →∙ B)
+  → f ∘∙ (fiberMap∙ f) ≡ (const∙ (fiber∙ f) B)
+fiberMapCompEq f =
+  ΣPathP ((funExt (λ x → snd x))
+         , (toPathP (transportPathLemmaLeft (snd f)
+                     (cong (fst f) refl ∙ snd f) ∙ cong (snd f ⁻¹ ∙_)
+                     (lUnit _ ⁻¹) ∙ lCancel _)))
+
 -- fits better w/ singletons
 fiber' : {A B : Type ℓ} → (A → B) → B → Type ℓ
 fiber' {A = A} f a = Σ[ x ∈ A ] f x ≡ a
@@ -48,12 +69,6 @@ transportPathLemmaRight : {A : Type ℓ} {a b c : A} (p : b ≡ c) (q : a ≡ b)
 transportPathLemmaRight {a = a} {b = b} =
   J (λ c p → ∀ (q : a ≡ b) → transport (λ i → a ≡ (p i)) q ≡ q ∙ p)
     λ q → fromPathP (rUnit q)
-
-transportPathLemmaLeft : {A : Type ℓ} {a b c : A} (p : b ≡ a) (q : b ≡ c)
-  → transport (λ i → p i ≡ c) q ≡ (p ⁻¹) ∙ q
-transportPathLemmaLeft {b = b} {c = c} =
-  J (λ a p → (q : b ≡ c) → transport (λ i → p i ≡ c) q ≡ (p ⁻¹) ∙ q)
-    (λ q → fromPathP (lUnit q ∙ cong (_∙ q) symRefl))
 
 transportFunPathLemma'' : {A : Type ℓ} (a a' : A) (p : a ≡ a')
   → transp (λ i → p (~ i) ≡ a') i0 refl ≡ p
@@ -109,12 +124,7 @@ record FiberSeq (A B C : Pointed ℓ) : Type (ℓ-suc ℓ) where
   field
     incl : A →∙ B
     proj : B →∙ C
-    compEq : proj ∘∙ incl ≡ const∙ _ _
-
-  open isPullback (fst proj) (fst (const∙ (Unit*∙) C)) (fst incl)
-                  (fst (const∙ A _)) (λ i → (fst (compEq i)))
-  field
-    universalProperty : isPullback
+    eqFib : (A , incl) ≡ (fiber∙ proj , fiberMap∙ proj)
 
 --projections from a fiber sequence (projections from a cofiber sequence will
 --also need to be defined
@@ -126,10 +136,6 @@ FiberSeqTotal {B = B} F = B
 
 FiberSeqFiber : {A B C : Pointed ℓ} → FiberSeq A B C → Pointed ℓ
 FiberSeqFiber {A = A} F = A
-
-fiber∙ : {A B : Pointed ℓ} → (A →∙ B) → Pointed ℓ
-fiber∙ {A = A} {B = B} f = fiber (fst f) (pt B) , (pt A) , (snd f)
-
 
 module _ {A B : Pointed ℓ} (f : A →∙ B) where
   open isPullback (fst f) (fst (const∙ Unit*∙ B)) {P = typ (fiber∙ f)}
@@ -146,7 +152,8 @@ FiberFiberSeq : {A B : Pointed ℓ} (f : A →∙ B)
   → FiberSeq (fiber∙ f) A B
 FiberSeq.incl (FiberFiberSeq f) = fst , refl
 FiberSeq.proj (FiberFiberSeq f) = f
-FiberSeq.compEq (FiberFiberSeq {B = B} f) =
+FiberSeq.eqFib (FiberFiberSeq f) = refl
+{-FiberSeq.compEq (FiberFiberSeq {B = B} f) =
   ΣPathP ((funExt (λ x → snd x))
   , (toPathP
      (transportPathLemmaLeft (snd f) (refl ∙ (snd f))
@@ -167,9 +174,7 @@ isPullback.isPullback.comparisonIsEquiv
     Iso.fun γ = pullbackComparison E
     Iso.inv γ = fst (isoUnivProperty f E)
     Iso.rightInv γ = fst (snd (isoUnivProperty f E))
-    Iso.leftInv γ = snd (snd (isoUnivProperty f E))
-
-
+    Iso.leftInv γ = snd (snd (isoUnivProperty f E))-}
 
 FiberSeqIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
   → (FiberSeqFiber F →∙ FiberSeqTotal F)
@@ -181,11 +186,6 @@ FiberSeqProj : {A B C : Pointed ℓ} (F : FiberSeq A B C)
 FiberSeqProj = FiberSeq.proj
 
 
-FiberSeqCompEq : {A B C : Pointed ℓ} (F : FiberSeq A B C)
-  → (FiberSeqProj F ∘∙ FiberSeqIncl F) ≡ const∙ _ _
-FiberSeqCompEq = FiberSeq.compEq
-
--- fibers for a fixed projection form a proposition
 postulate
   EqOfEqFiberSeqProj' : {A B C D E : Pointed ℓ} (F : FiberSeq A B C)
     → (G : FiberSeq A D E)
@@ -193,6 +193,10 @@ postulate
     → transport (λ i → FiberSeq A (fst (p i)) (fst (snd (p i)))) F
      ≡ G
 
+postulate
+  FiberSeqCompEq : {A B C : Pointed ℓ} (F : FiberSeq A B C)
+    → (FiberSeqProj F ∘∙ FiberSeqIncl F) ≡ const∙ _ _
+--FiberSeqCompEq {C = C} F = {!!}
 
 EqOfEqFiberSeqProj : {A B C : Pointed ℓ} (F G : FiberSeq A B C)
   → (FiberSeqProj F) ≡ (FiberSeqProj G) → F ≡ G
