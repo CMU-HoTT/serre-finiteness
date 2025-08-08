@@ -8,6 +8,8 @@ open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.GroupoidLaws
 open import Cubical.Foundations.HLevels
 open import Cubical.Foundations.Path
+open import Cubical.Foundations.Transport
+open import Cubical.Foundations.Univalence
 
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
@@ -18,28 +20,39 @@ open import Cubical.Data.Nat.Order
 open import Cubical.Data.Fin.Inductive
 open import Cubical.Data.Sigma
 
-open import Cubical.CW.Base
-
 open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.EilenbergMacLane.Base
 
 open import Cubical.HITs.S1
 open import Cubical.HITs.EilenbergMacLane1 as EM1
 open import Cubical.HITs.Join
+open import Cubical.HITs.SmashProduct
+open import Cubical.HITs.Wedge
+open import Cubical.HITs.Pushout
+open import Cubical.HITs.Susp
+open import Cubical.HITs.Susp.SuspProduct
+open import Cubical.HITs.Sn hiding (S)
 open import Cubical.HITs.Truncation as TR
 open import Cubical.HITs.PropositionalTruncation as PT
-open import Cubical.HITs.Susp
-open import Cubical.HITs.Sn hiding (S)
 
-open import Connectedness
+open import Cubical.CW.Base
+open import Cubical.CW.Instances.Lift
+open import Cubical.CW.Instances.Sn
+
 open import FiniteCW
 open import PointedHITs
 open import FPAbGroup
 open import HomotopyGroups
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
+open import Connectedness
 
 open import LastMinuteLemmas.EM
+open import LastMinuteLemmas.ConnectedLemmas
+open import LastMinuteLemmas.SmashLemmas
+open import LastMinuteLemmas.CWLemmas
+open import LastMinuteLemmas.SuspLemmas
+
 
 private
   variable
@@ -49,17 +62,11 @@ private
 
 -- probably this is defined elsewhere
 Susp→^ : {X Y : Type ℓ} (n : ℕ) (f : X → Y) → Susp^ n X → Susp^ n Y
-Susp→^ zero f = f
-Susp→^ (suc n) f = Susp→^ n (suspFun f)
+Susp→^ n f = Susp^Fun f n
 
 Susp→^-conn : {X Y : Type ℓ} (n m : ℕ) (f : X → Y) → isConnectedFun m f
             → isConnectedFun (n + m) (Susp→^ n f)
-Susp→^-conn zero m f con = con
-Susp→^-conn (suc n) m f con =
-  subst (λ k → isConnectedFun k (Susp→^ n (suspFun f)))
-        (+-suc n m)
-        (Susp→^-conn n (suc m) (suspFun f)
-          (isConnectedSuspFun f m con))
+Susp→^-conn n m f cf = isConnectedSusp^Fun f m n cf
 
 isConnectedPoint* : ∀ (n : HLevel) {A : Type ℓ}
   → isConnected (suc n) A
@@ -124,6 +131,13 @@ isConnectedTrnspConnected {X = X} {n = n} p f conf  =
 -- spheres with arbitrary universe level?
 S : ℕ → Pointed ℓ
 S {ℓ = ℓ} n = S₊∙ n ×∙ (Unit* {ℓ} , tt*)
+
+isFinCWS : (n : ℕ) → isFinCW (S {ℓ} n .fst)
+isFinCWS n = subst isFinCW (isoToPath lem)
+             (snd (finCWLift _ (_ , isFinCWSn)))
+  where
+  lem : Iso (Lift (S₊ n)) (S n .fst)
+  lem = compIso (invIso LiftIso) (invIso rUnit*×Iso)
 
 -- `nFinite n X` corresponds to "X is (n-1)-finite" on paper,
 -- because `isConnectedFun n f` corresponds to "f is (n-2)-connected".
@@ -227,8 +241,12 @@ cofNFinite {ℓ} {n} CS hX hY =
               (transport (λ i → nFinite n (typ (CofiberSeqDom-Id {S = CS} (~ i)))) hX)
               (transport (λ i → nFinite (1 + n) (typ (CofiberSeqExt-Id {S = CS} (~ i)))) hY))
 
-postulate
-  susp-nFinite : {X : Type ℓ} (n : ℕ) → nFinite n X → nFinite (suc n) (Susp X)
+susp-nFinite : {X : Type ℓ} (n : ℕ) → nFinite n X → nFinite (suc n) (Susp X)
+susp-nFinite {X = X} n = PT.map
+  λ {(X , w , q)
+  → (Susp (fst X)
+  , isFinCWSusp {n = 1} (fst X) (snd X))
+  , (suspFun w , isConnectedSuspFun w n q)}
 
 -- If X is (n-1)-finite and f : X -> Y is (n-2)-connected then Y is (n-1)-finite.
 nFiniteApprox :  {X Y : Type ℓ} (f : X → Y)
@@ -331,14 +349,14 @@ isFinCW→saf {ℓ = ℓ }{X = X} hX =
     → isEquiv (transport (λ i → snd p i → typ X) (λ x → x))
   lem p = isEquivTrnspId (snd p)
 
-postulate
-  safFin : ∀ n (b : Fin n) → saf (Fin n , b)
+saf-Fin : ∀ n (b : Fin n) → saf (Fin n , b)
+saf-Fin n b = isFinCW→saf {X = _ , b} (isFinCWFin n)
 
-postulate
-  safUnit : saf {ℓ} (Unit* , tt*)
+saf-Unit : saf {ℓ} (Unit* , tt*)
+saf-Unit = isFinCW→saf {X = _ , tt*} isFinCWUnit
 
-postulate
-  safSn : ∀ n → saf (S {ℓ} n)
+saf-Sn : ∀ n → saf (S {ℓ} n)
+saf-Sn n = isFinCW→saf {X = _ , (ptSn n) , tt*} (isFinCWS n)
 
 EM₁ℤ : (EM∙ {ℓ-zero} ℤ 1) ≡ S 1
 EM₁ℤ = sym (ua∙ (isoToEquiv (compIso rUnit*×Iso S¹≅EM)) refl)
@@ -387,15 +405,30 @@ stablyNFiniteOfSusp n A = PT.rec (stablyNFinite-isProp {X = A})
                                                          (fst (snd x)))
                                   (snd (snd x)) ∣₁) (snd p) ∣₁
 
-postulate
-  susp-stablyNFinite : (n : HLevel) (A : Pointed ℓ)
-    → stablyNFinite n A → stablyNFinite (suc n) (S∙ A)
+susp-stablyNFinite : (n : HLevel) (A : Pointed ℓ)
+  → stablyNFinite n A → stablyNFinite (suc n) (S∙ A)
+susp-stablyNFinite n A = PT.rec squash₁
+  (uncurry λ m → PT.rec squash₁
+    (uncurry λ X → uncurry λ f c
+      → ∣ (m , ∣ ((_ , isFinCWSusp {n = 1}
+        (fst X) (snd X))
+        , transport (p m) ∘ suspFun f
+        , isConnectedComp (transport (p m))
+           (suspFun f) (m + suc n)
+           (isEquiv→isConnected _
+             (isEquivTransport (p m)) _)
+           (subst (λ k → isConnectedFun k (suspFun f))
+                  (sym (+-suc m n))
+                  (isConnectedSuspFun f _ c))) ∣₁) ∣₁))
+  where
+  p : (m : _) → _ ≡ _
+  p m = cong Susp (sym (Susp^'≡Susp^ m))
+      ∙ Susp^'≡Susp^ (suc m)
 
 -- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
 postulate
   stablyNFiniteExtension : {n : HLevel} {A B C : Pointed ℓ} (S : CofiberSeq A B C)
       → stablyNFinite n A → stablyNFinite n C → stablyNFinite n B
---stablyNFiniteExtension Co hA hC = {!!}
 
 postulate
   safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
@@ -418,15 +451,246 @@ joinSuspTrick X₁ X₂ (suc M₁) M₂ =
   ∙ joinSuspTrick (Susp∙ (X₁ .fst)) X₂ M₁ M₂
   ∙ cong₂ join refl refl
 
-postulate
-  -- TODO: Maybe make more universe polymorphic?
-  saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
+saf⋀ : {A B : Pointed ℓ} → saf A → saf B → saf (A ⋀∙ B)
+saf⋀ {ℓ = ℓ} {A = A} {B = B} sA sB m =
+  PT.rec2 squash₁
+    (uncurry (λ nA → PT.rec (isPropΠ (λ _ → squash₁))
+      λ {(XA , f , cf)
+      → uncurry (λ nB → PT.rec squash₁
+      λ{(XB , g , cg)
+        → main m nA nB XA XB f g
+              (subst (λ k → isConnectedFun k f) (+-comm nA m) cf)
+              (subst (λ k → isConnectedFun k g) (+-comm nB m) cg)})}))
+    (sA m) (sB m)
+  where
+  main : (m nA nB : ℕ) (XA XB : FinCW ℓ)
+    (f : fst XA → Susp^ nA (typ A))
+    (g : fst XB → Susp^ nB (typ B))
+    (cf : isConnectedFun (m + nA) f)
+    (cg : isConnectedFun (m + nB) g)
+    → stablyNFinite m (A ⋀∙ B)
+  main zero nA nB XA XB f g cf cg =
+    ∣ 0 , ∣ (_ , isFinCWUnit)
+        , ((λ _ → inl tt) , (λ b → tt* , λ _ → refl)) ∣₁ ∣₁
+  main (suc m) nA nB XA XB f g cf cg =
+    TR.rec (isProp→isOfHLevelSuc (m + nA) squash₁)
+      (λ {(x , xId)
+      → TR.rec (isProp→isOfHLevelSuc (m + nB) squash₁)
+        (λ {(y , yId) → ∣ ((nA + nB) , ∣
+          ((((fst XA , x)) ⋀ ((fst XB , y))
+          , isFinCW⋀ ((snd XA)) (snd XB))
+          , (invEq (fst (Susp^⋀≃∙⋀Susp^ A B nA nB))
+          ∘ ((f , xId) ⋀→ (g , yId)))
+          , isConnectedComp
+               (invEq (fst (Susp^⋀≃∙⋀Susp^ A B nA nB)))
+               ((f , xId) ⋀→ (g , yId))
+            (nA + nB + suc m)
+            (isEquiv→isConnected _
+              (snd (invEquiv (fst (Susp^⋀≃∙⋀Susp^ A B nA nB)))) _)
+            (subst (λ k → isConnectedFun k ((f , xId) ⋀→ (g , yId)))
+              (cong₂ min
+                (cong (nB +_) (+-comm (suc m) nA)
+                ∙ +-assoc nB nA (suc m)
+                ∙ cong (_+ suc m) (+-comm nB nA))
+                (cong (nA +_) (+-comm (suc m) nB)
+                ∙ +-assoc nA nB (suc m)) ∙ min-diag (nA + nB + suc m))
+              (isConnected⋀→ (suc (m + nA)) (suc (m + nB)) (suc nB) (suc nA)
+                conXB conSuspXA (f , xId) (g , yId) cf cg))) ∣₁) ∣₁})
+        (cg (Susp∙^ nB B .snd) .fst)})
+      (cf (Susp∙^ nA A .snd) .fst)
+        where
+        conSuspXA : isConnected (suc nA) (Susp^ nA (typ A))
+        conSuspXA = subst (λ r → isConnected r (Susp^ nA (typ A)))
+                     (+-comm nA 1)
+                     (isConnectedSusp^ (suc zero) nA
+                       (∣ pt A ∣ , (isOfHLevelTrunc 1 ∣ (pt A) ∣)))
+
+        conXB : isConnected (suc nB) (fst XB)
+        conXB = isConnectedCodomain (suc nB) m g
+                   (subst (λ r → isConnected r (Susp^ nB (typ B)))
+                     (+-comm nB 1)
+                     (isConnectedSusp^ (suc zero) nB
+                       (∣ pt B ∣ , (isOfHLevelTrunc 1 ∣ (pt B) ∣))))
+                       (subst (λ k → isConnectedFun k g) (sym (+-suc m nB)) cg)
+
+saf⋁ : {A B : Pointed ℓ} → saf A → saf B → saf (A ⋁∙ₗ B)
+saf⋁ {ℓ = ℓ} {A} {B} sA sB zero = PT.rec2 squash₁
+  (uncurry λ nA → PT.rec (isPropΠ (λ _ → squash₁))
+    λ {(XA , f , cf) → uncurry λ nB → PT.rec squash₁
+    λ {(XB , g , cg) → ∣ 0 , ∣ ((_ , isFinCWUnit) , ((λ _ → inl (pt A))
+    , λ b → tt* , (λ _ → refl))) ∣₁ ∣₁}})
+  (sA zero) (sB zero)
+saf⋁ {ℓ = ℓ} {A} {B} sA sB (suc m) = PT.rec2 squash₁
+  (uncurry (λ nA → PT.rec (isPropΠ λ _ → squash₁)
+    λ {(XA , f , cf) → uncurry λ nB →
+      PT.rec squash₁ λ {(XB , g , cg)
+      → TR.rec (isProp→isOfHLevelSuc (nA + m) squash₁)
+        (λ {(x , px) →
+        TR.rec (isProp→isOfHLevelSuc (nB + m) squash₁)
+          (λ {(y , py) →
+          ∣ d nA nB XA XB f g cf cg x y px py
+          , main nA nB XA XB f g cf cg x y px py ∣₁})
+          (subst (λ k → isConnectedFun k g)
+               (+-suc nB m) cg
+               (Susp∙^ nB B .snd) .fst)})
+        (subst (λ k → isConnectedFun k f)
+               (+-suc nA m) cf
+               (Susp∙^ nA A .snd) .fst)}}))
+  (sA (suc m)) (sB (suc m))
+  where
+  module _ (nA nB : ℕ) (XA XB : FinCW ℓ)
+    (f : fst XA → Susp^ nA (typ A))
+    (g : fst XB → Susp^ nB (typ B))
+    (cf : isConnectedFun (nA + suc m) f)
+    (cg : isConnectedFun (nB + suc m) g)
+    (x : fst XA) (y : fst XB)
+    (fp : f x ≡ Susp∙^ nA A .snd) (gp : g y ≡ Susp∙^ nB B .snd)
+    where
+    ma = max nA nB
+    mi = min nA nB
+
+    P : FinCW ℓ
+    fst P = Susp∙^ nB (fst XA , x) ⋁ Susp∙^ nA (fst XB , y)
+    snd P = isFinCW⋁ {A = Susp∙^ nB (fst XA , x)}
+                     {B = Susp∙^ nA (fst XB , y)}
+                     (isFinCWSusp {n = nB} (fst XA) (snd XA))
+                     (isFinCWSusp {n = nA} (fst XB) (snd XB))
+
+    d : ℕ
+    d = nA + nB
+
+    Susp^+Iso : ∀ {ℓ} {A : Type ℓ} (n m : ℕ)
+      → Iso (Susp^ n (Susp^ m A)) (Susp^ (n + m) A)
+    Susp^+Iso zero m = idIso
+    Susp^+Iso (suc n) m =
+      compIso
+        (invIso (equivToIso (Susp^Equiv (isoToEquiv (Susp^-comm-Iso m _)) n)))
+        (Susp^+Iso n m)
+
+    Susp^+Iso∙ : ∀ {ℓ} (A : Pointed ℓ) (n m : ℕ)
+      → Iso.fun (Susp^+Iso {A = typ A} n m) (Susp∙^ n (Susp∙^ m A) .snd)
+      ≡ snd (Susp∙^ (n + m) A)
+    Susp^+Iso∙ A zero m = refl
+    Susp^+Iso∙ A (suc n) m =
+        cong (Iso.fun (Susp^+Iso n m))
+             (invEquiv∙ (Susp^Equiv∙ n
+               (isoToEquiv (Susp^-comm-Iso m (typ A))
+               , Susp^-comm-Equiv∙ m A .snd)) .snd)
+      ∙ Susp^+Iso∙ (_ , north) n m
+
+    f* : Σ[ f' ∈ (Susp^ nB (fst XA) → Susp^ (nA + nB) (typ A)) ]
+           (isConnectedFun (suc (nA + nB + m)) f')
+    f* = _
+      , isConnectedComp _ (Susp^Fun f nB)
+         (suc (nA + nB + m))
+         (isEquiv→isConnected _
+           ((isoToEquiv (Susp^+Iso nB nA)
+            ∙ₑ substEquiv (λ k → Susp^ k (fst A)) (+-comm nB nA)) .snd) _)
+         (subst (λ k → isConnectedFun k (Susp^Fun f nB))
+                (+-comm nB (nA + suc m)
+              ∙ sym (+-assoc nA (suc m) nB)
+              ∙ +-suc nA (m + nB)
+              ∙ cong suc (cong (nA +_) (+-comm m nB)
+              ∙ +-assoc nA nB m))
+                (isConnectedSusp^Fun f _ nB cf))
+
+    g* : Σ[ g' ∈ (Susp^ nA (fst XB) → Susp^ (nA + nB) (typ B)) ]
+           (isConnectedFun (suc (nA + nB + m)) g')
+    g* = _
+      , isConnectedComp _ (Susp^Fun g nA)
+         (suc (nA + nB + m))
+         (isEquiv→isConnected _ ((isoToIsEquiv (Susp^+Iso nA nB))) _)
+         (subst (λ k → isConnectedFun k (Susp^Fun g nA))
+                (cong (nA +_) (+-suc nB m)
+                ∙ +-suc nA (nB + m)
+                ∙ +-assoc (suc nA) nB m )
+                (isConnectedSusp^Fun g _ nA cg))
+
+    e : (Susp∙^ d A ⋁ Susp∙^ d B) ≃ Susp^ d (typ (A ⋁∙ₗ B))
+    e = invEquiv (fst (⋁Susp^≃∙Susp^⋁ A B d))
+
+    t : Σ[ f ∈ (decodeFinCW P → Susp∙^ d A ⋁ Susp∙^ d B) ]
+         (isConnectedFun (suc (d + m)) f)
+    t = _ , isConnectedPushout→
+             (λ _ → Susp∙^ nB (fst XA , x) .snd)
+             (λ _ → Susp∙^ nA (fst XB , y) .snd)
+             (λ _ → Susp∙^ d A .snd)
+             (λ _ → Susp∙^ d B .snd)
+             (λ _ → tt) (fst f*) (fst g*)
+             (funExt (λ x → cong (subst (λ k → Susp^ k (fst A)) (+-comm nB nA))
+               (cong (Iso.fun (Susp^+Iso nB nA)) (Susp^Fun∙ (f , fp) nB .snd)
+               ∙ Susp^+Iso∙ A nB nA)
+               ∙ λ j → transp (λ i → Susp^ (+-comm nB nA (i ∨ j)) (fst A))
+                               j (snd (Susp∙^ (+-comm nB nA j) A))))
+             (funExt (λ x →
+                 cong (Iso.fun (Susp^+Iso nA nB)) (Susp^Fun∙ (g , gp) nA .snd)
+               ∙ Susp^+Iso∙ B nA nB))
+               (d + m)
+             (isEquiv→isConnected _ (idIsEquiv _) _)
+             (f* .snd) (g* .snd)
+
+    main : nFinite (d + suc m) (Susp^ d (typ (A ⋁∙ₗ B)))
+    main = ∣ (P , (fst e ∘ fst t
+           , isConnectedComp (fst e) (fst t)
+             (d + suc m)
+             (isEquiv→isConnected _ (snd e) _)
+             (subst (λ k → isConnectedFun k (fst t))
+                    (sym (+-suc d m)) (snd t)))) ∣₁
+
+safSusp : {A : Pointed ℓ} → saf A → saf (Susp∙ (typ A))
+safSusp {A = A} sA m =
+  PT.rec squash₁
+    (uncurry (λ n → PT.map
+      λ {(X , f , cf) → n , ∣ ((_ , isFinCWSusp {n = 1} _ (snd X) )
+        , ((transport (sym (Susp^-comm n (typ A))) ∘ suspFun f)
+        , isConnectedComp
+          (transport (sym (Susp^-comm n (typ A))))
+          (suspFun f) (n + m)
+          (isEquiv→isConnected _
+            (isEquivTransport (sym (Susp^-comm n (typ A)))) (n + m))
+          λ b → isConnectedSubtr (n + m) 1 (isConnectedSuspFun _ _ cf b ))) ∣₁}))
+          (sA m)
+
+isNFinite↓ : {A : Pointed ℓ} (n : ℕ)
+  → stablyNFinite (suc n) (Susp∙ (typ A)) → stablyNFinite n A
+isNFinite↓ {A = A} n = PT.rec squash₁
+  (uncurry λ m → PT.map
+    λ {(XA , f , cf) → (suc m) , ∣ XA
+      , (f , subst (λ k → isConnectedFun k f) (+-suc m n) cf) ∣₁})
+
+-- TODO: Maybe make more universe polymorphic?
+saf× : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
+saf× {ℓ = ℓ} {A} {B} sA sB m =
+  TR.rec squash₁ (λ p →
+    isNFinite↓ {A = _ , pt A , pt B} m
+      (subst (stablyNFinite (suc m))
+             (sym (ua∙ {A = Susp∙ (typ A × typ B)}
+                  (invEquiv SuspProduct^') p))
+             (safSusp {A = _ , inl (inl (pt A))}
+               (saf⋁ {A = _ , inl (pt A)} {B = _ , inl tt}
+                 (saf⋁ {A = A} {B = B} sA sB) (saf⋀ sA sB)) (suc m))))
+  (isConnectedPath _ (isConnectedSusp 1 (∣ inl (inl (pt A)) ∣
+    , (λ _ → isOfHLevelTrunc 1 _ _)))
+    (fst (invEquiv SuspProduct^') north) north .fst)
+  where
+  SuspProduct^' : (Susp ((A ⋁∙ₗ B) ⋁ (A ⋀∙ B)))
+                ≃ Susp (typ A × typ B)
+  SuspProduct^' =
+    compEquiv (isoToEquiv
+      (compIso Iso-⋁Susp-Susp⋁
+        (⋁Iso (isoToEquiv Iso-⋁Susp-Susp⋁ , refl)
+              (idEquiv∙ _))))
+        (SuspProduct A B)
 
 safS1× : {A : Pointed ℓ} → saf A → saf ((S {ℓ} 1) ×∙ A)
-safS1× {ℓ} {A} safA = saf× {A = S {ℓ} 1} {B = A} (safSn 1) safA
+safS1× {ℓ} {A} safA = saf× {A = S {ℓ} 1} {B = A} (saf-Sn 1) safA
 
-postulate
-  safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
+safS¹× : {A : Pointed ℓ} → saf A → saf (S¹∙ ×∙ A)
+safS¹× {ℓ = ℓ} {A = A} sA =
+  subst saf lem (safS1× {A = A} sA)
+  where
+  lem : ((S {ℓ} 1) ×∙ A) ≡ S¹∙ ×∙ A
+  lem = ua∙ (Σ-cong-equiv-fst (isoToEquiv rUnit*×Iso)) refl
 
 stablyNFiniteJoin'-alt : {X₁ X₂ : Pointed ℓ} (m₁ m₂ n₂ : HLevel)
   (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite' 1 X₁)

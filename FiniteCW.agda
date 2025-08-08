@@ -41,18 +41,6 @@ private
     ℓ : Level
 
 -- todo: is this needed?
-Susp^-comm : (n : ℕ) (X : Type ℓ) → Susp^ (1 + n) X
-                                   ≡ Susp (Susp^ n X)
-Susp^-comm zero X = refl
-Susp^-comm (suc n) X = Susp^-comm n (Susp X)
-
-Susp^-conn : (m n : ℕ) (X : Type ℓ) → isConnected m X
-             → isConnected (n + m) (Susp^ n X)
-Susp^-conn m zero X hX = hX
-Susp^-conn m (suc n) X hX =
-  transport (λ i → isConnected (+-suc n m i) (Susp^ (suc n) X))
-             (Susp^-conn (suc m) n (Susp X) (isConnectedSusp m hX))
-
   -- The type of "finite CW complex structures".
   -- We need to expose this separately from `isFinCW`
   -- if we want to define e.g. `nFinite n X` as a *small* proposition.

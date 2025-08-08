@@ -34,6 +34,8 @@ open import Cubical.Homotopy.Loopspace
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.WhiteheadsLemma
 
+open import LastMinuteLemmas.SuspLemmas
+
 private
   variable
     ℓ : Level
@@ -137,13 +139,10 @@ FromSuspToΩ=∘∙ : (A B : Pointed ℓ) (f : Susp∙ (typ A) →∙ B)
   → (fromSusp→toΩ f) ≡ (Ω→ f) ∘∙ (toSuspPointed A)
 FromSuspToΩ=∘∙ A B f = refl
 
-Susp∙^ : (n : ℕ) → Pointed ℓ → Pointed ℓ
-Susp∙^ zero A = A
-Susp∙^ (suc n) A = Susp∙^ n (Susp∙ (typ A))
-
 ^Susp∙ : (n : ℕ) → Pointed ℓ → Pointed ℓ
-^Susp∙ zero A = A
-^Susp∙ (suc n) A = Susp∙ (typ (^Susp∙ n A))
+^Susp∙ n A .fst = Susp^' n (typ A)
+^Susp∙ zero A .snd = pt A
+^Susp∙ (suc n) A .snd = north
 
 Susp∙^Comm : (A : Pointed ℓ) (n : ℕ)
   → Susp∙^ (1 + n) A ≡ Susp∙ (typ (Susp∙^ n A))
@@ -217,18 +216,6 @@ SuspUnitFun≡ A = ΣPathP (SuspUnit≡∙ , (SuspFunUnit A))
                  → ((b : fst (SuspUnit≡∙ (~ i))) → A b)
                   ≃ A (snd (SuspUnit≡∙ (~ i))))
             ΠUnit
-
-{-isConnectedSusp : (A : Type ℓ) (n : ℕ) → isConnected n A
-  → isConnected (1 + n) (Susp A)
-isConnectedSusp A n cA =
-  transport ((ua (ΠSuspUnit _)
-            ∙ λ i → isConnected (1 + n) (fiber (snd (SuspUnitFun≡ A i))
-                                               (snd (fst (SuspUnitFun≡ A i)))))
-            ∙ cong (isConnected (1 + n)) (ua (isoToEquiv fiberUnitIso)))
-            (isConnectedSuspFun (λ (a : A) → tt) n
-              (transport
-              (cong (isConnected n) (sym (ua (isoToEquiv fiberUnitIso)))
-              ∙ sym (ua (ΠUnit _))) cA))-}
 
 +∸' : (m n : ℕ) → (m < n) → m + (n ∸ m) ≡ n
 +∸' m n (zero , p) =
