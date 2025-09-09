@@ -1,3 +1,4 @@
+{-# OPTIONS --lossy-unification #-}
 module FiberOrCofiberSequences.ChainOfFibers where
 
 open import Cubical.Foundations.Prelude

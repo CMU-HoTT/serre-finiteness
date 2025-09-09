@@ -121,8 +121,6 @@ module _ (F G : Pointed ℓ) where
                                (join∙^-SNFnt n k (hF k) cG
                                                     (hG (suc k)))
 
-
--- sillyy
 isConnected→mere-path : {X : Type ℓ} → isConnected 3 X
                                   → (x y : X)
                                   → ∥ x ≡ y ∥ 1

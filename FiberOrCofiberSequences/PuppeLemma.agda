@@ -20,75 +20,37 @@ private
   variable
     ℓ : Level
 
-puppeTotalIso2 : (B C : Pointed ℓ) (f : B →∙ C) →
-  Iso (typ (fiber∙ (inclOfFiberFiberSeq f)))
-      (Σ[ b ∈ (typ B) ] ((fst f) b ≡ pt C) × (b ≡ pt B))
-Iso.fun (puppeTotalIso2 B C f) ((b , p) , q) = b , (p , q)
-Iso.inv (puppeTotalIso2 B C f) (b , (p , q)) = (b , p) , q
-Iso.rightInv (puppeTotalIso2 B C f) tr = refl
-Iso.leftInv (puppeTotalIso2 B C f) tr = refl
+∙IsoOnLeft : {A : Type ℓ} {a b c : A} (p : a ≡ b) → Iso (b ≡ c) (a ≡ c)
+Iso.fun (∙IsoOnLeft p) = p ∙_
+Iso.inv (∙IsoOnLeft p) = (sym p) ∙_
+Iso.rightInv (∙IsoOnLeft p) q =
+  assoc p (sym p) q ∙ cong (_∙ q) (rCancel p) ∙ lUnit q ⁻¹
+Iso.leftInv (∙IsoOnLeft p) q =
+  assoc (sym p) p q ∙ cong (_∙ q) (lCancel p) ∙ lUnit q ⁻¹
 
--- needs tidying up
--- try making this a ≡⟨ ⟩ type thing!
-puppeTotalIso1 : (B C : Pointed ℓ) (f : B →∙ C) →
-  Iso (Σ[ b ∈ (typ B) ] ((fst f) b ≡ pt C) × (b ≡ pt B)) (typ (Ω C))
-Iso.fun (puppeTotalIso1 B C f) (b , (p , q)) =
-  sym (snd f) ∙ cong (fst f) (sym q) ∙ p
-Iso.inv (puppeTotalIso1 B C f) p = (pt B) , (((snd f) ∙ p) , refl)
-Iso.rightInv (puppeTotalIso1 B C f) p =
-  cong
-  ( sym (snd f) ∙_)
-  ( lUnit _ ⁻¹)
-  ∙ assoc
-    ( sym (snd f))
-    ( snd f)
-    ( p)
-  ∙ cong
-    ( _∙ p)
-    ( lCancel _)
-  ∙ lUnit _ ⁻¹
-Iso.leftInv (puppeTotalIso1 B C f) (b , (p , q)) =
-  ΣPathP
-  ( (sym q)
-  , ( toPathP
-      ( ≡-×
-        ( transportFunPathLemma'
-          ( fst f)
-          ( q)
-          ( snd f
-          ∙ sym (snd f)
-          ∙ cong (fst f) (sym q)
-          ∙ p)
-        ∙ cong
-          ( cong (fst f) q ∙_)
-          ( assoc
-            ( snd f)
-            ( sym (snd f))
-            ( cong (fst f) (sym q)
-            ∙ p)
-          ∙ cong
-            ( _∙ (cong (fst f) (sym q) ∙ p))
-            ( rCancel _))
-        ∙ cong
-          ( cong (fst f) q ∙_)
-          ( lUnit _ ⁻¹)
-        ∙ assoc
-          ( cong (fst f) q)
-          ( cong (fst f) (sym q))
-          ( p)
-        ∙ cong
-          ( _∙ p)
-          ( rCancel _)
-        ∙ lUnit _ ⁻¹)
-        ( transportFunPathLemma'' b (pt B) q))))
+∙IsoOnRight : {A : Type ℓ} {a b c : A} (p : b ≡ c) → Iso (a ≡ b) (a ≡ c)
+Iso.fun (∙IsoOnRight p) = _∙ p
+Iso.inv (∙IsoOnRight p) = _∙ (sym p)
+Iso.rightInv (∙IsoOnRight p) q =
+  sym (assoc _ _ _) ∙ cong (q ∙_) (lCancel p) ∙ rUnit q ⁻¹
+Iso.leftInv (∙IsoOnRight p) q =
+  sym (assoc _ _ _) ∙ cong (q ∙_) (rCancel p) ∙ rUnit q ⁻¹
+
+postulate
+  fiberΩ-comm : {B C : Pointed ℓ} (f : B →∙ C)
+    → Iso (typ (Ω (fiber∙ f))) (typ (fiber∙ (Ω→ f)))
 
 puppeTotalIso : {B C : Pointed ℓ} (f : B →∙ C) →
   Σ[ H ∈ Iso (typ (fiber∙ (inclOfFiberFiberSeq f))) (typ (Ω C)) ]
   Iso.fun H  (pt (fiber∙ (inclOfFiberFiberSeq f))) ≡ (pt (Ω C))
-fst (puppeTotalIso f) = compIso (puppeTotalIso2 _ _ f) (puppeTotalIso1 _ _ f)
-snd (puppeTotalIso f) = cong (sym (snd f) ∙_) (lUnit _ ⁻¹) ∙ lCancel _
+Iso.fun (fst (puppeTotalIso f)) ((b' , q) , p) = (snd f) ⁻¹ ∙ cong (fst f) (p ⁻¹) ∙ q
+Iso.inv (fst (puppeTotalIso {B = B} f)) p = (pt B , snd f ∙ p) , refl
+Iso.rightInv (fst (puppeTotalIso f)) p = cong (snd f ⁻¹ ∙_) (lUnit (snd f ∙ p) ⁻¹) ∙ assoc (snd f ⁻¹) (snd f) p ∙ cong (_∙ p) (lCancel (snd f)) ∙ lUnit p ⁻¹
+Iso.leftInv (fst (puppeTotalIso f)) ((b' , q) , p) =
+  ΣPathP ((ΣPathP (p ⁻¹ , toPathP (transportPathLemmaLeft (cong (fst f) (p ⁻¹)) (snd f ∙ Iso.fun (fst (puppeTotalIso f)) ((b' , q) , p)) ∙ cong (cong (fst f) (p ⁻¹) ⁻¹ ∙_) (assoc (snd f) (snd f ⁻¹) (cong (fst f) (p ⁻¹) ∙ q) ∙ cong (_∙ (cong (fst f) (p ⁻¹) ∙ q)) (rCancel (snd f))) ∙ cong (cong (fst f) (p ⁻¹) ⁻¹ ∙_) (lUnit (cong (fst f) (p ⁻¹) ∙ q) ⁻¹) ∙ assoc (cong (fst f) (p ⁻¹) ⁻¹) (cong (fst f) (p ⁻¹)) q ∙ cong (_∙ q) (lCancel (cong (fst f) (p ⁻¹))) ∙ lUnit q ⁻¹))) , toPathP (transportPathLemmaLeft (p ⁻¹) refl ∙ rUnit p ⁻¹))
+snd (puppeTotalIso f) = cong (snd f ⁻¹ ∙_) (lUnit _ ⁻¹) ∙ lCancel (snd f)
 
-puppeFiberIso2 : (B C : Pointed ℓ) (f : B →∙ C) →
+{-puppeFiberIso2 : (B C : Pointed ℓ) (f : B →∙ C) →
   Iso (typ (fiber∙ (inclOfFiberFiberSeq (inclOfFiberFiberSeq f))))
      (Σ[ pr ∈ Σ[ b ∈ (typ B) ] (fst f) b ≡ pt C ]
       ((fst pr ≡ pt B) × (pr ≡ (pt B , snd f))))
@@ -127,8 +89,7 @@ puppeFiberIso : {B C : Pointed ℓ} (f : B →∙ C) →
              (typ (Ω B)) ]
   Iso.fun H (pt (fiber∙ (inclOfFiberFiberSeq (inclOfFiberFiberSeq f))))
   ≡ (pt (Ω B))
-fst (puppeFiberIso f) = compIso (puppeFiberIso2 _ _ f) (puppeFiberIso1 _ _ f)
-snd (puppeFiberIso f) = lUnit _ ⁻¹
+puppeFiberIso = {!!}-}
 
 postulate
   copuppe : {A B C : Pointed ℓ} → CofiberSeq A B C → CofiberSeq B C (S∙ A)
@@ -150,10 +111,17 @@ puppe F = TotalIsoFiberSeq
             ( FiberSeqProj F))
 
 -- needs tidying up
-puppeProjEqFibIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
-  → FiberSeqProj (puppe F) ≡ FiberSeqIncl F
-puppeProjEqFibIncl F =
-  ( TotalIsoFiberSeqProj
+puppeProjFiberFiberCase : {B C : Pointed ℓ} (f : B →∙ C)
+    → FiberSeqProj (puppeFiberFiberCase f) ≡ (fiberMap∙ f)
+puppeProjFiberFiberCase f = transportRefl _
+
+postulate
+
+  puppeProjEqFibIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
+    → FiberSeqProj (puppe F) ≡ FiberSeqIncl F
+
+--puppeProjEqFibIncl F = {!!}
+  {-( TotalIsoFiberSeqProj
     ( fst (FibsIsoFiberFiberSeq F))
     ( snd (FibsIsoFiberFiberSeq F))
     ( puppeFiberFiberCase (FiberSeqProj F))
@@ -178,9 +146,9 @@ puppeProjEqFibIncl F =
            ( FiberSeqProj F))
          ( F)
          ( ProjOfFiberFiberSeq
-           ( FiberSeqProj F))))
+           ( FiberSeqProj F))))-}
 
-alternativeIteratedPuppeFiberFiberCase : {B C : Pointed ℓ} (f : B →∙ C)
+{-alternativeIteratedPuppeFiberFiberCase : {B C : Pointed ℓ} (f : B →∙ C)
   → FiberSeq (Ω B) (Ω C) (fiber∙ f)
 alternativeIteratedPuppeFiberFiberCase f =
   FiberIsoFiberSeq
@@ -203,123 +171,21 @@ alternativeIteratedPuppe F =
     ( FiberSeqProj F))
 
 -- this needs tidying up!
-altIteratedPuppeEqIteratedPuppe : {A B C : Pointed ℓ} (F : FiberSeq A B C)
-  → alternativeIteratedPuppe F ≡ puppe (puppe F)
-altIteratedPuppeEqIteratedPuppe F =
-   EqOfEqFiberSeqProj
-   ( alternativeIteratedPuppe F)
-   ( puppe (puppe F))
-   ( FiberSeqProj (alternativeIteratedPuppe F)
- ≡⟨
-    (BaseIsoFiberSeqProj
-     ( fst (FibsIsoFiberFiberSeq F))
-     ( snd (FibsIsoFiberFiberSeq F))
-     ( alternativeIteratedPuppeFiberFiberCase (FiberSeqProj F)))
-  ⟩
-  ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-  , snd (FibsIsoFiberFiberSeq F))
-  ∘∙ ( FiberSeqProj
-       ( alternativeIteratedPuppeFiberFiberCase (FiberSeqProj F))))
- ≡⟨
-    cong
-    ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-    , snd (FibsIsoFiberFiberSeq F)) ∘∙_)
-    ( FiberIsoFiberSeqProj
-      ( fst (puppeFiberIso (FiberSeqProj F)))
-      ( snd (puppeFiberIso (FiberSeqProj F)))
-      ( TotalIsoFiberSeq _ _ _))
-  ⟩
-  ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-  , snd (FibsIsoFiberFiberSeq F))
-  ∘∙ ( FiberSeqProj
-       ( TotalIsoFiberSeq _ _ _)))
- ≡⟨
-    cong
-    ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-    , snd (FibsIsoFiberFiberSeq F)) ∘∙_)
-    ( TotalIsoFiberSeqProj _ _
-      ( FiberFiberSeq
-         ( inclOfFiberFiberSeq
-           ( inclOfFiberFiberSeq
-             ( FiberSeqProj F)))))
-  ⟩
-  ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-  , snd (FibsIsoFiberFiberSeq F))
-  ∘∙ ( FiberSeqProj
-       ( FiberFiberSeq
-         ( inclOfFiberFiberSeq
-           ( inclOfFiberFiberSeq
-             ( FiberSeqProj F))))
-  ∘∙ ( Iso.inv (fst (puppeTotalIso (FiberSeqProj F)))
-     , cong
-       ( Iso.inv (fst (puppeTotalIso (FiberSeqProj F))))
-       ( sym (snd (puppeTotalIso (FiberSeqProj F))))
-       ∙ Iso.leftInv (fst (puppeTotalIso (FiberSeqProj F))) _)))
- ≡⟨
-    ( λ i →
-         ( Iso.fun (fst (FibsIsoFiberFiberSeq F))
-         , snd (FibsIsoFiberFiberSeq F))
-         ∘∙ ( ( ( ProjOfFiberFiberSeq
-                  ( inclOfFiberFiberSeq
-                    ( inclOfFiberFiberSeq
-                      ( FiberSeqProj F)))
-                ∙ sym (InclOfFiberFiberSeq
-                       ( inclOfFiberFiberSeq
-                         ( FiberSeqProj F)))) i)
-         ∘∙ ( Iso.inv (fst (puppeTotalIso (FiberSeqProj F)))
-            , cong
-              ( Iso.inv (fst (puppeTotalIso (FiberSeqProj F))))
-              ( sym (snd (puppeTotalIso (FiberSeqProj F))))
-              ∙ Iso.leftInv
-                ( fst (puppeTotalIso (FiberSeqProj F)))
-                ( ( (pt (FiberSeqTotal F))
-                  , (snd (FiberSeqProj F)))
-                , refl))))
-     ⟩
-  ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-  , snd (FibsIsoFiberFiberSeq F))
-  ∘∙ ( FiberSeqIncl
-       ( FiberFiberSeq
-         ( inclOfFiberFiberSeq (FiberSeqProj F)))
-  ∘∙ ( Iso.inv (fst (puppeTotalIso (FiberSeqProj F)))
-     , cong
-       ( Iso.inv (fst (puppeTotalIso (FiberSeqProj F))))
-       ( sym (snd (puppeTotalIso (FiberSeqProj F))))
-       ∙ Iso.leftInv (fst (puppeTotalIso (FiberSeqProj F))) _)))
- ≡⟨
-    cong
-    ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-    , snd (FibsIsoFiberFiberSeq F)) ∘∙_)
-    ( sym (FiberIsoFiberSeqIncl
-           ( fst (puppeTotalIso (FiberSeqProj F)))
-           ( snd (puppeTotalIso (FiberSeqProj F)))
-           ( FiberFiberSeq
-             ( inclOfFiberFiberSeq (FiberSeqProj F)))))
-  ⟩
-   ( (Iso.fun (fst (FibsIsoFiberFiberSeq F))
-   , snd (FibsIsoFiberFiberSeq F))
-   ∘∙ FiberSeqIncl
-      ( puppeFiberFiberCase
-        ( FiberSeqProj F)))
- ≡⟨
-    sym
-    ( TotalIsoFiberSeqIncl
-      ( fst (FibsIsoFiberFiberSeq F))
-      ( snd (FibsIsoFiberFiberSeq F))
-      ( puppeFiberFiberCase (FiberSeqProj F)))
-  ⟩
-   FiberSeqIncl (puppe F)
- ≡⟨
-    sym (puppeProjEqFibIncl (puppe F))
-  ⟩
-   FiberSeqProj (puppe (puppe F)) ∎)
+{-altIteratedPuppeEqIteratedPuppe' : {B C : Pointed ℓ} (f : B →∙ C)
+  → FiberFiberSeq (inclOfFiberFiberSeq (inclOfFiberFiberSeq f))
+   ≡ -}
 
-twiceIteratedPuppeIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
-  → fst (FiberSeqIncl (puppe (puppe (puppe F))))
-   ≡ λ p → sym (snd (FiberSeqIncl F))
+  altIteratedPuppeEqIteratedPuppe : {A B C : Pointed ℓ} (F : FiberSeq A B C)
+    → alternativeIteratedPuppe F ≡ puppe (puppe F)
+--altIteratedPuppeEqIteratedPuppe F = {!!}-}
+
+{-
+  twiceIteratedPuppeIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
+    → fst (FiberSeqIncl (puppe (puppe (puppe F))))
+     ≡ λ p → sym (snd (FiberSeqIncl F))
             ∙ cong (fst (FiberSeqIncl F)) (sym p)
             ∙ snd (FiberSeqIncl F)
-twiceIteratedPuppeIncl F =
+{-twiceIteratedPuppeIncl F =
    fst (FiberSeqIncl (puppe (puppe (puppe F))))
   ≡⟨
      cong
@@ -461,14 +327,15 @@ twiceIteratedPuppeIncl F =
    (λ p →
        ( sym (snd (FiberSeqIncl F)))
        ∙ cong (fst (FiberSeqIncl F)) (sym p)
-       ∙ snd (FiberSeqIncl F)) ∎
+       ∙ snd (FiberSeqIncl F)) ∎-}
 
-twiceIteratedPuppeProj : {A B C : Pointed ℓ} (F : FiberSeq A B C)
-  → fst (FiberSeqProj (puppe (puppe (puppe F))))
-   ≡ λ p → sym (snd (FiberSeqProj F))
+
+  twiceIteratedPuppeProj : {A B C : Pointed ℓ} (F : FiberSeq A B C)
+    → fst (FiberSeqProj (puppe (puppe (puppe F))))
+     ≡ λ p → sym (snd (FiberSeqProj F))
             ∙ cong (fst (FiberSeqProj F)) (sym p)
             ∙ snd (FiberSeqProj F)
-twiceIteratedPuppeProj F =
+{-twiceIteratedPuppeProj F =
   fst (FiberSeqProj (puppe (puppe (puppe F))))
  ≡⟨
     cong fst (puppeProjEqFibIncl (puppe (puppe F)))
@@ -555,4 +422,4 @@ twiceIteratedPuppeProj F =
   (λ p →
       ( sym (snd (FiberSeqProj F))
       ∙ cong (fst (FiberSeqProj F)) (sym p)
-      ∙ snd (FiberSeqProj F))) ∎
+      ∙ snd (FiberSeqProj F))) ∎-}-}
