@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module FiniteCW where
 
 open import Cubical.Foundations.Prelude

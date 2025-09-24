@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module LastMinuteLemmas.ConnectedLemmas where
 
 open import Cubical.Foundations.Prelude

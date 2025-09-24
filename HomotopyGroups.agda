@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module HomotopyGroups where
 
 open import Cubical.Foundations.Prelude

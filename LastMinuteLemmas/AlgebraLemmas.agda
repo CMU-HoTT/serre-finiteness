@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 {-
 For n : ℤ, ℤ/nℤ can be defined as Fin (abs n) or as a quotient
 group ℤ/im(n·_). This module proves the two definitions equivalent.

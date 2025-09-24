@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module ConnectedCovers.Base where
 
 open import Cubical.Foundations.Prelude

@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module FiberOrCofiberSequences.PuppeLemma where
 
 open import Cubical.Foundations.Prelude
