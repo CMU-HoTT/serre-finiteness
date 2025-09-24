@@ -3,11 +3,14 @@ module SerreFinitenessTheorem where
 
 open import Cubical.Foundations.Prelude
 open import Cubical.Foundations.Pointed
+open import Cubical.Foundations.HLevels
 
 open import Cubical.Data.Nat
 open import Cubical.Data.Nat.Order
+open import Cubical.Data.Sigma
 
 open import Cubical.Homotopy.Connected
+open import Cubical.HITs.Sn hiding (S)
 
 open import SAF
 open import FPAbGroup
@@ -37,3 +40,19 @@ mutual
   saf→saf<-> X safX scX (suc n) =
     safTotal (<->EMFibSeq X n) (Conn→ConnConnCov X 3 (suc n) scX)
       (saf→saf<-> X safX scX n) (isFP→safEM (πAb n X) (saf→isFPπ X safX scX n) n)
+
+isFPπAbSn : (n m : ℕ) → isFP (πAb n (S (2 + m)))
+isFPπAbSn n m = saf→isFPπ (S (2 + m)) (saf-Sn (2 + m)) rem2 n
+  where
+  -- copy-pasted from Cubical.Paper.Pi4S3...
+  con-lem : (n m : ℕ) → n < m → isConnected (2 + n) (S₊ m)
+  con-lem n m l = isConnectedSubtr (suc (suc n)) (fst l)
+             (subst (λ n → isConnected n (S₊ m))
+               (sym (+-suc (fst l) (suc n) ∙ cong suc (snd l)))
+                (sphereConnected m))
+
+  rem1 : isConnected 3 (S₊ (2 + m))
+  rem1 = con-lem 1 (2 + m) (suc-≤-suc (suc-≤-suc zero-≤))
+
+  rem2 : isConnected 3 (S (2 + m) .fst)
+  rem2 = isConnectedRetractFromIso 3 rUnit*×Iso rem1
