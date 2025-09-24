@@ -1,3 +1,4 @@
+{-# OPTIONS --lossy-unification #-}
 module SAF where
 
 open import Cubical.Foundations.Prelude
@@ -15,7 +16,7 @@ open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 
-open import Cubical.Data.Nat
+open import Cubical.Data.Nat renaming (elim to elimℕ)
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Fin.Inductive
 open import Cubical.Data.Sigma
@@ -58,11 +59,20 @@ private
   variable
     ℓ : Level
 
+
+srthmetic : (m n : ℕ) → (m + suc n) ≡ (suc (m + n))
+srthmetic m n = +-suc m n
+
+
 -- stably almost finite spaces
 
 -- probably this is defined elsewhere
 Susp→^ : {X Y : Type ℓ} (n : ℕ) (f : X → Y) → Susp^ n X → Susp^ n Y
 Susp→^ n f = Susp^Fun f n
+
+Susp^-need : {X : Type ℓ} (m' m : ℕ) → Susp^ (m' + m) X ≡ Susp^ m' (Susp^ m X)
+Susp^-need zero m = refl
+Susp^-need (suc m') m = Susp^-comm (m' + m) _ ∙ cong (Susp) (Susp^-need m' m) ∙ Susp^-comm m' _ ⁻¹
 
 Susp→^-conn : {X Y : Type ℓ} (n m : ℕ) (f : X → Y) → isConnectedFun m f
             → isConnectedFun (n + m) (Susp→^ n f)
@@ -200,7 +210,7 @@ cofNFinite'' {ℓ} {n} CS hDom hExt =
          → nFinite (1 + n) (typ (CofiberSeqCof CS))
    step0 (C , hC , f , cf) (D , g , cg) (l , p) =
      ∣ ((typ (CofiberSeqCof₋ (cofiber-CofiberSeq₋ l))) ,
-       isFinCWCofiberSeq₋
+       isFinCWCofiberSeq₋ {S = cofiber-CofiberSeq₋ l}
          (cofiberDom-isFinCWCofiberSeq₋ l (isNDimFinCW→isFinCW hC))
          (cofiberExt-isFinCWCofiberSeq₋ l (snd D))) ,
        (fst (CofiberSeqMap-cofiber l CS f g p)) ,
@@ -425,14 +435,171 @@ susp-stablyNFinite n A = PT.rec squash₁
   p m = cong Susp (sym (Susp^'≡Susp^ m))
       ∙ Susp^'≡Susp^ (suc m)
 
--- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
-postulate
-  stablyNFiniteExtension : {n : HLevel} {A B C : Pointed ℓ} (S : CofiberSeq A B C)
-      → stablyNFinite n A → stablyNFinite n C → stablyNFinite n B
+stablyNFiniteDrop : {X : Pointed ℓ} (n : HLevel)
+    → stablyNFinite (1 + n) X → stablyNFinite n X
+stablyNFiniteDrop {X = X} n =
+  PT.rec (stablyNFinite-isProp {n = n} {X = X})
+         λ hX → ∣ (fst hX) ,
+                  nFiniteDrop (fst hX + n)
+                  (transport (λ i → nFinite (srthmetic (fst hX) n i) (Susp^ (fst hX) (typ X))) (snd hX)) ∣₁
 
-postulate
-  safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
+stablyNFiniteLower : {X : Pointed ℓ} (m n : HLevel)
+  → stablyNFinite (m + n) X → stablyNFinite n X
+stablyNFiniteLower zero n hX = hX
+stablyNFiniteLower {X = X} (suc m) n hX =
+  stablyNFiniteLower {X = X} m n (stablyNFiniteDrop {X = X} (m + n) hX)
+
+
+-- need definitions or helper lemmas about cofiber sequences (and finite CW complexes?)
+stablyNFiniteCofiber : {n : HLevel} {A B C : Pointed ℓ} (S : CofiberSeq A B C)
+    → stablyNFinite n A → stablyNFinite (1 + n) B → stablyNFinite (1 + n) C
+stablyNFiniteCofiber {ℓ} {n = n} {A = A} {B = B} {C = C} S hA =
+  PT.rec (isProp→ squash₁)
+         (λ hA' hB → PT.rec squash₁ γ5 (γ6 hA' (stablyNFinite→stablyNFinite' hB)))
+         (stablyNFinite→stablyNFinite' hA)
+  where
+
+    postulate
+      S' : (k : ℕ) → CofiberSeq (Susp∙^ k A) (Susp∙^ k B) (Susp∙^ k C)
+
+    rtmtc : (k k' : ℕ) → (k + (1 + k')) ≡ (1 + (k + k'))
+    rtmtc k k' = +-assoc k 1 k' ∙ cong (_+ k') (+-comm k 1)
+      
+
+    γ1 : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ A))) ]
+     isConnectedFun (m + n) f))
+     → (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+     isConnectedFun (m + (suc n)) f))
+     → (Σ[ m ∈ ℕ ]
+         (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ A))) ]
+         isConnectedFun (m + n) f)
+         × (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+         isConnectedFun (m + (suc n)) f))
+    γ1 (m , C , f , hf) (m' , C' , f' , hf') =
+      (m + m') ,
+      ((((Susp^ m' (typ C)) , (isFinCWSusp (typ C) (snd C)))
+        , (transport (λ i → Susp^ m' (typ C) → Susp^ (+-comm m' m i) (typ A))
+           (transport (λ i → Susp^ m' (typ C)
+                           → Susp^-need {X = typ A} m' m (~ i))
+             (Susp→^ m' f)))
+        , isConnectedTrnspConnected (λ i → Susp^ (+-comm m' m i) (typ A))
+          _ (isConnectedTrnspConnected (Susp^-need m' m ⁻¹) (Susp→^ m' f)
+             (transport (λ i → isConnectedFun (rtmtk m m' n (~ i))
+                                (Susp→^ m' f))
+                        (Susp→^-conn m' (m + n) f hf) )))
+      , ((Susp^ m (typ C')) , (isFinCWSusp (typ C') (snd C')))
+      , (transport (λ i → Susp^ m (typ C')
+                        → Susp^-need {X = typ B} m m' (~ i))
+                   (Susp→^ m f'))
+       , (isConnectedTrnspConnected (Susp^-need m m' ⁻¹) (Susp→^ m f')
+             (transport (λ i → isConnectedFun (+-assoc m m' (suc n) i)
+                                (Susp→^ m f'))
+                        (Susp→^-conn m (m' + suc n) f' hf'))))
+     where
+      rtmtk : (k0 k1 k2 : ℕ) → (k0 + k1 + k2) ≡ k1 + (k0 + k2)
+      rtmtk k0 k1 k2 = cong (_+ k2) (+-comm k0 k1) ∙ +-assoc k1 k0 k2 ⁻¹
+      
+    γ2 : (Σ[ m ∈ ℕ ]
+     (Σ[ C ∈ FinCW ℓ ]
+      Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ A))) ]
+      isConnectedFun (m + n) f)
+     × (Σ[ C ∈ FinCW ℓ ]
+       Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+       isConnectedFun (m + (suc n)) f))
+     → ∥ (Σ[ m ∈ ℕ ]
+         (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW (m + n) C ]
+         Σ[ f ∈ (C → (Susp^ m (typ A))) ]
+         isConnectedFun (m + n) f)
+         × (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+         isConnectedFun (m + (suc n)) f)) ∥₁
+    γ2 (m , (C , f , hf) , (C' , f' , hf')) =
+      PT.rec squash₁
+      (λ C^ → ∣ m , (((fst C^) , ((fst (snd C^)) , ((f ∘ fst (snd (snd C^)))
+                  , (isConnectedComp f (fst (snd (snd C^)))
+                                     (m + n) hf (snd (snd (snd C^)))))))
+                  , (C' , f' , hf')) ∣₁)
+      (mapFromNSkel (fst C) (snd C) (m + n))
+
+    γ3 : (T : Σ[ m ∈ ℕ ]
+         (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW (m + n) C ]
+         Σ[ f ∈ (C → (Susp^ m (typ A))) ]
+         isConnectedFun (m + n) f)
+         × (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+         isConnectedFun (m + (suc n)) f))
+      → ∃[ f ∈ (fst (fst (snd T)) → typ (fst (snd (snd T)))) ]
+          (fst (snd (snd (snd T))) ∘ f
+          ≡ (fst (CofiberSeqInc (S' (fst T))) ∘ fst (snd (snd (fst (snd T))))))
+    γ3 (m , (C , hC , f , hf) , (C' , f' , hf')) =
+      liftFromNDimFinCW (m + n) C hC f'
+        (isConnectedFunSubtr (m + n) 1 f'
+          (transport (λ i → isConnectedFun (rtmtc m n i) f')
+                     hf'))
+        (fst (CofiberSeqInc (S' m)) ∘ f)
+
+    γ4 : (T : Σ[ m ∈ ℕ ]
+         (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW (m + n) C ]
+         Σ[ f ∈ (C → (Susp^ m (typ A))) ]
+         isConnectedFun (m + n) f)
+         × (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+         isConnectedFun (m + (suc n)) f))
+      → Σ[ f ∈ (fst (fst (snd T)) → typ (fst (snd (snd T)))) ]
+          (fst (snd (snd (snd T))) ∘ f
+          ≡ (fst (CofiberSeqInc (S' (fst T))) ∘ fst (snd (snd (fst (snd T))))))
+      → stablyNFinite (1 + n) C
+    γ4 (m , (C , hC , f , hf) , (C' , f' , hf')) (h , F) =
+      stablyNFinite'→stablyNFinite
+      ∣ m
+      , ((cofib h) , isFinCWCofiberSeq₋ {S = cofiber-CofiberSeq₋ h}
+                       (isNDimFinCW→isFinCW hC) (snd C'))
+      , (fst (CofiberSeqMap-cofiber h (S' m) f f' F))
+      , transport (λ i → isConnectedFun (rtmtc m n (~ i))
+                           (fst (CofiberSeqMap-cofiber h (S' m) f f' F)))
+          (CofiberSeqMapConn-cofiber (m + n) h (S' m) f f' F hf
+            (transport (λ i → isConnectedFun (rtmtc m n i) f') hf')) ∣₁
+
+    γ5 : (T : Σ[ m ∈ ℕ ]
+         (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW (m + n) C ]
+         Σ[ f ∈ (C → (Susp^ m (typ A))) ]
+         isConnectedFun (m + n) f)
+         × (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+         isConnectedFun (m + (suc n)) f))
+         → stablyNFinite (1 + n) C
+    γ5 T = PT.rec squash₁ (γ4 T) (γ3 T)
+
+    γ6 : (Σ[ m ∈ ℕ ] (Σ[ C ∈ FinCW ℓ ]
+     Σ[ f ∈ (decodeFinCW {ℓ = ℓ} C → (Susp^ m (typ A))) ]
+     isConnectedFun (m + n) f))
+     → stablyNFinite' {ℓ = ℓ} (1 + n) B
+     → ∥ (Σ[ m ∈ ℕ ]
+         (Σ[ C ∈ Type ℓ ] Σ[ hC ∈ isNDimFinCW (m + n) C ]
+         Σ[ f ∈ (C → (Susp^ m (typ A))) ]
+         isConnectedFun (m + n) f)
+         × (Σ[ C ∈ FinCW ℓ ]
+         Σ[ f ∈ (decodeFinCW C → (Susp^ m (typ B))) ]
+         isConnectedFun (m + (suc n)) f)) ∥₁
+    γ6 hA = PT.rec squash₁ (λ hB → γ2 (γ1 hA hB))
+
+stablyNFiniteExtension : {n : HLevel} {A B C : Pointed ℓ} (S : CofiberSeq A B C)
+      → stablyNFinite n A → stablyNFinite n C → stablyNFinite n B
+stablyNFiniteExtension {ℓ} {n = n} {A = A} {B = B} {C = C} S hA hC =
+  stablyNFiniteOfSusp n B (stablyNFiniteCofiber S' hC (susp-stablyNFinite n A hA))
+  where
+    postulate
+      S' : CofiberSeq C (S∙ A) (S∙ B)
+
+
+safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
     → saf A → saf B → saf C
+safCofiber S sA sB 0 = stablyNFiniteDrop 0 (stablyNFiniteCofiber S (sA 0) (sB 1))
+safCofiber S sA sB (suc n) = stablyNFiniteCofiber S (sA n) (sB (1 + n))
 
 joinSuspTrick : ∀ {ℓ} (X₁ X₂ : Pointed ℓ) (M₁ M₂ : ℕ)
   → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
@@ -829,10 +996,6 @@ stablyNFiniteJoin {ℓ} {X₁} {X₂} m₁ n₁ m₂ n₂ hmn₁ hXm₁ hXn₁ h
   (stablyNFinite→stablyNFinite' {X = X₁} hXn₁) hXm₂
   (stablyNFinite→stablyNFinite' {X = X₂} hXn₂) k hk₁ hk₂)
 
-
-srthmetic : (m n : ℕ) → (m + suc n) ≡ (suc (m + n))
-srthmetic m n = +-suc m n
-
 stablyNFiniteApprox : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun n (fst f))
     → stablyNFinite n X → stablyNFinite n Y
@@ -844,20 +1007,6 @@ stablyNFiniteApprox f n hf hX =
   (snd hX')) ∣₁) hX
 
 
-
-stablyNFiniteDrop : {X : Pointed ℓ} (n : HLevel)
-    → stablyNFinite (1 + n) X → stablyNFinite n X
-stablyNFiniteDrop {X = X} n =
-  PT.rec (stablyNFinite-isProp {n = n} {X = X})
-         λ hX → ∣ (fst hX) ,
-                  nFiniteDrop (fst hX + n)
-                  (transport (λ i → nFinite (srthmetic (fst hX) n i) (Susp^ (fst hX) (typ X))) (snd hX)) ∣₁
-
-stablyNFiniteLower : {X : Pointed ℓ} (m n : HLevel)
-  → stablyNFinite (m + n) X → stablyNFinite n X
-stablyNFiniteLower zero n hX = hX
-stablyNFiniteLower {X = X} (suc m) n hX =
-  stablyNFiniteLower {X = X} m n (stablyNFiniteDrop {X = X} (m + n) hX)
 
 stablyNFiniteApprox' : {X Y : Pointed ℓ} (f : X →∙ Y)
     (n : HLevel) (hf : isConnectedFun (1 + n) (fst f))
