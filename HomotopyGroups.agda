@@ -1,3 +1,4 @@
+{-# OPTIONS --lossy-unification #-}
 module HomotopyGroups where
 
 open import Cubical.Foundations.Prelude
@@ -32,7 +33,7 @@ private
 -- Essentially proven as EH-π in Cubical.Homotopy.Loopspace
 πGr-comm : (n : ℕ) (A : Pointed ℓ) → (a b : typ (πGr (suc n) A))
   → ·π (suc n) a b ≡ ·π (suc n) b a
-πGr-comm n A = elim2 (λ _ _ → isSetPathImplicit) λ a b → cong ∣_∣₂ (EH 0 a b)
+πGr-comm n A = elim2 (λ _ _ → isSetPathImplicit) λ a b → cong ∣_∣₂ (EH n a b)
 
 -- πAb n A = πₙ₊₂(A), as an abelian group
 πAb : (n : ℕ) (A : Pointed ℓ) → AbGroup ℓ
@@ -93,7 +94,7 @@ UnitAbGroupEquiv G (e , isHom-e) = e , isHom-e
   → AbGroupEquiv {ℓ} {ℓ} (πAb k (hLevelTrunc∙ (3 + n) X)) UnitAbGroup
 πAbOfHLevelTrunc X n k p =
   UnitAbGroupEquiv
-  ( πAb k (hLevelTrunc∙ (3 + n) X))
+  ( πAb k (hLevelTrunc∙ _ X))
   ( compGroupEquiv
     ( contrGroupEquivUnit
       ( isContr→isContrSetTrunc

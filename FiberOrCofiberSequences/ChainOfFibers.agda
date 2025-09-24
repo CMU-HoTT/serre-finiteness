@@ -65,14 +65,14 @@ LoopSpacesInChainOfFibers F zero =
   fst (PathPΣ (FibsEqOfFibSeq
                ( ChainOfFibers→FiberSeq F 1)
                ( puppe (ChainOfFibers→FiberSeq F 0))
-               ( ProjOfFiberFiberSeq _ ∙ puppeProjEqFibIncl F ⁻¹)))
+               ( ProjOfFiberFiberSeq (FiberSeq.incl F) ∙ puppeProjEqFibIncl F ⁻¹)))
 LoopSpacesInChainOfFibers F 1 =
   fst (PathPΣ (FibsEqOfFibSeq
                ( ChainOfFibers→FiberSeq F 2)
                ( puppe (ChainOfFibers→FiberSeq F 1))
                ( ProjOfFiberFiberSeq (fst , snd (ChainOfFibersEdges F 2))
              ∙ ( InclOfFiberFiberSeq (FiberSeqIncl F)) ⁻¹
-             ∙ ( puppeProjEqFibIncl _) ⁻¹)))
+             ∙ ( puppeProjEqFibIncl (ChainOfFibers→FiberSeq F 1)) ⁻¹)))
 LoopSpacesInChainOfFibers F (suc (suc n)) =
   fst (PathPΣ (FibsEqOfFibSeq
                ( ChainOfFibers→FiberSeq F (3 + n))
@@ -80,7 +80,7 @@ LoopSpacesInChainOfFibers F (suc (suc n)) =
                ( ProjOfFiberFiberSeq
                  ( fst , snd (ChainOfFibersEdges F (suc (suc (suc n)))))
              ∙ ( InclOfFiberFiberSeq (ChainOfFibersEdges F (suc (suc n)))) ⁻¹
-             ∙ ( puppeProjEqFibIncl _) ⁻¹)))
+             ∙ ( puppeProjEqFibIncl (ChainOfFibers→FiberSeq F (suc (suc n)))) ⁻¹)))
 
 LoopSpacesInChainOfFibers' : {A B C : Pointed ℓ} (F : FiberSeq A B C) (n : ℕ)
   → (ChainOfFibersVertices F (n · 3) ≡ (Ω^ n) C)
