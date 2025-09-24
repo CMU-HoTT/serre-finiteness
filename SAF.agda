@@ -46,6 +46,7 @@ open import FPAbGroup
 open import HomotopyGroups
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
+open import FiberOrCofiberSequences.PuppeLemma
 open import Connectedness
 
 open import LastMinuteLemmas.EM
@@ -459,8 +460,8 @@ stablyNFiniteCofiber {ℓ} {n = n} {A = A} {B = B} {C = C} S hA =
          (stablyNFinite→stablyNFinite' hA)
   where
 
-    postulate
-      S' : (k : ℕ) → CofiberSeq (Susp∙^ k A) (Susp∙^ k B) (Susp∙^ k C)
+    S' : (k : ℕ) → CofiberSeq (Susp∙^ k A) (Susp∙^ k B) (Susp∙^ k C)
+    S' k = copuppe-Cof S
 
     rtmtc : (k k' : ℕ) → (k + (1 + k')) ≡ (1 + (k + k'))
     rtmtc k k' = +-assoc k 1 k' ∙ cong (_+ k') (+-comm k 1)
@@ -592,8 +593,8 @@ stablyNFiniteExtension : {n : HLevel} {A B C : Pointed ℓ} (S : CofiberSeq A B 
 stablyNFiniteExtension {ℓ} {n = n} {A = A} {B = B} {C = C} S hA hC =
   stablyNFiniteOfSusp n B (stablyNFiniteCofiber S' hC (susp-stablyNFinite n A hA))
   where
-    postulate
-      S' : CofiberSeq C (S∙ A) (S∙ B)
+    S' : CofiberSeq C (S∙ A) (S∙ B)
+    S' = copuppe-Ext {n = 0} S
 
 
 safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C

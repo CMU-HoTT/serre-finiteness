@@ -10,6 +10,8 @@ open import Cubical.Foundations.Equiv
 
 open import Cubical.Data.Sigma
 open import Cubical.Data.Nat
+open import Cubical.HITs.Pushout
+open import Cubical.HITs.Susp
 open import Cubical.Homotopy.Loopspace
 
 open import PointedHITs
@@ -22,6 +24,9 @@ open import LastMinuteLemmas.SuspLemmas
 private
   variable
     ℓ : Level
+
+Susp∙^-comm : (n : ℕ) {A : Pointed ℓ} → Susp∙^ (suc n) A ≡ S∙ (Susp∙^ n A)
+Susp∙^-comm n {A = A} = ua∙ (fst (Susp^-comm-Equiv∙ n A)) (snd (Susp^-comm-Equiv∙ n A))
 
 ∙IsoOnLeft : {A : Type ℓ} {a b c : A} (p : a ≡ b) → Iso (b ≡ c) (a ≡ c)
 Iso.fun (∙IsoOnLeft p) = p ∙_
@@ -62,23 +67,56 @@ Iso.leftInv (fst (puppeTotalIso f)) ((b' , q) , p) =
         , toPathP (transportPathLemmaLeft (p ⁻¹) refl ∙ rUnit p ⁻¹))
 snd (puppeTotalIso f) = cong (snd f ⁻¹ ∙_) (lUnit _ ⁻¹) ∙ lCancel (snd f)
 
+coPuppe-Iso∙ : {A B : Pointed ℓ} (f : A →∙ B)
+  → Iso.fun (Iso-cofibInr-Susp f)
+     (pt (cofiber∙ {B = cofiber∙ f} (inr , sym (push (pt A))))) ≡ (pt (S∙ _))
+coPuppe-Iso∙ {A = A} f = merid (pt A) ⁻¹
 
-postulate
-  copuppe : {A B C : Pointed ℓ} → CofiberSeq A B C → CofiberSeq B C (S∙ A)
+coPuppe-≡ : {A B : Pointed ℓ} (f : A →∙ B)
+  → (cofiber∙ {B = cofiber∙ f} (inr , sym (push (pt A))))
+    ≡ (S∙ A)
+coPuppe-≡ f = ua∙ (isoToEquiv (Iso-cofibInr-Susp f)) (coPuppe-Iso∙ f)
+
+copuppe-cofiber :
+  {A B : Pointed ℓ} (f : A →∙ B) → CofiberSeq B (cofiber∙ f) (S∙ A)
+copuppe-cofiber {A = A} {B = B} f =
+  transport (λ i → CofiberSeq B (cofiber∙ f) (coPuppe-≡ f i))
+            (cofiber-CofiberSeq (inr , cong inr (snd f) ⁻¹ ∙ push (pt A) ⁻¹))
+
+copuppe : {A B C : Pointed ℓ} → CofiberSeq A B C → CofiberSeq B C (S∙ A)
+copuppe {A = A} {B = B} {C = C} S = transport (λ i → CofiberSeq B (fst (CofiberSeq.eqCof S (~ i))) (S∙ A))
+              (copuppe-cofiber (CofiberSeq.incl S))
 
 -- corollaries
-
-  copuppe-Cof : {n : ℕ} {A B C : Pointed ℓ} → CofiberSeq A B C
+mutual
+  copuppe-Cof : (n : ℕ) {A B C : Pointed ℓ} → CofiberSeq A B C
              → CofiberSeq (Susp∙^ n A) (Susp∙^ n B) (Susp∙^ n C)
+  copuppe-Cof zero = λ x → x
+  copuppe-Cof (suc n) {A = A} {B = B} {C = C} S =
+    transport (λ i → CofiberSeq (Susp∙^ (suc n) A)
+                                  (Susp∙^ (suc n) B)
+                                  (Susp∙^-comm n {A = C} (~ i)))
+                (copuppe (copuppe-Ext n S))
 
   
-  copuppe-Dom : {n : ℕ} {A B C : Pointed ℓ} → CofiberSeq A B C
+  copuppe-Dom : (n : ℕ) {A B C : Pointed ℓ} → CofiberSeq A B C
              → CofiberSeq (Susp∙^ n B) (Susp∙^ n C) (Susp∙^ (suc n) A)
-
+  copuppe-Dom zero S = copuppe S
+  copuppe-Dom (suc n) {A = A} {B = B} {C = C} S =
+    transport (λ i → CofiberSeq (Susp∙^ (suc n) B)
+                                  (Susp∙^ (suc n) C)
+                                  (Susp∙^-comm (suc n) {A = A} (~ i)))
+               (copuppe (copuppe-Cof (suc n) S))
   
-  copuppe-Ext : {n : ℕ} {A B C : Pointed ℓ} → CofiberSeq A B C
+  copuppe-Ext : (n : ℕ) {A B C : Pointed ℓ} → CofiberSeq A B C
              → CofiberSeq (Susp∙^ n C) (Susp∙^ (suc n) A) (Susp∙^ (suc n) B)
-
+  copuppe-Ext zero S = copuppe (copuppe S)
+  copuppe-Ext (suc n) {A = A} {B = B} {C = C} S =
+    transport (λ i → CofiberSeq (Susp∙^ (suc n) C)
+                                  (Susp∙^ (suc (suc n)) A)
+                                  (Susp∙^-comm (suc n) {A = B} (~ i)))
+               (copuppe (copuppe-Dom (suc n) S))
+  
 puppeFiberFiberCase : {B C : Pointed ℓ} (f : B →∙ C)
   → FiberSeq (Ω C) (fiber∙ f) B
 puppeFiberFiberCase {B = B} {C = C} f =
