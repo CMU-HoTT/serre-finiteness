@@ -39,6 +39,15 @@ private
   variable
     ℓ : Level
 
+isConnectedTrnspConnected* : {W X Y Z : Type ℓ} {n : ℕ} (p : Y ≡ Z) (q : X ≡ W) (f : X → Y)
+  → isConnectedFun n f
+  → isConnectedFun n (transport (λ i → (q i) → (p i)) f)
+isConnectedTrnspConnected* {X = X} {n = n} p q f conf  =
+  transport (λ i → isConnectedFun n
+                    (transp (λ j → (q (j ∧ i)) → (p (j ∧ i))) (~ i) f))
+    conf
+
+
 Unit-map : {A : Type ℓ} → PathP (λ _ → A → Unit* {ℓ})
                                  (equivFun (Unit≃Unit* {ℓ})
                                  ∘ (λ (_ : A) → tt))
@@ -136,11 +145,6 @@ CofiberSeqProj : {A B C : Pointed ℓ} (S : CofiberSeq A B C)
                    → ((CofiberSeqExt S) →∙ (CofiberSeqCof S))
 CofiberSeqProj S = CofiberSeq.proj S
 
-postulate
-  CofiberSeqExact : {A B C : Pointed ℓ} {S : CofiberSeq A B C}
-                    → (CofiberSeqProj S) ∘∙ (CofiberSeqInc S)
-                        ≡ ((λ _ → snd (CofiberSeqCof S)) , refl)
-
 cofiber-CofiberSeq : {A B : Pointed ℓ} (f : A →∙ B)
     → CofiberSeq A B (cofib (fst f) , inl tt)
 CofiberSeq.incl (cofiber-CofiberSeq f) = f
@@ -161,11 +165,28 @@ cofiber-isPushout {ℓ} f =
        (pushoutLevelMix^* (λ _ → tt) (λ _ → tt*) (fst f)
                           (invIso unitLevelMix^) unitLevelMix'^))
 
+cofiber-isPushout∙ : {A B : Pointed ℓ} (f : A →∙ B)
+  → CofiberSeqCof (cofiber-CofiberSeq f)
+   ≡ (Pushout {B = Unit* {ℓ}} (λ _ → tt*) (fst f) , inl tt*)
+cofiber-isPushout∙ f =
+  ua∙
+   (isoToEquiv
+    (pushoutLevelMix^* (λ _ → tt) (λ _ → tt*) (fst f)
+                       (invIso unitLevelMix^) unitLevelMix'^))
+    refl
+
 Cof-isPushout : {A B C : Pointed ℓ} (S : CofiberSeq A B C)
   → typ (CofiberSeqCof S)
    ≡ Pushout {B = Unit* {ℓ}} (λ _ → tt*) (fst (CofiberSeq.incl S))
 Cof-isPushout S = (λ i → typ (fst (CofiberSeq.eqCof S i)))
                 ∙ cofiber-isPushout (CofiberSeq.incl S)
+
+Cof-isPushout∙ : {A B C : Pointed ℓ} (S : CofiberSeq A B C)
+  → CofiberSeqCof S
+  ≡ (Pushout {B = Unit* {ℓ}} (λ _ → tt*) (fst (CofiberSeq.incl S)) ,
+             inl tt*)
+Cof-isPushout∙ S = (λ i → fst (CofiberSeq.eqCof S i))
+                   ∙ cofiber-isPushout∙ (CofiberSeq.incl S)
 
 isFinCWCofiberSeq-cofiber : {A B : Pointed ℓ} (f : A →∙ B)
     → (isFinCW (typ (CofiberSeqDom (cofiber-CofiberSeq f))))
@@ -183,15 +204,21 @@ isFinCWCofiberSeq {S = S} hA hB =
   transport (λ i → isFinCW (typ (fst (CofiberSeq.eqCof S (~ i)))))
             (isFinCWCofiberSeq-cofiber (CofiberSeq.incl S) hA hB)
 
-postulate
-  CofiberSeqMap : {A B C A' B' C' : Pointed ℓ}
+CofiberSeqMap : {A B C A' B' C' : Pointed ℓ}
     (S : CofiberSeq A B C) (S' : CofiberSeq A' B' C')
     (f : (CofiberSeqDom S) →∙ (CofiberSeqDom S'))
     (g : (CofiberSeqExt S) →∙ (CofiberSeqExt S'))
     → (g ∘∙ CofiberSeqInc S) ≡ (CofiberSeqInc S' ∘∙ f)
     → ((CofiberSeqCof S) →∙ (CofiberSeqCof S'))
+CofiberSeqMap S S' f g H =
+  transport (λ i → (Cof-isPushout∙ S (~ i))
+                 →∙ (Cof-isPushout∙ S' (~ i)))
+    (Pushout→ (λ _ → tt*) (fst (CofiberSeq.incl S)) (λ _ → tt*)
+                         (fst (CofiberSeq.incl S')) (fst f) (λ _ → tt*)
+                         (fst g) refl (λ i → (fst (H i)))
+             , refl)
 
-  CofiberSeqMapConn : (n : ℕ) {A B C A' B' C' : Pointed ℓ}
+CofiberSeqMapConn : (n : ℕ) {A B C A' B' C' : Pointed ℓ}
     (S : CofiberSeq A B C) (S' : CofiberSeq A' B' C')
     (f : (CofiberSeqDom S) →∙ (CofiberSeqDom S'))
     (g : (CofiberSeqExt S) →∙ (CofiberSeqExt S'))
@@ -199,6 +226,19 @@ postulate
     → isConnectedFun n (fst f)
     → isConnectedFun (1 + n) (fst g)
     → isConnectedFun (1 + n) (fst (CofiberSeqMap S S' f g p))
+CofiberSeqMapConn n S S' f g p hf hg =
+  isConnectedTrnspConnected*
+    (λ i → typ ((Cof-isPushout∙ S' ⁻¹) i))
+    (λ i → typ ((Cof-isPushout∙ S ⁻¹) i))
+    (Pushout→ (λ _ → tt*) (fst (CofiberSeq.incl S)) (λ _ → tt*)
+               (fst (CofiberSeq.incl S')) (fst f) (λ _ → tt*) (fst g)
+               refl λ i → fst (p i))
+    (isConnectedPushout→ (λ _ → tt*) (fst (CofiberSeq.incl S)) (λ _ → tt*)
+     (fst (CofiberSeq.incl S')) (fst f) (λ _ → tt*)
+       (fst g) refl (λ i → fst (p i)) n hf
+       (isEquiv→isConnected (λ _ → tt*)
+       (isoToIsEquiv (iso (λ _ → tt*) (λ _ → tt*)
+       (λ _ → refl) (λ _ → refl))) (1 + n)) hg)
 
 -- cofiber sequences for unpointed maps
 cofiber : {A B : Type ℓ} (f : A → B) → Pointed ℓ
@@ -262,12 +302,6 @@ CofiberSeqProj₋ : {A B : Type ℓ} {C : Pointed ℓ} (S : CofiberSeq₋ A B C)
                    → ((CofiberSeqExt₋ S) → typ (CofiberSeqCof₋ S))
 CofiberSeqProj₋ S = CofiberSeq₋.proj S
 
-postulate
-  CofiberSeqExact₋ : {A B : Type ℓ} {C : Pointed ℓ} {S : CofiberSeq₋ A B C}
-                    → (CofiberSeqProj₋ S) ∘ (CofiberSeqInc₋ S)
-                        ≡ (λ _ → snd (CofiberSeqCof₋ S))
---CofiberSeqExact₋ = {!!}
-
 cofiber-CofiberSeq₋ : {A B : Type ℓ} (f : A → B)
     → CofiberSeq₋ A B (cofib f , inl tt)
 CofiberSeq₋.incl (cofiber-CofiberSeq₋ f) = f
@@ -288,11 +322,27 @@ cofiber₋-isPushout {ℓ} f =
        (pushoutLevelMix^* (λ _ → tt) (λ _ → tt*) f
                           (invIso unitLevelMix^) unitLevelMix'^))
 
+cofiber₋-isPushout∙ : {A B : Type ℓ} (f : A → B)
+  → CofiberSeqCof₋ (cofiber-CofiberSeq₋ f)
+   ≡ (Pushout {B = Unit* {ℓ}} (λ _ → tt*) f , inl tt*)
+cofiber₋-isPushout∙ f =
+  ua∙ (isoToEquiv (pushoutLevelMix^* (λ _ → tt) (λ _ → tt*) f
+                   (invIso unitLevelMix^) unitLevelMix'^))
+      refl
+   
+
+
 Cof₋-isPushout : {A B : Type ℓ} {C : Pointed ℓ} (S : CofiberSeq₋ A B C)
   → typ (CofiberSeqCof₋ S)
    ≡ Pushout {B = Unit* {ℓ}} (λ _ → tt*) (CofiberSeq₋.incl S)
 Cof₋-isPushout S = (λ i → typ (fst (CofiberSeq₋.eqCof S i)))
                  ∙ cofiber₋-isPushout (CofiberSeq₋.incl S)
+
+Cof₋-isPushout∙ : {A B : Type ℓ} {C : Pointed ℓ} (S : CofiberSeq₋ A B C)
+  → CofiberSeqCof₋ S
+   ≡ (Pushout {B = Unit* {ℓ}} (λ _ → tt*) (CofiberSeq₋.incl S) , inl tt*)
+Cof₋-isPushout∙ S = (λ i → fst (CofiberSeq₋.eqCof S i))
+                   ∙ cofiber₋-isPushout∙ (CofiberSeq₋.incl S)
 
 cofiber-CofiberSeqInc₋ : {A B : Type ℓ} (f : A → B)
     → f ≡ equivFun (CofiberSeqExt-Eq₋ {S = cofiber-CofiberSeq₋ f})
@@ -322,31 +372,20 @@ cofiberExt-isFinCWCofiberSeq₋ : {A B : Type ℓ} (f : A → B)
                                        (cofiber-CofiberSeq₋ f))
 cofiberExt-isFinCWCofiberSeq₋ = λ f x → x
 
-postulate
-  CofiberSeqMap₋ : {A B A' B' : Type ℓ} {C C' : Pointed ℓ}
-    (S : CofiberSeq₋ A B C) (S' : CofiberSeq₋ A' B' C')
-    (f : (CofiberSeqDom₋ S) → (CofiberSeqDom₋ S'))
-    (g : (CofiberSeqExt₋ S) → (CofiberSeqExt₋ S'))
-    → (g ∘ CofiberSeqInc₋ S) ≡ (CofiberSeqInc₋ S' ∘ f)
-    → ((CofiberSeqCof₋ S) →∙ (CofiberSeqCof₋ S'))
-
-  CofiberSeqMapConn₋ : (n : ℕ) {A B A' B' : Type ℓ} {C C' : Pointed ℓ}
-    (S : CofiberSeq₋ A B C) (S' : CofiberSeq₋ A' B' C')
-    (f : (CofiberSeqDom₋ S) → (CofiberSeqDom₋ S'))
-    (g : (CofiberSeqExt₋ S) → (CofiberSeqExt₋ S'))
-    (p : (g ∘ CofiberSeqInc₋ S) ≡ (CofiberSeqInc₋ S' ∘ f))
-    → isConnectedFun n f
-    → isConnectedFun (1 + n) g
-    → isConnectedFun (1 + n) (fst (CofiberSeqMap₋ S S' f g p))
-
-  CofiberSeqMap-mix : {A B : Type ℓ} {C A' B' C' : Pointed ℓ}
+CofiberSeqMap-mix : {A B : Type ℓ} {C A' B' C' : Pointed ℓ}
     (S : CofiberSeq₋ A B C) (S' : CofiberSeq A' B' C')
     (f : (CofiberSeqDom₋ S) → typ (CofiberSeqDom S'))
     (g : (CofiberSeqExt₋ S) → typ (CofiberSeqExt S'))
     → (g ∘ CofiberSeqInc₋ S) ≡ ((fst (CofiberSeqInc S')) ∘ f)
     → ((CofiberSeqCof₋ S) →∙ (CofiberSeqCof S'))
+CofiberSeqMap-mix S S' f g H =
+  transport (λ i → (Cof₋-isPushout∙ S (~ i)) →∙ (Cof-isPushout∙ S' (~ i)))
+            ((Pushout→ (λ _ → tt*) (CofiberSeq₋.incl S) (λ _ → tt*)
+                        (fst (CofiberSeq.incl S')) f (λ _ → tt*)
+                        g refl H)
+            , refl)
 
-  CofiberSeqMapConn-mix : (n : ℕ) {A B : Type ℓ} {C A' B' C' : Pointed ℓ}
+CofiberSeqMapConn-mix : (n : ℕ) {A B : Type ℓ} {C A' B' C' : Pointed ℓ}
     (S : CofiberSeq₋ A B C) (S' : CofiberSeq A' B' C')
     (f : (CofiberSeqDom₋ S) → typ (CofiberSeqDom S'))
     (g : (CofiberSeqExt₋ S) → typ (CofiberSeqExt S'))
@@ -354,15 +393,28 @@ postulate
     → isConnectedFun n f
     → isConnectedFun (1 + n) g
     → isConnectedFun (1 + n) (fst (CofiberSeqMap-mix S S' f g p))
+CofiberSeqMapConn-mix n S S' f g p hf hg =
+  isConnectedTrnspConnected* (λ i → typ (Cof-isPushout∙ S' (~ i)))
+                             (λ i → typ (Cof₋-isPushout∙ S (~ i)))
+    (Pushout→ (λ _ → tt*) (CofiberSeq₋.incl S) (λ _ → tt*)
+               (fst (CofiberSeq.incl S')) f (λ _ → tt*) g refl p)
+    (isConnectedPushout→ (λ _ → tt*) (CofiberSeq₋.incl S) (λ _ → tt*)
+       (fst (CofiberSeq.incl S')) f (λ _ → tt*) g refl p n hf
+       (isEquiv→isConnected (λ _ → tt*)
+         (isoToIsEquiv (iso (λ _ → tt*) (λ _ → tt*)
+          (λ _ → refl) (λ _ → refl))) (1 + n))
+        hg)
 
-  CofiberSeqMap-cofiber : {A B : Type ℓ} {A' B' C' : Pointed ℓ}
+CofiberSeqMap-cofiber : {A B : Type ℓ} {A' B' C' : Pointed ℓ}
     (m : A → B) (S' : CofiberSeq A' B' C')
     (f : A → typ (CofiberSeqDom S'))
     (g : B → typ (CofiberSeqExt S'))
     → (g ∘ m) ≡ ((fst (CofiberSeqInc S')) ∘ f)
     → ((CofiberSeqCof₋ (cofiber-CofiberSeq₋ m)) →∙ (CofiberSeqCof S'))
+CofiberSeqMap-cofiber m S' f g H =
+  CofiberSeqMap-mix (cofiber-CofiberSeq₋ m) S' f g H
 
-  CofiberSeqMapConn-cofiber : (n : ℕ) {A B : Type ℓ} {A' B' C' : Pointed ℓ}
+CofiberSeqMapConn-cofiber : (n : ℕ) {A B : Type ℓ} {A' B' C' : Pointed ℓ}
     (m : A → B) (S' : CofiberSeq A' B' C')
     (f : A → typ (CofiberSeqDom S'))
     (g : B → typ (CofiberSeqExt S'))
@@ -370,6 +422,8 @@ postulate
     → isConnectedFun n f
     → isConnectedFun (1 + n) g
     → isConnectedFun (1 + n) (fst (CofiberSeqMap-cofiber m S' f g p))
+CofiberSeqMapConn-cofiber n m S' f g p hf hg =
+  CofiberSeqMapConn-mix n (cofiber-CofiberSeq₋ m) S' f g p hf hg
 
 CofiberSeq₋→CofiberSeq : {A B C : Pointed ℓ}
     (S : CofiberSeq₋ (typ A) (typ B) C)

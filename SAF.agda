@@ -461,7 +461,7 @@ stablyNFiniteCofiber {ℓ} {n = n} {A = A} {B = B} {C = C} S hA =
   where
 
     S' : (k : ℕ) → CofiberSeq (Susp∙^ k A) (Susp∙^ k B) (Susp∙^ k C)
-    S' k = copuppe-Cof S
+    S' k = copuppe-Cof k S
 
     rtmtc : (k k' : ℕ) → (k + (1 + k')) ≡ (1 + (k + k'))
     rtmtc k k' = +-assoc k 1 k' ∙ cong (_+ k') (+-comm k 1)
@@ -594,7 +594,7 @@ stablyNFiniteExtension {ℓ} {n = n} {A = A} {B = B} {C = C} S hA hC =
   stablyNFiniteOfSusp n B (stablyNFiniteCofiber S' hC (susp-stablyNFinite n A hA))
   where
     S' : CofiberSeq C (S∙ A) (S∙ B)
-    S' = copuppe-Ext {n = 0} S
+    S' = copuppe-Ext 0 S
 
 
 safCofiber : {A B C : Pointed ℓ} → CofiberSeq A B C
