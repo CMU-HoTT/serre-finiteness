@@ -150,6 +150,9 @@ isFinCWS n = subst isFinCW (isoToPath lem)
   lem : Iso (Lift (S₊ n)) (S n .fst)
   lem = compIso (invIso LiftIso) (invIso rUnit*×Iso)
 
+isConnectedS : (n : ℕ) → isConnected (suc n) (S {ℓ} n .fst)
+isConnectedS n = isConnectedRetractFromIso (suc n) rUnit*×Iso (sphereConnected n)
+
 -- `nFinite n X` corresponds to "X is (n-1)-finite" on paper,
 -- because `isConnectedFun n f` corresponds to "f is (n-2)-connected".
 nFinite : HLevel → Type ℓ → Type (ℓ-suc ℓ)
