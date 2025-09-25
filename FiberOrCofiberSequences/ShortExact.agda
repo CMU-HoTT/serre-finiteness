@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module FiberOrCofiberSequences.ShortExact where
 
 open import Cubical.Foundations.Prelude

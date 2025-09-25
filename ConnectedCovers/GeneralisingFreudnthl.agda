@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module ConnectedCovers.GeneralisingFreudnthl where
 
 open import Cubical.Foundations.Prelude

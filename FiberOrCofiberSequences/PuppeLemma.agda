@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module FiberOrCofiberSequences.PuppeLemma where
 
 open import Cubical.Foundations.Prelude
@@ -164,4 +164,6 @@ puppeProjEqFibIncl : {A B C : Pointed ℓ} (F : FiberSeq A B C)
 puppeProjEqFibIncl {A = A} {B = B} {C = C} F =
   J (λ Y p → FiberSeqProj (transport (λ i → FiberSeq (Ω C) (fst (p i)) B)
                                       (puppeFiberFiberCase (FiberSeqProj F)))
-             ≡ (snd Y)) (cong (FiberSeqProj) (transportRefl _) ∙ puppeProjFiberFiberCase (FiberSeqProj F)) (λ i → FiberSeq.eqFib F (~ i))
+             ≡ (snd Y))
+    (transportRefl _ ∙ transportRefl _)
+    (λ i → FiberSeq.eqFib F (~ i))

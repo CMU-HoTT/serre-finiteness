@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module PointedHITs where
 
 open import Cubical.Foundations.Prelude

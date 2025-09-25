@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module ConnectedCovers.K-G-n-facts where
 
 open import Cubical.Foundations.Prelude

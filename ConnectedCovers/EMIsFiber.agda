@@ -1,5 +1,5 @@
 -- containing a proof that the fibers in the Whitehead tower are K(πₙ₊₁X,n)
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module ConnectedCovers.EMIsFiber where
 
 open import Cubical.Foundations.Prelude

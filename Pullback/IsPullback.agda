@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module Pullback.IsPullback where
 
 open import Cubical.Foundations.Equiv
@@ -29,4 +30,3 @@ module _ {B C D : Type ℓ} (f : B → D) (g : C → D) where
       no-eta-equality
       field
         comparisonIsEquiv : (E : Type ℓ) → isEquiv (pullbackComparison E)
-      

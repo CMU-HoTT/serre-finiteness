@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module ConnectedCovers.PointedEquivalences where
 
 open import Cubical.Foundations.Prelude

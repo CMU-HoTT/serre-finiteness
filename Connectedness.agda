@@ -1,3 +1,4 @@
+{-# OPTIONS --safe #-}
 module Connectedness where
 
 open import Cubical.Foundations.Prelude

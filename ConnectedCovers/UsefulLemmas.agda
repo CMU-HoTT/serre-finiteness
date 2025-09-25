@@ -1,4 +1,4 @@
-{-# OPTIONS --lossy-unification #-}
+{-# OPTIONS --lossy-unification --safe #-}
 module ConnectedCovers.UsefulLemmas where
 
 open import Cubical.Foundations.Prelude
