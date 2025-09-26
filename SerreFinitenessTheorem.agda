@@ -59,21 +59,51 @@ open import Cubical.HITs.PropositionalTruncation
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Group.PinSn
 open import Cubical.Algebra.Group.Morphisms
+open import Cubical.Algebra.Group.MorphismProperties
 open import Cubical.Algebra.Group.Instances.Int
 open import Cubical.Algebra.AbGroup.Instances.Int
 open import Cubical.Algebra.AbGroup
 open import Cubical.Algebra.Group
 open import Cubical.Algebra.AbGroup.FinitePresentation
-open import Cubical.Data.Int
+open import Cubical.Data.Nat
+open import Cubical.Data.Bool hiding (_≤_)
+open import Cubical.Data.Unit
+open import Cubical.Data.Nat.Order
+open import Cubical.Data.Int hiding (_+_)
 open import Cubical.HITs.SetQuotients
 open import Cubical.Data.Nat.Order.Inductive
 open import Cubical.Algebra.Group.QuotientGroup
 open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
 open import Cubical.Algebra.Group.Instances.Unit
+open import Cubical.HITs.SetTruncation as ST
 
 -- TODO: upstream and add for Group as well
 AbGroupIso→AbGroupEquiv : {G : AbGroup ℓ} {H : AbGroup ℓ'} → AbGroupIso G H → AbGroupEquiv G H
 AbGroupIso→AbGroupEquiv (e , h) = isoToEquiv e , h
+
+-- How is this not in the library yet??
+isOfHLevel+ : ∀ {ℓ} {A : Type ℓ} (n m : ℕ) → isOfHLevel n A → isOfHLevel (m + n) A
+isOfHLevel+ n zero h = h
+isOfHLevel+ n (suc m) h = isOfHLevelSuc (m + n) (isOfHLevel+ n m h)
+
+module _ {ℓ} {A : Pointed ℓ} (n m : ℕ) (le : n ≤ m) (hA : isOfHLevel n (fst A))
+  where
+  πVanish : isContr (π m A)
+  πVanish =
+    subst (λ m → isContr (π m A)) (snd le)
+      (isOfHLevelRetractFromIso 0
+        (setTruncIso (isContr→Iso (hLevΩ+ {A = A} 0 (le .fst + n)
+                     adjust-HLevel)
+                     isContrUnit))
+      (∣ tt ∣₂ , ST.elim (λ _ → isSetPathImplicit) λ _ → refl))
+    where
+    adjust-HLevel : isOfHLevel (le .fst + n + 0) (typ A)
+    adjust-HLevel =
+      subst (λ n → isOfHLevel n (typ A)) (sym (+-comm (le .fst + n) 0))
+        (isOfHLevel+ n (fst le) hA)
+
+  π'Vanish : isContr (π' m A)
+  π'Vanish = isOfHLevelRetractFromIso 0 (setTruncIso (IsoSphereMapΩ m)) πVanish
 
 open FinitePresentation
 open AbGroupStr
@@ -92,19 +122,28 @@ finPresTrivialAbGroup .fpiso .snd = record { pres· = λ x y i →  [ (λ x₁ �
 isFPTrivialAbGroup : isFP {ℓ = ℓ} trivialAbGroup
 isFPTrivialAbGroup = ∣ finPresTrivialAbGroup ∣₁
 
+wtf : GroupIso {ℓ' = ℓ} UnitGroup₀ UnitGroup
+wtf = invGroupIso (contrGroupIsoUnit (tt* , (λ { tt* → refl })))
+
 -- π_{n+2}(S⁰) = 0
 lemma0 : (n : ℕ) → πAb n (S₊∙ 0) ≡ trivialAbGroup
 lemma0 n = AbGroupPath _ _ .fst (AbGroupIso→AbGroupEquiv suff)
   where
+  boo : isContr (π (suc (suc n)) (S₊∙ 0))
+  boo = πVanish 2 (suc (suc n)) (≤-+k zero-≤) isSetBool
+
   suff : GroupIso (πGr (suc n) (S₊∙ 0)) UnitGroup
-  suff = {!!}
+  suff = compGroupIso (contrGroupIsoUnit boo) wtf
 
 -- π_{n+2}(S¹) = 0
 lemma1 : (n : ℕ) → πAb n (S₊∙ 1) ≡ trivialAbGroup
 lemma1 n = AbGroupPath _ _ .fst (AbGroupIso→AbGroupEquiv suff)
   where
+  boo : isContr (π (suc (suc n)) (S₊∙ 1))
+  boo = πVanish 2 (suc (suc n)) (≤-+k zero-≤) {!!}
+
   suff : GroupIso (πGr (suc n) (S₊∙ 1)) UnitGroup
-  suff = {!!}
+  suff = compGroupIso (contrGroupIsoUnit boo) wtf
 
 isFPπAbS₊ : (n m : ℕ) → isFP (πAb n (S₊∙ m))
 isFPπAbS₊ n 0 = subst isFP (sym (lemma0 n)) isFPTrivialAbGroup
