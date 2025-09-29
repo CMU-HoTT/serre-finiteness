@@ -54,11 +54,11 @@ open import LastMinuteLemmas.ConnectedLemmas
 open import LastMinuteLemmas.SmashLemmas
 open import LastMinuteLemmas.CWLemmas
 open import LastMinuteLemmas.SuspLemmas
-
+open import LastMinuteLemmas.CWResize
 
 private
   variable
-    ℓ : Level
+    ℓ ℓ' : Level
 
 
 srthmetic : (m n : ℕ) → (m + suc n) ≡ (suc (m + n))
@@ -1031,3 +1031,38 @@ stablyNFiniteApprox' {ℓ} {X} {Y} f n cf hY =
     γ : (hY' : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ Y)))
        → Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))
     γ (m , hY') = m , nFiniteApprox' (susp-f m) (m + n) (susp-f-conn m) hY'
+
+
+-- Invariance under isomorphism.
+-- This is only interesting for levels ℓ ≠ ℓ', otherwise just use univalence.
+
+nFiniteOfIso : {n : HLevel} {X : Type ℓ} {X' : Type ℓ'} (i : Iso X X')
+  → nFinite n X → nFinite n X'
+nFiniteOfIso {n = n} {X = X} {X' = X'} i = PT.map main
+  where
+    main : Σ[ C ∈ FinCW ℓ ] Σ[ f ∈ (decodeFinCW C → X) ] isConnectedFun n f
+         → Σ[ C ∈ FinCW ℓ' ] Σ[ f ∈ (decodeFinCW C → X') ] isConnectedFun n f
+    main (C , f , cf) =
+      fst resizeEquiv C , i .Iso.fun ∘ f ∘ fst (invEquiv (resizeEquiv-Equiv C)) ,
+      isConnectedComp (i .Iso.fun) (f ∘ fst (invEquiv (resizeEquiv-Equiv C))) n
+        (isEquiv→isConnected (i .Iso.fun) (isoToEquiv i .snd) n)
+        (isConnectedComp _ _ n cf
+         (isEquiv→isConnected _ (snd (invEquiv (resizeEquiv-Equiv C))) n))
+
+-- induced isomorphism between iterated suspensions
+IsoSusp^ : {A : Type ℓ} {B : Type ℓ'} → Iso A B → (n : ℕ)
+  → Iso (Susp^ n A) (Susp^ n B)
+IsoSusp^ i zero = i
+IsoSusp^ i (suc n) = IsoSusp^ (IsoType→IsoSusp i) n
+
+stablyNFiniteOfIso : {n : HLevel} {X : Pointed ℓ} {X' : Pointed ℓ'}
+  (i : Iso (typ X) (typ X')) → stablyNFinite n X → stablyNFinite n X'
+stablyNFiniteOfIso {n = n} {X = X} {X' = X'} i = PT.map main
+  where
+    main : Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X))
+         → Σ[ m ∈ ℕ ] nFinite (m + n) (Susp^ m (typ X'))
+    main (m , h) = (m , nFiniteOfIso (IsoSusp^ i m) h)
+
+safOfIso : {X : Pointed ℓ} {X' : Pointed ℓ'}
+  (i : Iso (typ X) (typ X')) → saf X → saf X'
+safOfIso i h n = stablyNFiniteOfIso i (h n)
