@@ -54,6 +54,7 @@ isFPπAbSn n m = saf→isFPπ (S (2 + m)) (saf-Sn (2 + m)) rem2 n
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Univalence
+open import Cubical.HITs.S1
 open import Cubical.HITs.Susp
 open import Cubical.HITs.PropositionalTruncation
 open import Cubical.Homotopy.Group.Base
@@ -70,7 +71,7 @@ open import Cubical.Data.Bool hiding (_≤_)
 open import Cubical.Data.Unit
 open import Cubical.Data.Nat.Order
 open import Cubical.Data.Int hiding (_+_)
-open import Cubical.HITs.SetQuotients
+open import Cubical.HITs.SetQuotients as SQ
 open import Cubical.Data.Nat.Order.Inductive
 open import Cubical.Algebra.Group.QuotientGroup
 open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
@@ -122,6 +123,20 @@ finPresTrivialAbGroup .fpiso .snd = record { pres· = λ x y i →  [ (λ x₁ �
 isFPTrivialAbGroup : isFP {ℓ = ℓ} trivialAbGroup
 isFPTrivialAbGroup = ∣ finPresTrivialAbGroup ∣₁
 
+finPresℤ : FinitePresentation {ℓ = ℓ-zero} ℤAbGroup
+finPresℤ .nGens = 1
+finPresℤ .nRels = 0
+finPresℤ .rels = (λ x y → 0) , record { pres· = λ x y i x₁ → 0 ; pres1 = λ i x → 0 ; presinv = λ x i x₁ → 0 }
+finPresℤ .fpiso .fst .Iso.fun = λ x → [ (λ x₁ → x) ]
+finPresℤ .fpiso .fst .Iso.inv = SQ.rec isSetℤ (λ x → x (0 , tt)) λ a b → {!!}
+finPresℤ .fpiso .fst .Iso.rightInv = {!!}
+finPresℤ .fpiso .fst .Iso.leftInv = {!!}
+finPresℤ .fpiso .snd = {!!}
+
+isFPℤ : isFP {ℓ = ℓ-zero} ℤAbGroup
+isFPℤ = ∣ finPresℤ ∣₁
+
+
 wtf : GroupIso {ℓ' = ℓ} UnitGroup₀ UnitGroup
 wtf = invGroupIso (contrGroupIsoUnit (tt* , (λ { tt* → refl })))
 
@@ -140,7 +155,8 @@ lemma1 : (n : ℕ) → πAb n (S₊∙ 1) ≡ trivialAbGroup
 lemma1 n = AbGroupPath _ _ .fst (AbGroupIso→AbGroupEquiv suff)
   where
   boo : isContr (π (suc (suc n)) (S₊∙ 1))
-  boo = πVanish 2 (suc (suc n)) (≤-+k zero-≤) {!!}
+  boo = {!!}
+  -- πVanish 2 (suc (suc n)) (≤-+k zero-≤) λ x y → {!isGroupoidS¹ x y!}
 
   suff : GroupIso (πGr (suc n) (S₊∙ 1)) UnitGroup
   suff = compGroupIso (contrGroupIsoUnit boo) wtf
@@ -153,3 +169,15 @@ isFPπAbS₊ n (suc (suc m)) = subst (λ A → isFP (πAb n A)) (sym rem) (isFP�
   rem : S₊∙ (suc (suc m)) ≡ S (suc (suc m))
   rem = ΣPathP ((isoToPath (iso (λ x → (x , tt*)) fst (λ { (x , tt*) → refl }) λ _ → refl))
                , toPathP (λ i → north , tt*))
+
+-- π_{n+1} S^m ??
+πSphere : (n m : ℕ) → AbGroup₀
+πSphere n 0 = Group→AbGroup (πGr n (S₊∙ 0)) {!!}
+πSphere n 1 = Group→AbGroup (πGr n (S₊∙ 1)) {!!}
+πSphere n (suc (suc m)) = {!!}
+
+πSphere0TrivialGroup : (n : ℕ) → πSphere n 0 ≡ trivialAbGroup
+πSphere0TrivialGroup n = {!!}
+
+isFPπSphere : (n m : ℕ) → isFP (πSphere n m)
+isFPπSphere n m = {!!}
