@@ -15,6 +15,7 @@ open import Cubical.Algebra.AbGroup.Base
 open import Cubical.Algebra.AbGroup.Instances.DirectProduct
 open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to ℤMod)
+open import Cubical.Algebra.Group.MorphismProperties
 
 open import Cubical.Data.Sum as ⊎ hiding (rec)
 
@@ -558,6 +559,11 @@ EMℤMod-saf n (suc m) =
             (transport (λ i → saf (EM≃ΩEM+1∙ {G = ℤMod (suc n)} (suc m) i))
                        (EMℤMod-saf n m))
 
+EMℤMod-saf' : (n m : ℕ) (G : AbGroup ℓ) → AbGroupIso G (ℤMod (suc n))
+  → saf (EM∙ G (suc m))
+EMℤMod-saf' n m G v =
+  safOfIso (invIso (Iso→EMIso (GroupIso→GroupEquiv v) (suc m))) (EMℤMod-saf n m)
+
 EMℤ-saf : (m : ℕ) → saf {ℓ = ℓ-zero} (EM∙ ℤ (suc m))
 EMℤ-saf zero = transport (λ i → saf (EM₁ℤ (~ i)))
                          (saf-Sn 1)
@@ -568,6 +574,10 @@ EMℤ-saf (suc m) =
                           (isConnectedEM (2 + m))))
                (transport (λ i → saf (EM≃ΩEM+1∙ {G = ℤ} (suc m) i))
                          (EMℤ-saf m))
+
+EMℤ-saf' : (m : ℕ) (G : AbGroup ℓ) → AbGroupIso G ℤ → saf (EM∙ G (suc m))
+EMℤ-saf' m G v =
+  safOfIso (invIso (Iso→EMIso (GroupIso→GroupEquiv v) (suc m))) (EMℤ-saf m)
 
 saf-dir-prod : (H K : AbGroup ℓ)
   → ((n : ℕ) → saf (EM∙ H (suc n)))
@@ -584,4 +594,12 @@ isFP→safEM =
   indFP (λ A → (n : ℕ) → saf (EM∙ A (suc n)))
         (λ A → isOfHLevelΠ 1 λ n → saf-isProp {X = EM∙ A (suc n)})
         (λ { zero m → EMℤ-saf m ; (suc n) m → EMℤMod-saf n m})
+        saf-dir-prod
+
+isFP→safEM' : (A : AbGroup ℓ) (fpA : isFP A) (n : ℕ)
+  → saf (EM∙ A (suc n))
+isFP→safEM' =
+ indFP' (λ A → (n : ℕ) → saf (EM∙ A (suc n)))
+        (λ A → isOfHLevelΠ 1 λ n → saf-isProp {X = EM∙ A (suc n)})
+        (λ { zero G v m → EMℤ-saf' m G v ; (suc n) G v m → EMℤMod-saf' n m G v })
         saf-dir-prod

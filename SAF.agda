@@ -42,7 +42,6 @@ open import Cubical.CW.Instances.Sn
 
 open import FiniteCW
 open import PointedHITs
-open import FPAbGroup
 open import HomotopyGroups
 open import FiberOrCofiberSequences.Base
 open import FiberOrCofiberSequences.CofiberBase
