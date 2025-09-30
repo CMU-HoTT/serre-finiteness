@@ -77,6 +77,7 @@ open import Cubical.Algebra.Group.QuotientGroup
 open import Cubical.Algebra.AbGroup.Instances.FreeAbGroup
 open import Cubical.Algebra.Group.Instances.Unit
 open import Cubical.HITs.SetTruncation as ST
+open import Cubical.Algebra.Group.Instances.Bool
 
 -- TODO: upstream and add for Group as well
 AbGroupIso→AbGroupEquiv : {G : AbGroup ℓ} {H : AbGroup ℓ'} → AbGroupIso G H → AbGroupEquiv G H
@@ -109,7 +110,7 @@ module _ {ℓ} {A : Pointed ℓ} (n m : ℕ) (le : n ≤ m) (hA : isOfHLevel n (
 open FinitePresentation
 open AbGroupStr
 
--- This could probably be done nicer
+-- This could probably be done nicer?
 finPresTrivialAbGroup : FinitePresentation {ℓ = ℓ} trivialAbGroup
 finPresTrivialAbGroup .nGens = 0
 finPresTrivialAbGroup .nRels = 0
@@ -137,29 +138,29 @@ isFPℤ : isFP {ℓ = ℓ-zero} ℤAbGroup
 isFPℤ = ∣ finPresℤ ∣₁
 
 
-wtf : GroupIso {ℓ' = ℓ} UnitGroup₀ UnitGroup
-wtf = invGroupIso (contrGroupIsoUnit (tt* , (λ { tt* → refl })))
+sigh : GroupIso {ℓ' = ℓ} UnitGroup₀ UnitGroup
+sigh = invGroupIso (contrGroupIsoUnit (tt* , (λ { tt* → refl })))
 
 -- π_{n+2}(S⁰) = 0
 lemma0 : (n : ℕ) → πAb n (S₊∙ 0) ≡ trivialAbGroup
 lemma0 n = AbGroupPath _ _ .fst (AbGroupIso→AbGroupEquiv suff)
   where
   boo : isContr (π (suc (suc n)) (S₊∙ 0))
-  boo = πVanish 2 (suc (suc n)) (≤-+k zero-≤) isSetBool
+  boo = πVanish 2 (suc (suc n)) (≤-k+ zero-≤) isSetBool
 
   suff : GroupIso (πGr (suc n) (S₊∙ 0)) UnitGroup
-  suff = compGroupIso (contrGroupIsoUnit boo) wtf
+  suff = compGroupIso (contrGroupIsoUnit boo) sigh
 
 -- π_{n+2}(S¹) = 0
 lemma1 : (n : ℕ) → πAb n (S₊∙ 1) ≡ trivialAbGroup
 lemma1 n = AbGroupPath _ _ .fst (AbGroupIso→AbGroupEquiv suff)
   where
   boo : isContr (π (suc (suc n)) (S₊∙ 1))
-  boo = {!!}
+  boo = {!!} -- hmm...
   -- πVanish 2 (suc (suc n)) (≤-+k zero-≤) λ x y → {!isGroupoidS¹ x y!}
 
   suff : GroupIso (πGr (suc n) (S₊∙ 1)) UnitGroup
-  suff = compGroupIso (contrGroupIsoUnit boo) wtf
+  suff = compGroupIso (contrGroupIsoUnit boo) sigh
 
 isFPπAbS₊ : (n m : ℕ) → isFP (πAb n (S₊∙ m))
 isFPπAbS₊ n 0 = subst isFP (sym (lemma0 n)) isFPTrivialAbGroup
@@ -170,14 +171,32 @@ isFPπAbS₊ n (suc (suc m)) = subst (λ A → isFP (πAb n A)) (sym rem) (isFP�
   rem = ΣPathP ((isoToPath (iso (λ x → (x , tt*)) fst (λ { (x , tt*) → refl }) λ _ → refl))
                , toPathP (λ i → north , tt*))
 
--- π_{n+1} S^m ??
-πSphere : (n m : ℕ) → AbGroup₀
-πSphere n 0 = Group→AbGroup (πGr n (S₊∙ 0)) {!!}
-πSphere n 1 = Group→AbGroup (πGr n (S₊∙ 1)) {!!}
-πSphere n (suc (suc m)) = {!!}
+-- New attempt at generalizing
 
-πSphere0TrivialGroup : (n : ℕ) → πSphere n 0 ≡ trivialAbGroup
-πSphere0TrivialGroup n = {!!}
+-- TODO: upstream
+BoolAbGroupStr : AbGroupStr Bool
+BoolAbGroupStr = Group→AbGroup BoolGroup (λ { false false → refl ; false true → refl ; true false → refl ; true true → refl }) .snd
+
+π₀S¹⁺ : (n : ℕ) → π 0 (S₊∙ (suc n)) ≡ Unit*
+π₀S¹⁺ n = {!!}
+
+π₁S⁰ : π 1 (S₊∙ 0) ≡ Unit*
+π₁S⁰ = {!!}
+
+π₁S²⁺ : (n : ℕ) → π 1 (S₊∙ (suc (suc n))) ≡ Unit*
+π₁S²⁺ n = {!!}
+
+-- π_n(S^m)
+πSphere : (n m : ℕ) → AbGroup₀
+πSphere 0 0 = (π 0 (S₊∙ 0)) , rem
+  where
+  rem : AbGroupStr ∥ Bool ∥₂
+  rem = subst AbGroupStr (sym (setTruncIdempotent isSetBool)) BoolAbGroupStr
+πSphere 0 (suc m) = (π 0 (S₊∙ (suc m))) , subst AbGroupStr (sym (π₀S¹⁺ m)) (trivialAbGroup .snd)
+πSphere 1 0 = (π 1 (S₊∙ 0)) , subst AbGroupStr (sym π₁S⁰) (trivialAbGroup .snd)
+πSphere 1 1 = (π 1 (S₊∙ 1)) , (subst AbGroupStr (sym (cong ∥_∥₂ ΩS¹≡ℤ ∙ setTruncIdempotent isSetℤ)) (ℤAbGroup .snd))
+πSphere 1 (suc (suc m)) = π 1 (S₊∙ (suc (suc m))) , subst AbGroupStr (sym (π₁S²⁺ m)) (trivialAbGroup .snd)
+πSphere (suc (suc n)) m = πAb n (S₊∙ m)
 
 isFPπSphere : (n m : ℕ) → isFP (πSphere n m)
 isFPπSphere n m = {!!}
