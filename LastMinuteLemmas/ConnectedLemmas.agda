@@ -99,4 +99,4 @@ isConnectedSusp^Fun f n (suc m) cf =
 -- move to Cubical.Data.Nat.Properties
 min-diag : (a : ℕ) → min a a ≡ a
 min-diag zero = refl
-min-diag (suc a) = cong suc (min-diag a)
+min-diag (suc a) = minSuc ∙ cong suc (min-diag a)
