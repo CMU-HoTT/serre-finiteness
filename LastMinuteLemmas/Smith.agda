@@ -135,9 +135,9 @@ module _ (n m : ℕ) where
                               (HomGroup (AbGroup→Group ℤ[Fin n ]) ℤ[Fin m ])
   Iso.fun (fst Matℤ'≅HomGroup) = Matrix→FreeHomHom .fst
   Iso.inv (fst Matℤ'≅HomGroup) = FreeHom→MatrixHom .fst
-  Iso.rightInv (fst Matℤ'≅HomGroup) f =
+  Iso.sec (fst Matℤ'≅HomGroup) f =
     funExt⁻ (cong fst Matrix→FreeHom→Matrix) f
-  Iso.leftInv (fst Matℤ'≅HomGroup) f =
+  Iso.ret (fst Matℤ'≅HomGroup) f =
     funExt⁻ (cong fst FreeHom→Matrix→FreeHom) f
   snd Matℤ'≅HomGroup = Matrix→FreeHomHom .snd
 
@@ -335,7 +335,7 @@ Matℤ≅HomGroup-presSmith : (n m : ℕ) (l : List ℤ)
 Matℤ≅HomGroup-presSmith n m l =
   sym (cong (Iso.fun (Matℤ≅HomGroup _ _ .fst) )
             (Matℤ≅HomGroup⁻¹-presSmith n m l))
-  ∙ Iso.rightInv (Matℤ≅HomGroup _ _ .fst) (smithHom n m l)
+  ∙ Iso.sec (Matℤ≅HomGroup _ _ .fst) (smithHom n m l)
 
 -------- Goal : ℤ[Fin]/ImSmith ≅ ℤᵐ × ℤ/a₁ × ... × ℤ/aₙ --------
 -- Definition of ℤᵐ × ℤ/a₁ × ... × ℤ/aₙ
@@ -481,7 +481,7 @@ Iso.fun (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
   fst (ℤ[Fin]/ImSmith→ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)
 Iso.inv (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
   fst (ℤAbGroup/'×ℤ[Fin]/ImSmith→ℤ[Fin]/ImSmith n m l x)
-Iso.rightInv (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
+Iso.sec (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
   uncurry (SQ.elimProp (λ _ → isPropΠ λ _ → isSetΣ squash/ (λ _ → squash/) _ _)
     λ a → SQ.elimProp (λ _ → isSetΣ squash/ (λ _ → squash/) _ _)
       λ b → ΣPathP (cong [_]'
@@ -492,7 +492,7 @@ Iso.rightInv (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
             (elimFin-altβ {m = len l +ℕ m} {A = λ _ → ℤ} a (λ _ → pos 0) .snd s)
             (elimFin-altβ {m = len l +ℕ m} {A = λ _ → ℤ} (pos 0) b .snd s)
           ∙ +Comm 0 (b s))))
-Iso.leftInv (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
+Iso.ret (fst (ℤ[Fin]/ImSmith≅ℤAbGroup/'×ℤ[Fin]/ImSmith n m l x)) =
   SQ.elimProp (λ _ → squash/ _ _)
   λ f → cong [_]' (funExt
     (elimFin-alt
@@ -584,7 +584,7 @@ module _ {ℓ} {G : AbGroup ℓ} (fpG : FinitePresentation G) where
 
     rels≡ : rels ≡ compGroupHom (GroupEquiv→GroupHom ϕₗ)
                    (compGroupHom ϕₘ (GroupEquiv→GroupHom ϕᵣ))
-    rels≡ = sym (Iso.rightInv (fst (Matℤ≅HomGroup nRels nGens)) rels)
+    rels≡ = sym (Iso.sec (fst (Matℤ≅HomGroup nRels nGens)) rels)
           ∙ cong (Iso.fun (fst (Matℤ≅HomGroup nRels nGens)))
                  M≡L⁻TR⁻
           ∙ Matℤ≅HomGroupPresMult nRels nGens nGens (L⁻ ✦ T) R⁻

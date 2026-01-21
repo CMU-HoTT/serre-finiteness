@@ -88,8 +88,8 @@ indFP' {ℓ'} {ℓ} P prop bas prod A fpA = PT.rec (prop A) main fpA
       → AbGroupIso (LiftGroup (AbDirProd H K)) (AbDirProd (LiftGroup H) (LiftGroup K))
     LiftDirProdIso H K .fst .fun ((h , k) , _) = (h , tt*) , (k , tt*)
     LiftDirProdIso H K .fst .inv ((h , _) , (k , _)) = (h , k) , tt*
-    LiftDirProdIso H K .fst .rightInv ((h , _) , (k , _)) = refl
-    LiftDirProdIso H K .fst .leftInv ((h , k) , _) = refl
+    LiftDirProdIso H K .fst .sec ((h , _) , (k , _)) = refl
+    LiftDirProdIso H K .fst .ret ((h , k) , _) = refl
     LiftDirProdIso H K .snd .pres· _ _ = refl
     LiftDirProdIso H K .snd .pres1 = refl
     LiftDirProdIso H K .snd .presinv _ = refl

@@ -55,10 +55,10 @@ isFinCW⊎ {A = A} {B = B} fA fB =
   PushoutEmptyDomainIso* .Iso.fun (inr x) = inr x
   PushoutEmptyDomainIso* .Iso.inv (inl x) = inl x
   PushoutEmptyDomainIso* .Iso.inv (inr x) = inr x
-  PushoutEmptyDomainIso* .Iso.rightInv (inl x) = refl
-  PushoutEmptyDomainIso* .Iso.rightInv (inr x) = refl
-  PushoutEmptyDomainIso* .Iso.leftInv (inl x) = refl
-  PushoutEmptyDomainIso* .Iso.leftInv (inr x) = refl
+  PushoutEmptyDomainIso* .Iso.sec (inl x) = refl
+  PushoutEmptyDomainIso* .Iso.sec (inr x) = refl
+  PushoutEmptyDomainIso* .Iso.ret (inl x) = refl
+  PushoutEmptyDomainIso* .Iso.ret (inr x) = refl
 
 -- move to Cubical.Fin.Instances.Fin
 isFinCWFin : (n : ℕ) → isFinCW (Fin n)

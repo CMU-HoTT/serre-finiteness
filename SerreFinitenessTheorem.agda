@@ -131,8 +131,8 @@ finPresTrivialAbGroup .nRels = 0
 finPresTrivialAbGroup .rels = (λ x y → pos 0) , record { pres· = λ x y i x₁ → pos 0 ; pres1 = λ i x → pos 0 ; presinv = λ x i x₁ → pos 0 }
 finPresTrivialAbGroup .fpiso .fst .Iso.fun = λ x → [ (λ x₁ → pos 0) ]
 finPresTrivialAbGroup .fpiso .fst .Iso.inv = λ x → lift tt
-finPresTrivialAbGroup .fpiso .fst .Iso.rightInv = elimProp (λ x → is-set (snd (ℤ[Fin 0 ] /Im _) ) _ _) λ a → cong [_] (funExt (λ { () }))
-finPresTrivialAbGroup .fpiso .fst .Iso.leftInv (lift tt) = refl
+finPresTrivialAbGroup .fpiso .fst .Iso.sec = elimProp (λ x → is-set (snd (ℤ[Fin 0 ] /Im _) ) _ _) λ a → cong [_] (funExt (λ { () }))
+finPresTrivialAbGroup .fpiso .fst .Iso.ret (lift tt) = refl
 finPresTrivialAbGroup .fpiso .snd = record { pres· = λ x y i →  [ (λ x₁ → pos 0) ] ; pres1 = λ i → [ (λ x → pos 0) ] ; presinv = λ x i → [ (λ x₁ → pos 0) ] }
 
 isFPTrivialAbGroup : isFP {ℓ = ℓ} trivialAbGroup
@@ -149,9 +149,9 @@ finPresℤ .fpiso .fst .Iso.inv = SQ.rec isSetℤ (λ x → x (0 , tt)) λ a b
                   ∙ ℤData.+Assoc (a (0 , tt)) (ℤData.- b (0 , tt)) (b (0 , tt)))
                   ∙ sym (cong (_+ℤ b (0 , tt)) (funExt⁻ p (0 , tt)))
                   ∙ ℤData.+Comm 0 (b (0 , tt))})
-finPresℤ .fpiso .fst .Iso.rightInv = SQ.elimProp (λ _ → squash/ _ _)
+finPresℤ .fpiso .fst .Iso.sec = SQ.elimProp (λ _ → squash/ _ _)
   λ a → cong [_] (funExt λ { (zero , tt) i → a (0 , tt)})
-finPresℤ .fpiso .fst .Iso.leftInv _ = refl
+finPresℤ .fpiso .fst .Iso.ret _ = refl
 finPresℤ .fpiso .snd = makeIsGroupHom λ _ _ → refl
 
 isFPℤ : isFP {ℓ = ℓ-zero} ℤAbGroup
@@ -214,8 +214,8 @@ doubleHomℤ .snd = makeIsGroupHom λ a b → AbGroupTheory.comm-4 ℤAbGroup a 
 ℤ[Fin1]≅ℤ : GroupIso ℤGroup (AbGroup→Group ℤ[Fin 1 ])
 ℤ[Fin1]≅ℤ .fst .Iso.fun f _ = f
 ℤ[Fin1]≅ℤ .fst .Iso.inv f = f (0 , tt)
-ℤ[Fin1]≅ℤ .fst .Iso.rightInv f = funExt λ {(0 , tt) → refl}
-ℤ[Fin1]≅ℤ .fst .Iso.leftInv f = refl
+ℤ[Fin1]≅ℤ .fst .Iso.sec f = funExt λ {(0 , tt) → refl}
+ℤ[Fin1]≅ℤ .fst .Iso.ret f = refl
 ℤ[Fin1]≅ℤ .snd = makeIsGroupHom λ _ _ → refl
 
 finPresBoolAbGroup' : FinitePresentation {ℓ = ℓ-zero}

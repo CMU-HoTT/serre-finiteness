@@ -98,7 +98,7 @@ module _ {ℓ : Level} (H K : AbGroup ℓ) where
               (Iso.inv (iso1 n) ∘ EMProd→ProdEM n ∘ Iso.inv (Iso-EM-ΩEM+1 n))
     lem2 n =
         funExt (λ x → cong (congS (EMProd→ProdEM (suc n)))
-                        (sym (Iso.rightInv (Iso-EM-ΩEM+1 n) x)))
+                        (sym (Iso.sec (Iso-EM-ΩEM+1 n) x)))
       ∙ cong (_∘ Iso.inv (Iso-EM-ΩEM+1 n)) (funExt (lem n))
 
   isEquiv-EMProd→ProdEM : (n : ℕ) → isEquiv (EMProd→ProdEM n)

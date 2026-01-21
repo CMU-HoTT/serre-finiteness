@@ -35,10 +35,10 @@ Iso.fun joinUnit (inl tt) = tt
 Iso.fun joinUnit (inr tt) = tt
 Iso.fun joinUnit (push tt tt i) = tt
 Iso.inv joinUnit tt = inl tt
-Iso.rightInv joinUnit tt = refl
-Iso.leftInv joinUnit (inl tt) = refl
-Iso.leftInv joinUnit (inr tt) = push tt tt
-Iso.leftInv joinUnit (push tt tt i) = λ j → push tt tt (i ∧ j)
+Iso.sec joinUnit tt = refl
+Iso.ret joinUnit (inl tt) = refl
+Iso.ret joinUnit (inr tt) = push tt tt
+Iso.ret joinUnit (push tt tt i) = λ j → push tt tt (i ∧ j)
 
 join→Unit : {X₀ X₁ : Type ℓ}
              → (Iso.fun joinUnit) ∘ (join→ {A = X₀} {B = X₁}

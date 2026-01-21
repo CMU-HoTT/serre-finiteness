@@ -155,7 +155,7 @@ pushoutFunEqIso : ∀ {ℓA ℓA' ℓC ℓB}
   → Iso (Pushout f g) (Pushout h k)
 pushoutFunEqIso f g h k K q p =
   pushoutIso f g h k (isoToEquiv K) (idEquiv _) (idEquiv _)
-    q (funExt (λ x → cong g (sym (Iso.leftInv K x)))
+    q (funExt (λ x → cong g (sym (Iso.ret K x)))
     ∙ cong (_∘ Iso.fun K) p)
 
 pushoutLevelMix : ∀ {ℓA ℓB ℓC ℓC'}
@@ -287,8 +287,8 @@ safΩ→saf {ℓ} {B} cB hB = γ
     F0-Iso : Iso (typ (F 0)) (typ (Ω B))
     Iso.fun F0-Iso (tt* , p) = p
     Iso.inv F0-Iso p = tt* , p
-    Iso.rightInv F0-Iso = λ _ → refl
-    Iso.leftInv F0-Iso = λ _ → refl
+    Iso.sec F0-Iso = λ _ → refl
+    Iso.ret F0-Iso = λ _ → refl
 
     F0-Eq∙ : (F 0) ≃∙ (Ω B)
     fst F0-Eq∙ = isoToEquiv F0-Iso
@@ -357,8 +357,8 @@ saf→safΩ {ℓ} {B} scB hB = γ
     F0-Iso : Iso (typ (F 0)) (typ (Ω B))
     Iso.fun F0-Iso (tt* , p) = p
     Iso.inv F0-Iso p = tt* , p
-    Iso.rightInv F0-Iso = λ _ → refl
-    Iso.leftInv F0-Iso = λ _ → refl
+    Iso.sec F0-Iso = λ _ → refl
+    Iso.ret F0-Iso = λ _ → refl
 
     F0-Eq∙ : (F 0) ≃∙ (Ω B)
     fst F0-Eq∙ = isoToEquiv F0-Iso

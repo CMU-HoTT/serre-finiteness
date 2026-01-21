@@ -31,17 +31,17 @@ Susp∙^-comm n {A = A} = ua∙ (fst (Susp^-comm-Equiv∙ n A)) (snd (Susp^-comm
 ∙IsoOnLeft : {A : Type ℓ} {a b c : A} (p : a ≡ b) → Iso (b ≡ c) (a ≡ c)
 Iso.fun (∙IsoOnLeft p) = p ∙_
 Iso.inv (∙IsoOnLeft p) = (sym p) ∙_
-Iso.rightInv (∙IsoOnLeft p) q =
+Iso.sec (∙IsoOnLeft p) q =
   assoc p (sym p) q ∙ cong (_∙ q) (rCancel p) ∙ lUnit q ⁻¹
-Iso.leftInv (∙IsoOnLeft p) q =
+Iso.ret (∙IsoOnLeft p) q =
   assoc (sym p) p q ∙ cong (_∙ q) (lCancel p) ∙ lUnit q ⁻¹
 
 ∙IsoOnRight : {A : Type ℓ} {a b c : A} (p : b ≡ c) → Iso (a ≡ b) (a ≡ c)
 Iso.fun (∙IsoOnRight p) = _∙ p
 Iso.inv (∙IsoOnRight p) = _∙ (sym p)
-Iso.rightInv (∙IsoOnRight p) q =
+Iso.sec (∙IsoOnRight p) q =
   sym (assoc _ _ _) ∙ cong (q ∙_) (lCancel p) ∙ rUnit q ⁻¹
-Iso.leftInv (∙IsoOnRight p) q =
+Iso.ret (∙IsoOnRight p) q =
   sym (assoc _ _ _) ∙ cong (q ∙_) (rCancel p) ∙ rUnit q ⁻¹
 
 puppeTotalIso : {B C : Pointed ℓ} (f : B →∙ C) →
@@ -49,8 +49,8 @@ puppeTotalIso : {B C : Pointed ℓ} (f : B →∙ C) →
   Iso.fun H  (pt (fiber∙ (inclOfFiberFiberSeq f))) ≡ (pt (Ω C))
 Iso.fun (fst (puppeTotalIso f)) ((b' , q) , p) = (snd f) ⁻¹ ∙ cong (fst f) (p ⁻¹) ∙ q
 Iso.inv (fst (puppeTotalIso {B = B} f)) p = (pt B , snd f ∙ p) , refl
-Iso.rightInv (fst (puppeTotalIso f)) p = cong (snd f ⁻¹ ∙_) (lUnit (snd f ∙ p) ⁻¹) ∙ assoc (snd f ⁻¹) (snd f) p ∙ cong (_∙ p) (lCancel (snd f)) ∙ lUnit p ⁻¹
-Iso.leftInv (fst (puppeTotalIso f)) ((b' , q) , p) =
+Iso.sec (fst (puppeTotalIso f)) p = cong (snd f ⁻¹ ∙_) (lUnit (snd f ∙ p) ⁻¹) ∙ assoc (snd f ⁻¹) (snd f) p ∙ cong (_∙ p) (lCancel (snd f)) ∙ lUnit p ⁻¹
+Iso.ret (fst (puppeTotalIso f)) ((b' , q) , p) =
   ΣPathP
   ((ΣPathP (p ⁻¹
          , toPathP (transportPathLemmaLeft (cong (fst f) (p ⁻¹))

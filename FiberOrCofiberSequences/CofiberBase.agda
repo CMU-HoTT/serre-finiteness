@@ -66,7 +66,7 @@ pushoutFunEqIso^ : ∀ {ℓA ℓA' ℓC ℓB}
   → Iso (Pushout f g) (Pushout h k)
 pushoutFunEqIso^ f g h k K q p =
   pushoutIso f g h k (isoToEquiv K) (idEquiv _) (idEquiv _)
-    q (funExt (λ x → cong g (sym (Iso.leftInv K x)))
+    q (funExt (λ x → cong g (sym (Iso.ret K x)))
     ∙ cong (_∘ Iso.fun K) p)
 
 pushoutLevelMix^ : ∀ {ℓA ℓB ℓC ℓC'}

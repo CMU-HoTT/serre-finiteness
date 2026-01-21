@@ -32,7 +32,7 @@ Iso-Smash-⋀ : {A : Pointed ℓ} {B : Pointed ℓ'}
   → Iso (Smash A B) (A ⋀ B)
 Iso-Smash-⋀ .Iso.fun = Smash→⋀
 Iso-Smash-⋀ .Iso.inv = ⋀→Smash
-Iso-Smash-⋀ {A = A} {B = B} .Iso.rightInv x =
+Iso-Smash-⋀ {A = A} {B = B} .Iso.sec x =
   ⋀-fun≡ (Smash→⋀ ∘ ⋀→Smash) (idfun _)
     refl
     (λ _ → refl)
@@ -45,12 +45,12 @@ Iso-Smash-⋀ {A = A} {B = B} .Iso.rightInv x =
             ∙ cong₂ _∙_ (cong₂ _∙_ (λ j i → push (push tt j) i) refl
                        ∙ rCancel (push (inr (pt B)))) refl
             ∙ sym (lUnit (push (inr x))))) x
-Iso-Smash-⋀ .Iso.leftInv basel = refl
-Iso-Smash-⋀ {A = A} {B = B} .Iso.leftInv baser =
+Iso-Smash-⋀ .Iso.ret basel = refl
+Iso-Smash-⋀ {A = A} {B = B} .Iso.ret baser =
   sym (gluel (pt A)) ∙' gluer (pt B)
-Iso-Smash-⋀ .Iso.leftInv (proj x y) = refl
-Iso-Smash-⋀ .Iso.leftInv (gluel a i) = refl
-Iso-Smash-⋀ {A = A} {B = B} .Iso.leftInv (gluer b i) j =
+Iso-Smash-⋀ .Iso.ret (proj x y) = refl
+Iso-Smash-⋀ .Iso.ret (gluel a i) = refl
+Iso-Smash-⋀ {A = A} {B = B} .Iso.ret (gluer b i) j =
   hcomp (λ k → λ {(i = i0) → gluer b (~ k)
                  ; (j = i0) → doubleCompPath-filler
                                 (sym (gluel (pt A)))
@@ -73,9 +73,9 @@ Iso-Smash-⋀ {A = A} {B = B} .Iso.leftInv (gluer b i) j =
                             p (h ((pt A) , b)))
   → (x : _) → f x ≡ g x
 ⋀-fun≡Dep {A = A} {B} {C} f g p h pl pr x i =
-  comp (λ k → C (Iso.rightInv Iso-Smash-⋀ x k))
-       (λ k → λ {(i = i0) → f (Iso.rightInv Iso-Smash-⋀ x k)
-                ; (i = i1) → g (Iso.rightInv Iso-Smash-⋀ x k)})
+  comp (λ k → C (Iso.sec Iso-Smash-⋀ x k))
+       (λ k → λ {(i = i0) → f (Iso.sec Iso-Smash-⋀ x k)
+                ; (i = i1) → g (Iso.sec Iso-Smash-⋀ x k)})
        (lem (⋀→Smash x) i)
   where
   lem : (x : Smash A B) → f (Smash→⋀ x) ≡ g (Smash→⋀ x)

@@ -367,16 +367,16 @@ snd (ℤ→ℤAbGroup/Hom (suc k)) = makeIsGroupHom (ℤ→ℤAbGroup/isHom k)
   → AbGroupIso (ℤAbGroup/' k) (ℤAbGroup/ (abs k))
 fun (fst (ℤAbGroup/≅ℤAbGroup/' k)) = ℤAbGroup/'→ℤAbGroup/ k .fst
 inv (fst (ℤAbGroup/≅ℤAbGroup/' k)) = ℤAbGroup/→ℤAbGroup/'Fun k
-rightInv (fst (ℤAbGroup/≅ℤAbGroup/' (pos zero))) _ = refl
-rightInv (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) x =
+sec (fst (ℤAbGroup/≅ℤAbGroup/' (pos zero))) _ = refl
+sec (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) x =
   Σ≡Prop (λ _ → isProp≤)
     (modIndBase n (fst x) (snd x))
-rightInv (fst (ℤAbGroup/≅ℤAbGroup/' (negsuc n))) x =
+sec (fst (ℤAbGroup/≅ℤAbGroup/' (negsuc n))) x =
   Σ≡Prop (λ _ → isProp≤)
     (modIndBase n (fst x) (snd x))
-leftInv (fst (ℤAbGroup/≅ℤAbGroup/' (pos zero))) =
+ret (fst (ℤAbGroup/≅ℤAbGroup/' (pos zero))) =
   SQ.elimProp (λ _ → squash/ _ _) λ _ → refl
-leftInv (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) =
+ret (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) =
   SQ.elimProp (λ _ → squash/ _ _)
   λ { (pos n) → lem n
     ; (negsuc a) →
@@ -398,7 +398,7 @@ leftInv (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) =
                       ∙ cong -_ (sym (pos+ (remainder a / suc n)
                                 (suc n ·ℕ (quotient a / suc n)))
                       ∙ cong pos (≡remainder+quotient (suc n) a))) ∣₁)
-leftInv (fst (ℤAbGroup/≅ℤAbGroup/' (negsuc n))) =
+ret (fst (ℤAbGroup/≅ℤAbGroup/' (negsuc n))) =
   SQ.elimProp (λ _ → squash/ _ _)
   λ { (pos n) → lem n
     ; (negsuc a) →
@@ -469,12 +469,12 @@ snd (ℤᵐ→ℤ[Fin] m) = makeIsGroupHom (ℤᵐ→ℤ[Fin]isHom m)
 ℤ[Fin]≅ℤᵐ : (m : ℕ) → AbGroupIso ℤ[Fin m ] (dirProdAbIt m ℤAbGroup)
 fun (fst (ℤ[Fin]≅ℤᵐ m)) = ℤ[Fin]→ℤᵐ m .fst
 inv (fst (ℤ[Fin]≅ℤᵐ m)) = ℤᵐ→ℤ[Fin] m .fst
-rightInv (fst (ℤ[Fin]≅ℤᵐ zero)) _ = refl
-rightInv (fst (ℤ[Fin]≅ℤᵐ one)) (s , t) = refl
-rightInv (fst (ℤ[Fin]≅ℤᵐ (suc (suc m)))) (s , t) =
-  ΣPathP (refl , rightInv (fst (ℤ[Fin]≅ℤᵐ (suc m))) t)
-leftInv (fst (ℤ[Fin]≅ℤᵐ one)) f i (zero , s) = f fzero
-leftInv (fst (ℤ[Fin]≅ℤᵐ (suc (suc m)))) f i (zero , s) = f fzero
-leftInv (fst (ℤ[Fin]≅ℤᵐ (suc (suc m)))) f i (suc x , s) =
-  leftInv (fst (ℤ[Fin]≅ℤᵐ (suc m))) (f ∘ fsuc) i (x , s)
+sec (fst (ℤ[Fin]≅ℤᵐ zero)) _ = refl
+sec (fst (ℤ[Fin]≅ℤᵐ one)) (s , t) = refl
+sec (fst (ℤ[Fin]≅ℤᵐ (suc (suc m)))) (s , t) =
+  ΣPathP (refl , sec (fst (ℤ[Fin]≅ℤᵐ (suc m))) t)
+ret (fst (ℤ[Fin]≅ℤᵐ one)) f i (zero , s) = f fzero
+ret (fst (ℤ[Fin]≅ℤᵐ (suc (suc m)))) f i (zero , s) = f fzero
+ret (fst (ℤ[Fin]≅ℤᵐ (suc (suc m)))) f i (suc x , s) =
+  ret (fst (ℤ[Fin]≅ℤᵐ (suc m))) (f ∘ fsuc) i (x , s)
 snd (ℤ[Fin]≅ℤᵐ m) = ℤ[Fin]→ℤᵐ m .snd

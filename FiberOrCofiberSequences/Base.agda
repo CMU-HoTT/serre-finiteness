@@ -137,18 +137,18 @@ FiberSeq' A B C =
 
 IsoFiberSeqs : (A B C : Pointed ℓ)
   → Iso (FiberSeq A B C) (FiberSeq' A B C)
+
 Iso.fun (IsoFiberSeqs A B C) F =
   (FiberSeq.incl F) , ((FiberSeq.proj F) , (FiberSeq.eqFib F))
 FiberSeq.incl (Iso.inv (IsoFiberSeqs A B C) (incl , proj , eqFib)) =
   incl
 FiberSeq.proj (Iso.inv (IsoFiberSeqs A B C) (incl , proj , eqFib)) =
   proj
-FiberSeq.eqFib (Iso.inv (IsoFiberSeqs A B C) (incl , proj , eqFib)) =
-  eqFib
-Iso.rightInv (IsoFiberSeqs A B C) F = refl
-FiberSeq.incl (Iso.leftInv (IsoFiberSeqs A B C) F i) = FiberSeq.incl F
-FiberSeq.proj (Iso.leftInv (IsoFiberSeqs A B C) F i) = FiberSeq.proj F
-FiberSeq.eqFib (Iso.leftInv (IsoFiberSeqs A B C) F i) = FiberSeq.eqFib F
+FiberSeq.eqFib (Iso.inv (IsoFiberSeqs A B C) (incl , proj , eqFib)) = eqFib
+Iso.sec (IsoFiberSeqs A B C) F = refl
+FiberSeq.incl (Iso.ret (IsoFiberSeqs A B C) F i) = FiberSeq.incl F
+FiberSeq.proj (Iso.ret (IsoFiberSeqs A B C) F i) = FiberSeq.proj F
+FiberSeq.eqFib (Iso.ret (IsoFiberSeqs A B C) F i) = FiberSeq.eqFib F
 
 EquivFiberSeqs : (A B C : Pointed ℓ)
   → (FiberSeq A B C) ≃ (FiberSeq' A B C)
@@ -290,7 +290,7 @@ FibsIsoOfFibSeq : {A A' B C : Pointed ℓ} (F : FiberSeq A B C)
     → Σ[ pr ∈ Σ[ H ∈ Iso (typ A) (typ A') ] Iso.fun H (pt A) ≡ pt A' ]
        (FiberSeqIncl F
        ∘∙ ((Iso.inv (fst pr)) , cong (Iso.inv (fst pr)) (sym (snd pr))
-                                ∙ Iso.leftInv (fst pr) _))
+                                ∙ Iso.ret (fst pr) _))
      ≡ FiberSeqIncl G
 FibsIsoOfFibSeq {A = A} F G p =
   J (λ y q
@@ -299,7 +299,7 @@ FibsIsoOfFibSeq {A = A} F G p =
    (FiberSeqIncl F
        ∘∙ ((Iso.inv (fst pr))
           , cong (Iso.inv (fst pr)) (sym (snd pr))
-            ∙ Iso.leftInv (fst pr) _))
+            ∙ Iso.ret (fst pr) _))
     ≡ (snd y))
     ((idIso , refl)
     , ΣPathP (refl , (cong (_∙ (snd (FiberSeqIncl F)))

@@ -398,10 +398,10 @@ EM₁ℤ = sym (ua∙ (isoToEquiv (compIso rUnit*×Iso S¹≅EM)) refl)
   S¹≅EM : Iso S¹ (EM {ℓ-zero} ℤ 1)
   S¹≅EM .Iso.fun = S¹→EM
   S¹≅EM .Iso.inv = EM→S¹
-  S¹≅EM .Iso.rightInv = EM1.elimSet _ (λ _ → emsquash _ _) refl
+  S¹≅EM .Iso.sec = EM1.elimSet _ (λ _ → emsquash _ _) refl
     λ g i j → S¹→EM-intLoop g j i
-  S¹≅EM .Iso.leftInv base = refl
-  S¹≅EM .Iso.leftInv (loop i) j = lUnit loop (~ j) i
+  S¹≅EM .Iso.ret base = refl
+  S¹≅EM .Iso.ret (loop i) j = lUnit loop (~ j) i
 
 EMDirProd : {ℓ : Level} (H K : AbGroup ℓ) (n : ℕ)
   → EM∙ (AbDirProd H K) n ≡ (EM∙ H n) ×∙ (EM∙ K n)

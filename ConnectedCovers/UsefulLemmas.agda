@@ -108,8 +108,8 @@ isIso→isEquiv f hf = isoToIsEquiv
 
 Iso→isIso : {X Y : Type ℓ} (ISO : Iso X Y) → isIso (Iso.fun ISO)
 fst (Iso→isIso ISO) = Iso.inv ISO
-fst (snd (Iso→isIso ISO)) = Iso.rightInv ISO
-snd (snd (Iso→isIso ISO)) = Iso.leftInv ISO
+fst (snd (Iso→isIso ISO)) = Iso.sec ISO
+snd (snd (Iso→isIso ISO)) = Iso.ret ISO
 
 isEquiv→isIso : {X Y : Type ℓ} (f : X → Y) → isEquiv f → isIso f
 isEquiv→isIso f hf = Iso→isIso (equivToIso (f , hf))
@@ -118,8 +118,8 @@ isEquiv→isIso f hf = Iso→isIso (equivToIso (f , hf))
 isIsoToIso : {X Y : Type ℓ} (f : X → Y) → isIso f → Iso X Y
 Iso.fun (isIsoToIso f (invf , secf , retf)) = f
 Iso.inv (isIsoToIso f (invf , secf , retf)) = invf
-Iso.rightInv (isIsoToIso f (invf , secf , retf)) = secf
-Iso.leftInv (isIsoToIso f (invf , secf , retf)) = retf
+Iso.sec (isIsoToIso f (invf , secf , retf)) = secf
+Iso.ret (isIsoToIso f (invf , secf , retf)) = retf
 
 342-case1 : {X Y Z : Type ℓ} (f : X → Y) (g : Y → Z)
   → isIso f → isIso (g ∘ f) → isIso g
@@ -173,8 +173,8 @@ snd (snd (UnitUnitIsIso f)) (lift tt) = refl
 UnitUnitIso : (f : Unit* {ℓ} → Unit*) → Iso Unit* Unit*
 Iso.fun (UnitUnitIso f) = f
 Iso.inv (UnitUnitIso f) = fst (UnitUnitIsIso f)
-Iso.rightInv (UnitUnitIso f) = fst (snd (UnitUnitIsIso f))
-Iso.leftInv (UnitUnitIso f) = snd (snd (UnitUnitIsIso f))
+Iso.sec (UnitUnitIso f) = fst (snd (UnitUnitIsIso f))
+Iso.ret (UnitUnitIso f) = snd (snd (UnitUnitIsIso f))
 
 UnitUnitIsEquiv : (f : Unit* {ℓ} → Unit*) → isEquiv f
 UnitUnitIsEquiv f = isoToIsEquiv (UnitUnitIso f)

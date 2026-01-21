@@ -47,8 +47,8 @@ iteratedPuppeUniversalEquiv' F =
 ftit1 : {A : Type ℓ} (a : A) → Iso (Σ[ a' ∈ A ] a' ≡ a) (Unit)
 Iso.fun (ftit1 a) = λ _ → tt
 Iso.inv (ftit1 a) = λ _ → (a , refl)
-Iso.rightInv (ftit1 a) = λ _ → refl
-Iso.leftInv (ftit1 a) = λ p → J (λ a' q → Iso.inv (ftit1 a) (Iso.fun (ftit1 a) (a' , (sym q))) ≡ (a' , (sym q))) refl (sym (snd p))
+Iso.sec (ftit1 a) = λ _ → refl
+Iso.ret (ftit1 a) = λ p → J (λ a' q → Iso.inv (ftit1 a) (Iso.fun (ftit1 a) (a' , (sym q))) ≡ (a' , (sym q))) refl (sym (snd p))
 
 lUnitIsoLeft : {A : Type ℓ} {a b : A} (p q : a ≡ b)
   → Iso (refl ∙ p ≡ q) (p ≡ q)
@@ -237,8 +237,8 @@ iteratedPuppeUnEquiv : {B C : Pointed ℓ} (f : B →∙ C)
            (sym (snd f) ∙∙ cong (fst f) (fst x) ∙∙ snd f) ≡ refl)
 Iso.fun (iteratedPuppeUnEquiv f pb) ((x , y) , z) = (x , z) , y
 Iso.inv (iteratedPuppeUnEquiv f pb) ((x , y) , z) = (x , z) , y
-Iso.rightInv (iteratedPuppeUnEquiv f pb) t = refl
-Iso.leftInv (iteratedPuppeUnEquiv f pb) t = refl
+Iso.sec (iteratedPuppeUnEquiv f pb) t = refl
+Iso.ret (iteratedPuppeUnEquiv f pb) t = refl
 
 iteratedPuppeUniversalEquiv* : {B C : Pointed ℓ} (f : B →∙ C)
     (pb : typ (Ω B))

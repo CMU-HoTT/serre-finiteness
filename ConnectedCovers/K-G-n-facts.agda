@@ -210,14 +210,14 @@ setMapIsEquiv A B f hyp =
   (iso
    (mapSetTrunc f)
    (fst (setMapIso A B f ((Iso.inv (equivToIso (f , hyp)))
-                       , (Iso.rightInv (equivToIso (f , hyp))
-                        , Iso.leftInv (equivToIso (f , hyp))))))
+                       , (Iso.sec (equivToIso (f , hyp))
+                        , Iso.ret (equivToIso (f , hyp))))))
    (fst (snd (setMapIso A B f ((Iso.inv (equivToIso (f , hyp)))
-                       , (Iso.rightInv (equivToIso (f , hyp))
-                        , Iso.leftInv (equivToIso (f , hyp)))))))
+                       , (Iso.sec (equivToIso (f , hyp))
+                        , Iso.ret (equivToIso (f , hyp)))))))
    (snd (snd (setMapIso A B f ((Iso.inv (equivToIso (f , hyp)))
-                       , (Iso.rightInv (equivToIso (f , hyp))
-                        , Iso.leftInv (equivToIso (f , hyp))))))))
+                       , (Iso.sec (equivToIso (f , hyp))
+                        , Iso.ret (equivToIso (f , hyp))))))))
 
 1TypHomGr : (X : Pointed ℓ) → isOfHLevel 3 (typ X) → Group ℓ
 fst (1TypHomGr X hX) = fst (Ω X)
@@ -389,10 +389,10 @@ fst (Iso.inv (EM1UniversalPropertyAux G X hX) (h , p)) =
   elimGroupoid G (λ _ → hX) (pt X) (λ g → h g)
                  (EM1UniversalPropertyAuxComp G X hX h p)
 snd (Iso.inv (EM1UniversalPropertyAux G X hX) (h , p)) = refl
-Iso.rightInv (EM1UniversalPropertyAux G X hX) h =
+Iso.sec (EM1UniversalPropertyAux G X hX) h =
   GroupHomExt G (1TypHomGr X hX) _ h
               λ g → (rUnit ((fst h) g)) ⁻¹
-Iso.leftInv (EM1UniversalPropertyAux G X hX) f =
+Iso.ret (EM1UniversalPropertyAux G X hX) f =
  ΣPathP ((funExt (elimSet G (λ g → isOfHLevelPathP' 2 hX _ _) (sym (snd f))
                  λ g → toPathP
                         (movFunTransportPathLemma
@@ -411,7 +411,7 @@ CharInvComp : (G : Group ℓ) (X : Pointed ℓ)
            → (fst (Ω→ (Iso.inv (EM1UniversalPropertyAux G X hX) h))) ∘ emloop
             ≡ (fst h)
 CharInvComp G X hX h =
-  cong fst (Iso.rightInv (EM1UniversalPropertyAux G X hX) h)
+  cong fst (Iso.sec (EM1UniversalPropertyAux G X hX) h)
 
 2Connected→pathConnected : {A : Type ℓ}
                             (cA : isConnected 2 A)

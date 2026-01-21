@@ -49,13 +49,13 @@ Iso.fun (connConnMapIso f b) =
 Iso.inv (connConnMapIso f b) =
   sRec (isSetΣ isSetSetTrunc (λ x → isSetPathImplicit))
        λ p → ∣ fst p ∣₂ , (Iso.inv PathIdTrunc₀Iso (snd p))
-Iso.rightInv (connConnMapIso f b) =
+Iso.sec (connConnMapIso f b) =
   sElim (λ _ → isSetPathImplicit)
-         λ a → cong ∣_∣₂ (ΣPathP (refl , Iso.rightInv PathIdTrunc₀Iso (snd a)))
-Iso.leftInv (connConnMapIso f b) =
+         λ a → cong ∣_∣₂ (ΣPathP (refl , Iso.sec PathIdTrunc₀Iso (snd a)))
+Iso.ret (connConnMapIso f b) =
   sigmaElim (λ x → isOfHLevelPath 2
                     (isSetΣ isSetSetTrunc (λ _ → isSetPathImplicit)) _ _)
-            λ a p → ΣPathP (refl , (Iso.leftInv PathIdTrunc₀Iso p))
+            λ a p → ΣPathP (refl , (Iso.ret PathIdTrunc₀Iso p))
 
 connConnMap''' : {A B : Type ℓ} (f : A → B)
   → (b : B) → fiber (sMap f) ∣ b ∣₂ ≃ ∥ Σ[ a ∈ A ] ∥ f a ≡ b ∥₁ ∥₂
@@ -181,10 +181,10 @@ Iso.fun SuspUnitIso north = tt
 Iso.fun SuspUnitIso south = tt
 Iso.fun SuspUnitIso (merid tt i) = tt
 Iso.inv SuspUnitIso tt = north
-Iso.rightInv SuspUnitIso tt = refl
-Iso.leftInv SuspUnitIso north = refl
-Iso.leftInv SuspUnitIso south = merid tt
-Iso.leftInv SuspUnitIso (merid tt i) = λ j → merid tt (i ∧ j)
+Iso.sec SuspUnitIso tt = refl
+Iso.ret SuspUnitIso north = refl
+Iso.ret SuspUnitIso south = merid tt
+Iso.ret SuspUnitIso (merid tt i) = λ j → merid tt (i ∧ j)
 
 SuspUnitEquiv : (Susp Unit) ≃ Unit
 SuspUnitEquiv = isoToEquiv SuspUnitIso
@@ -290,7 +290,7 @@ CharInv A B f = refl
 CharArg : (A B : Pointed ℓ)
   → (f : A →∙ Ω B)
   → (fst f) ≡ fst (Ω→ (Iso.fun ΩSuspAdjointIso f)) ∘ toSusp A
-CharArg A B f = (cong fst (Iso.leftInv ΩSuspAdjointIso f)) ⁻¹
+CharArg A B f = (cong fst (Iso.ret ΩSuspAdjointIso f)) ⁻¹
               ∙ CharInv A B (Iso.fun ΩSuspAdjointIso f)
 
 hLevel→hLevelFib : (A B : Type ℓ) (n : ℕ) (f : A → B)
@@ -386,7 +386,7 @@ LoopSuspIsoConnected A B (suc n) f hf hA =
     ∘∙ toSuspPointedω A (1 + n)))
     (transport
       ((λ i → isEquiv (fst
-               (Iso.rightInv (Loop^Susp^AdjunctionIso A B (2 + n)) f (~ i))))
+               (Iso.sec (Loop^Susp^AdjunctionIso A B (2 + n)) f (~ i))))
       ∙ (λ i → isEquiv
                  (fst (LoopSusp^AdjGambit' A B (1 + n)
                  (Iso.inv (Loop^Susp^AdjunctionIso A B (2 + n)) f) i)))) hf) 3)

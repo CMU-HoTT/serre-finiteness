@@ -94,18 +94,18 @@ module _ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
                            (Pushout (suspFun f) (suspFun g))
   SuspCommPushoutIso .Iso.fun = SuspPushout→PushoutSusp
   SuspCommPushoutIso .Iso.inv = PushoutSusp→SuspPushout
-  SuspCommPushoutIso .Iso.rightInv (inl north) = refl
-  SuspCommPushoutIso .Iso.rightInv (inl south) = refl
-  SuspCommPushoutIso .Iso.rightInv (inl (merid a i)) = refl
-  SuspCommPushoutIso .Iso.rightInv (inr north) = push north
-  SuspCommPushoutIso .Iso.rightInv (inr south) = push south
-  SuspCommPushoutIso .Iso.rightInv (inr (merid a i)) j =
+  SuspCommPushoutIso .Iso.sec (inl north) = refl
+  SuspCommPushoutIso .Iso.sec (inl south) = refl
+  SuspCommPushoutIso .Iso.sec (inl (merid a i)) = refl
+  SuspCommPushoutIso .Iso.sec (inr north) = push north
+  SuspCommPushoutIso .Iso.sec (inr south) = push south
+  SuspCommPushoutIso .Iso.sec (inr (merid a i)) j =
     doubleCompPath-filler (push north)
                           (λ i → inr (merid a i))
                           (sym (push south)) (~ j) i
-  SuspCommPushoutIso .Iso.rightInv (push north i) j = push north (i ∧ j)
-  SuspCommPushoutIso .Iso.rightInv (push south i) j = push south (i ∧ j)
-  SuspCommPushoutIso .Iso.rightInv (push (merid a i) j) k =
+  SuspCommPushoutIso .Iso.sec (push north i) j = push north (i ∧ j)
+  SuspCommPushoutIso .Iso.sec (push south i) j = push south (i ∧ j)
+  SuspCommPushoutIso .Iso.sec (push (merid a i) j) k =
     hcomp (λ r →
       λ{(i = i0) → push north ((k ∨ ~ r) ∧ j)
       ; (i = i1) → push south ((k ∨ ~ r) ∧ j)
@@ -115,15 +115,15 @@ module _ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
                       (sym (push south)) (~ k ∧ r) i
       ; (k = i1) → push (merid a i) j})
       (push (merid a i) j)
-  SuspCommPushoutIso .Iso.leftInv north = refl
-  SuspCommPushoutIso .Iso.leftInv south = refl
-  SuspCommPushoutIso .Iso.leftInv (merid (inl x) i) = refl
-  SuspCommPushoutIso .Iso.leftInv (merid (inr x) i) j =
+  SuspCommPushoutIso .Iso.ret north = refl
+  SuspCommPushoutIso .Iso.ret south = refl
+  SuspCommPushoutIso .Iso.ret (merid (inl x) i) = refl
+  SuspCommPushoutIso .Iso.ret (merid (inr x) i) j =
     PushoutSusp→SuspPushout
       (doubleCompPath-filler (push north)
                           (λ i → inr (merid x i))
                           (sym (push south)) (~ j) i)
-  SuspCommPushoutIso .Iso.leftInv (merid (push a j) i) k =
+  SuspCommPushoutIso .Iso.ret (merid (push a j) i) k =
     hcomp (λ r →
       λ{(i = i0) → north
       ; (i = i1) → south
@@ -140,10 +140,10 @@ module _ {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
 Iso-SuspUnit-Unit : Iso (Susp Unit) Unit
 Iso-SuspUnit-Unit .Iso.fun x = tt
 Iso-SuspUnit-Unit .Iso.inv x = north
-Iso-SuspUnit-Unit .Iso.rightInv tt = refl
-Iso-SuspUnit-Unit .Iso.leftInv north = refl
-Iso-SuspUnit-Unit .Iso.leftInv south = merid tt
-Iso-SuspUnit-Unit .Iso.leftInv (merid a i) j = merid tt (i ∧ j)
+Iso-SuspUnit-Unit .Iso.sec tt = refl
+Iso-SuspUnit-Unit .Iso.ret north = refl
+Iso-SuspUnit-Unit .Iso.ret south = merid tt
+Iso-SuspUnit-Unit .Iso.ret (merid a i) j = merid tt (i ∧ j)
 
 -- Move to Cubical.HITs.Wedge.Properties
 ⋁Iso : ∀ {ℓ ℓ' ℓ'' ℓ'''} {A : Pointed ℓ} {B : Pointed ℓ'}

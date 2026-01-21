@@ -91,8 +91,8 @@ FinInd→Fin→FinInd .(suc _) p (suc x) i =
 Iso-Fin-FinInd : (n : ℕ) → Iso (Fin n) (FinInd n)
 Iso.fun (Iso-Fin-FinInd n) = Fin→FinInd n
 Iso.inv (Iso-Fin-FinInd n) = FinInd→Fin n
-Iso.rightInv (Iso-Fin-FinInd n) x = Fin→FinInd→Fin n x
-Iso.leftInv (Iso-Fin-FinInd n) x = FinInd→Fin→FinInd n refl x
+Iso.sec (Iso-Fin-FinInd n) x = Fin→FinInd→Fin n x
+Iso.ret (Iso-Fin-FinInd n) x = FinInd→Fin→FinInd n refl x
 
 -- iso preserves flast
 Fin→FinInd-flast : {n : ℕ} → Fin→FinInd (suc n) flast' ≡ flast
