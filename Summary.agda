@@ -102,42 +102,40 @@ Definition-6 : (n : ℕ) → Pointed₀ → Group₀
 Definition-6 n = πGr n
 
 -- Definition 8 (Fibre Sequences)
-Definition-8 : (A B C : Pointed₀) → Type₁
+Definition-8 : (X Y Z : Pointed₀) → Type₁
 Definition-8 = FiberSeq
 
 -- Long exact sequence of homotopy groups
 -- Where (fiberSequence F) is the sequence of groups:
--- ..., π (n + 1) (C), π n A, π n B, π n C, π (n - 1) A, ...
+-- ..., π (n + 1) (Z), π n X, π n Y, π n Z, π (n - 1) X, ...
 -- and (fiberSequenceEgges F) is the sequence of maps between them,
 -- this is a proof that together these form a long exact sequence of groups.
-Long-exact-sequence : {A B C : Pointed ℓ} (F : FiberSeq A B C)
-                          → isLES (fiberSequence F) (fiberSequenceEdges F)
+Long-exact-sequence : {X Y Z : Pointed ℓ} (F : FiberSeq X Y Z) → isLES (fiberSequence F) (fiberSequenceEdges F)
 Long-exact-sequence F = fiberSequenceIsLES F
 
 -- Definition 9 (Cofibre Sequences)
-Definition-9 : (A B C : Pointed₀) → Type₁
+Definition-9 : (X Y Z : Pointed₀) → Type₁
 Definition-9 = CofiberSeq
 
 -- Proposition 10 (if X → Y → Z is a cofibre sequence, then so is Y → Z → Susp X)
-Proposition-10 : (A B C : Pointed₀) → CofiberSeq A B C → CofiberSeq B C (S∙ A)
-Proposition-10 A B C = copuppe             
+Proposition-10 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → CofiberSeq Y Z (S∙ X)
+Proposition-10 X Y Z = copuppe             
 
 -- Corollary 11
 -- Susp n X → Susp n Y → Susp n Z is a cofiber sequence
-Corollary-11-1 : (A B C : Pointed₀) → CofiberSeq A B C → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) A) (Susp∙^ (suc n) B) (Susp∙^ (suc n) C)
-Corollary-11-1 A B C S n = copuppe-Cof (suc n) S
+Corollary-11-1 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) X) (Susp∙^ (suc n) Y) (Susp∙^ (suc n) Z)
+Corollary-11-1 X Y Z S n = copuppe-Cof (suc n) S
 -- Susp n Y → Susp n Z → Susp (1 + n) X is a cofiber sequence
-Corollary-11-2 : (A B C : Pointed₀) → CofiberSeq A B C → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) B) (Susp∙^ (suc n) C) (Susp∙^ (suc (suc n)) A)
-Corollary-11-2 A B C S n = copuppe-Dom (suc n) S
+Corollary-11-2 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) Y) (Susp∙^ (suc n) Z) (Susp∙^ (suc (suc n)) X)
+Corollary-11-2 X Y Z S n = copuppe-Dom (suc n) S
 -- Susp n Z → Susp (1 + n) X → Susp (1 + n) Y is a cofiber sequence
-Corollary-11-3 : (A B C : Pointed₀) → CofiberSeq A B C → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) C) (Susp∙^ (suc (suc n)) A) (Susp∙^ (suc (suc n)) B)
-Corollary-11-3 A B C S n = copuppe-Ext (suc n) S 
+Corollary-11-3 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) Z) (Susp∙^ (suc (suc n)) X) (Susp∙^ (suc (suc n)) Y)
+Corollary-11-3 X Y Z S n = copuppe-Ext (suc n) S 
 
 -- Proposition 12 (connectivity of maps between cofibers)
-Proposition-12 : (n : ℕ) {A B C A' B' C' : Pointed ℓ}
-    (S : CofiberSeq A B C) (S' : CofiberSeq A' B' C')
-    (f : (CofiberSeqDom S) →∙ (CofiberSeqDom S'))
-    (g : (CofiberSeqExt S) →∙ (CofiberSeqExt S'))
+Proposition-12 : (n : ℕ) {X Y Z X' Y' Z' : Pointed ℓ}
+    (S : CofiberSeq X Y Z) (S' : CofiberSeq X' Y' Z')
+    (f : X →∙ X') (g : Y →∙ Y')
     (p : (g ∘∙ CofiberSeqInc S) ≡ (CofiberSeqInc S' ∘∙ f))
     → isConnectedFun n (fst f)
     → isConnectedFun (1 + n) (fst g)
@@ -145,7 +143,7 @@ Proposition-12 : (n : ℕ) {A B C A' B' C' : Pointed ℓ}
 Proposition-12 = CofiberSeqMapConn
 
 -- Corollary 13 (connectivity of suspension map)
-Corollary-13 : (n : ℕ) {A B : Type₀} (f : A → B)
+Corollary-13 : (n : ℕ) {X Y : Type₀} (f : X → Y)
   → isConnectedFun n f
   → isConnectedFun (suc n) (suspFun f)
 Corollary-13 n f cf = isConnectedSuspFun f n cf
@@ -161,9 +159,9 @@ Proposition-14 : {ℓ' : Level} {X₁ X₂ : Type ℓ} {Y₁ Y₂ : Type ℓ'}
 Proposition-14 = isConnectedFunJoin
 
 -- Proposition 15 (distributivity of suspension and join)
-Proposition-15 : ∀ {ℓ} (X₁ X₂ : Pointed ℓ) (M₁ M₂ : ℕ)
-  → Susp^ (M₁ + M₂) (join (fst X₁) (fst X₂))
-   ≡ join (Susp^ M₁ (typ X₁)) (Susp^ M₂ (typ X₂))
+Proposition-15 : ∀ {ℓ} (X Y : Pointed ℓ) (M₁ M₂ : ℕ)
+  → Susp^ (M₁ + M₂) (join (fst X) (fst Y))
+   ≡ join (Susp^ M₁ (typ X)) (Susp^ M₂ (typ Y))
 Proposition-15 = joinSuspTrick
 
 -- Section 3: A rough outline of the formalised proof
@@ -179,8 +177,8 @@ Theorem-B = saf→isFPBottomπ
 -- Slight difference from the paper
 -- Rather than theorem 16, we use the following slightly weaker theorem to derive the finiteness theorem:
 -- Simply connected, stably almost finite types have finitely presented homotopy groups 
-Theorem-16' : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ) → isFP (πAb n X)
-Theorem-16' = saf→isFPπ
+Theorem-16-var : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ) → isFP (πAb n X)
+Theorem-16-var = saf→isFPπ
 
 -- Definition 19 (Finite CW Complexes)
 -- Universe polymorphic
@@ -188,8 +186,8 @@ Definition-19 : (ℓ : Level) → Type (ℓ-suc ℓ)
 Definition-19 = FinCW
 
 -- Example 20 (FinCW is closed under Susp)
-Example-20 : (n : ℕ) (X : Type ℓ) → isFinCW X → isFinCW (Susp^ n X)
-Example-20 {ℓ} n  X = isFinCWSusp {ℓ} {n} X
+Example-20 : (n : ℕ) (C : Type ℓ) → isFinCW C → isFinCW (Susp^ n C)
+Example-20 {ℓ} n C = isFinCWSusp {ℓ} {n} C
 
 -- Definition 21 (n-Finite Types)
 -- Note that the Agda conventions for finiteness of types and dimensions of CW complexes are off by one from what appears in the paper
@@ -217,20 +215,20 @@ Definition-25 : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
 Definition-25 = stablyNFinite 
 
 -- Propositions 27 and 28 (join is stably k-finite for suitable k)
-Proposition-27 : (X₁ X₂ : Pointed ℓ) (m₁ m₂ n₂ : HLevel)
-  (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite 1 X₁)
-  (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
+Proposition-27 : (X Y : Pointed ℓ) (m₁ m₂ n₂ : HLevel)
+  (hXm₁ : isConnected (m₁ + 2) (typ X)) (hX₁ : stablyNFinite 1 X)
+  (hXm₂ : isConnected m₂ (typ Y)) (hXn₂ : stablyNFinite n₂ Y)
   (k : HLevel) (hk₁ : k ≤ 1 + m₂) (hk₂ : k ≤ n₂ + (m₁ + 2))
-  → stablyNFinite k (join∙ X₁ X₂)
-Proposition-27 {ℓ} X₁ X₂ = stablyNFiniteJoin-alt {ℓ} {X₁} {X₂}
+  → stablyNFinite k (join∙ X Y)
+Proposition-27 {ℓ} X Y = stablyNFiniteJoin-alt {ℓ} {X} {Y}
 
-Proposition-28 : (X₁ X₂ : Pointed ℓ) (m₁ n₁ m₂ n₂ : HLevel)
+Proposition-28 : (X Y : Pointed ℓ) (m₁ n₁ m₂ n₂ : HLevel)
   (hmn₁ : m₁ ≤ n₁)
-  (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite n₁ X₁)
-    (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
+  (hXm₁ : isConnected m₁ (typ X)) (hXn₁ : stablyNFinite n₁ X)
+    (hXm₂ : isConnected m₂ (typ Y)) (hXn₂ : stablyNFinite n₂ Y)
   (k : HLevel) (hk₁ : k ≤ n₁ + m₂) (hk₂ : k ≤ n₂ + m₁)
-  → stablyNFinite k (join∙ X₁ X₂)
-Proposition-28 {ℓ} X₁ X₂ = stablyNFiniteJoin {ℓ} {X₁} {X₂}
+  → stablyNFinite k (join∙ X Y)
+Proposition-28 {ℓ} X Y = stablyNFiniteJoin {ℓ} {X} {Y}
 
 -- Definition 29 (Stably Almost Finite Types)
 Definition-29 : Pointed ℓ → Type (ℓ-suc ℓ)
@@ -238,43 +236,48 @@ Definition-29 = saf
 
 -- Proposition 30 (more closure properties for stably almost finite types)
 -- Closure under products
-Proposition-30-1 : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
-Proposition-30-1 {ℓ} {A} {B} = saf× {ℓ} {A} {B}
+Proposition-30-1 : {X Y : Pointed ℓ} → saf X → saf Y → saf (X ×∙ Y)
+Proposition-30-1 {ℓ} {X} {Y} = saf× {ℓ} {X} {Y}
 -- Closure under V (wedge product)
-Proposition-30-2 : {A B : Pointed ℓ} → saf A → saf B → saf (A ⋁∙ₗ B)
-Proposition-30-2 {ℓ} {A} {B} = saf⋁ {ℓ} {A} {B} 
+Proposition-30-2 : {X Y : Pointed ℓ} → saf X → saf Y → saf (X ⋁∙ₗ Y)
+Proposition-30-2 {ℓ} {X} {Y} = saf⋁ {ℓ} {X} {Y} 
 -- Closure under /\ (smash product)
-Proposition-30-3 : {A B : Pointed ℓ} → saf A → saf B → saf (A ⋀∙ B)
+Proposition-30-3 : {X Y : Pointed ℓ} → saf X → saf Y → saf (X ⋀∙ Y)
 Proposition-30-3 = saf⋀
 
 -- Note that the file SAF.agda contains proofs of many more closure properties for all these concepts, we have only highlighted a few in the paper.
 
 -- Corollary 32 (iterating Ganea)
-module _ {A : Pointed ℓ} {B : Pointed ℓ} (f : A →∙ B) where
+module _ {X : Pointed ℓ} {Y : Pointed ℓ} (f : X →∙ Y) where
     open Ganea^ f
     -- The ``elbow'' cofibre sequences, for instance
+    -- fiber * ...
+    --  |
+    --  V
+    --  E(n) --> E(n + 1)
     ElbowCofibreSeq : (n : ℕ) → CofiberSeq (join-F n) (E n) (E (1 + n))
     ElbowCofibreSeq = GaneaCofiberSeq
 
--- Proposition 33 (if B is connected and (Ω B) is SAF, so is B)
+-- Proposition 33 (if X is connected and (Ω X) is SAF, so is X)
 -- Remember connectedness conventions are off-by-two
-Proposition-33 : {B : Pointed ℓ} (cB : isConnected 2 (typ B)) → saf (Ω B) → saf B
+Proposition-33 : {X : Pointed ℓ} (cX : isConnected 2 (typ X)) → saf (Ω X) → saf X
 Proposition-33 = safΩ→saf
 
--- Proposition 34 (if B is simply connected and SAF, then so is (Ω B))
-Proposition-34 : {B : Pointed ℓ} (scB : isConnected 3 (typ B)) → saf B → saf (Ω B)
+-- Proposition 34 (if X is simply connected and SAF, then so is (Ω X))
+Proposition-34 : {X : Pointed ℓ} (scX : isConnected 3 (typ X)) → saf X → saf (Ω X)
 Proposition-34 = saf→safΩ
 
--- Proposition 35 (if F → E → B is a fibre sequence and B is simply connected, and B and F are SAF, then so is E)
-Proposition-35 : {F E B : Pointed ℓ} (S : FiberSeq F E B) (scB : isConnected 3 (typ B)) → saf B → saf F → saf E
+-- Proposition 35 (if X → Y → Z is a fibre sequence and Z is simply connected, and Z and X are SAF, then so is Y)
+Proposition-35 : {X Y Z : Pointed ℓ} (S : FiberSeq X Y Z) (scZ : isConnected 3 (typ Z)) → saf Z → saf X → saf Y
 Proposition-35 = safTotal
 
 -- Proposition 38 (fiber of the map X<n + 1> → X<n> is an Eilenberg-MacLane space)
+-- Indices shifted-by-one
 Proposition-38 : (X : Pointed ℓ) (n : ℕ) → FiberSeq (EM∙ (πAb n X) (suc n)) (X < (2 + n) >) (X < (suc n) >)
 Proposition-38 = <->EMFibSeq
 
 -- Proposition 39 (if G is FP, then K(G, n) are all SAF)
-Proposition-39 : (A : AbGroup ℓ) (fpA : isFP A) (n : ℕ) → saf (EM∙ A (suc n))
+Proposition-39 : (G : AbGroup ℓ) (fpG : isFP G) (n : ℕ) → saf (EM∙ G (suc n))
 Proposition-39 = isFP→safEM'
 
 -- Notice theorem 40 appears in the where clause in proof of saf→isFPBottomπ (Master theorem B)
@@ -287,8 +290,8 @@ Theorem-44 = isFPπSphere
 -- Section 4: On the formalisation
 
 -- Proposition 45 (Induction for finitely presentable abelian groups)
-Proposition-45 : (P : AbGroup₀ → Type ℓ) → (∀ A → isProp (P A))
+Proposition-45 : (P : AbGroup₀ → Type ℓ) → (∀ G → isProp (P G))
    → (∀ n → P (ℤMod n))
    → (∀ H K → P H → P K → P (AbDirProd H K))
-   → (∀ A → isFP A → (P A))
+   → (∀ G → isFP G → (P G))
 Proposition-45 = indFP
