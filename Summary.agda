@@ -16,6 +16,10 @@ open import Cubical.Foundations.Function
 open import Cubical.Foundations.Univalence
 
 open import Cubical.Algebra.Group
+open import Cubical.Algebra.AbGroup
+open import Cubical.Algebra.AbGroup.Instances.DirectProduct
+open import Cubical.Algebra.AbGroup.Instances.Int
+open import Cubical.Algebra.AbGroup.Instances.IntMod renaming (ℤAbGroup/_ to ℤMod)
 
 open import Cubical.Data.Empty
 open import Cubical.Data.Nat
@@ -27,12 +31,17 @@ open import Cubical.Homotopy.Connected
 open import Cubical.Homotopy.Group.Base
 open import Cubical.Homotopy.Freudenthal
 open import Cubical.Homotopy.Loopspace
+open import Cubical.Homotopy.EilenbergMacLane.Base
 
 open import Cubical.HITs.Sn hiding (S)
 open import Cubical.HITs.Pushout
 open import Cubical.HITs.Truncation
 open import Cubical.HITs.Susp
+open import Cubical.HITs.SmashProduct
 open import Cubical.HITs.Join
+open import Cubical.HITs.Wedge
+
+open import Cubical.CW.Base
 
 variable
     ℓ : Level
@@ -82,74 +91,7 @@ open import ConnectedCovers.PointedEquivalences
 open import ConnectedCovers.TruncationLevelFacts
 open import ConnectedCovers.UsefulLemmas
 
--- Section 2 (Background)
-N : Type₀
-N = ℕ
-
-𝟙 : Type₀
-𝟙 = Unit
-
-bot : Type₀
-bot = ⊥
-
-isEven' : N → Type₀
-isEven' zero = 𝟙
-isEven' (suc zero) = bot
-isEven' (suc (suc x)) = isEven' x
-
-divByEven : (n : N) → Σ[ m ∈ N ] Σ[ r ∈ N ] ((r < 2) × (2 · m + r ≡ n))
-divByEven zero = 0 , (0 , ((≤-suc ≤-refl) , refl))
-divByEven (suc zero) = 0 , (1 , (≤-refl , refl))
-divByEven (suc (suc n)) = (suc (fst (divByEven n))) 
-                        , (fst (snd (divByEven n))) 
-                        , (fst (snd (snd (divByEven n)))) 
-                        , (cong (_+ fst (snd (divByEven n))) (·-suc 2 (fst (divByEven n)))
-                             ∙ +-assoc 2 (2 · fst (divByEven n)) (fst (snd (divByEven n))) 
-                             ∙ cong (2 +_) (snd (snd (snd (divByEven n)))))
-
-module _ (A B : Type₀) (f g : A → B) where
-
-    rfl : (x : A) → x ≡ x
-    rfl x = refl
-
-    fnXt : ((x : A) → f x ≡ g x) → f ≡ g
-    fnXt = funExt
-
-𝕊¹ : Pointed₀
-𝕊¹ = S₊∙ 1
-
-module _ (A B C : Type₀) (f : A → B) (g : A → C) where
-
-    Pshout : Type
-    Pshout = Pushout f g
-
-    univa : A ≃ B → A ≡ B
-    univa = ua
-
-    ua-not : Bool → Bool
-    ua-not = transport (ua notEquiv)
-
-    fibre-f : B → Type
-    fibre-f b = fiber f b
-
-    A≃B : Type
-    A≃B = A ≃ B
-
-    ∥A∥ : (n : N) → Type
-    ∥A∥ n = ∥ A ∥ n
-
--- Proposition 2 (connectivity of composition)
-Proposition-2 : {A B C : Type} (n : ℕ) (f : A → B) (g : B → C) → isConnectedFun n f → isConnectedFun n g → isConnectedFun n (g ∘ f)
-Proposition-2 n f g cf cg = isConnectedComp g f n cg cf
-
--- Proposition 3 (connectivity cancelling on the right)
-Proposition-3 : {A B C : Type} (n : ℕ) (f : A → B) (g : B → C) → isConnectedFun n f → isConnectedFun n (g ∘ f) → isConnectedFun n g
-Proposition-3 zero f g cf cgf = λ b → isConnectedZero ⊥
-Proposition-3 (suc n) f g cf cgf = isConnectedFunCancel f g n (isConnectedFunSubtr n 1 f cf) cgf
-
--- Proposition 4 (connectivity cancelling on the left)
-Proposition-4 : {A B C : Type} (n : ℕ) (f : A → B) (g : B → C) → isConnectedFun (1 + n) g → isConnectedFun n (g ∘ f) → isConnectedFun n f
-Proposition-4 n f g cg cgf = isConnectedFunCancel' f g n cg cgf
+-- Section 2: Background
 
 -- Definition 5 (Connected Covers)
 Definition-5 : Pointed₀ → ℕ → Pointed₀
@@ -158,10 +100,6 @@ Definition-5 = _<_>
 -- Definition 6 (homotopy groups)
 Definition-6 : (n : ℕ) → Pointed₀ → Group₀
 Definition-6 n = πGr n
-
--- Proposition 7 (Freudenthal)
-Proposition-7 : (n : ℕ) (X : Pointed₀) → isConnected (2 + n) (fst X) → isConnectedFun (suc n + (suc n)) (toSusp X)
-Proposition-7 n X cX = isConnectedσ n cX
 
 -- Definition 8 (Fibre Sequences)
 Definition-8 : (A B C : Pointed₀) → Type₁
@@ -228,4 +166,129 @@ Proposition-15 : ∀ {ℓ} (X₁ X₂ : Pointed ℓ) (M₁ M₂ : ℕ)
    ≡ join (Susp^ M₁ (typ X₁)) (Susp^ M₂ (typ X₂))
 Proposition-15 = joinSuspTrick
 
+-- Section 3: A rough outline of the formalised proof
 
+-- Master theorem A (SAF is closed under taking connected covers)
+Theorem-A : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ) → saf (X < (suc n) >)
+Theorem-A = saf→saf<->
+
+-- Master theorem B (lowest non-trivial homotopy group of a highly connected SAF space is FP)
+Theorem-B : (X : Pointed ℓ) (hX : saf X) (n : ℕ) (cX : isConnected (3 + n) (typ X)) → isFP (πAb n X)
+Theorem-B = saf→isFPBottomπ
+
+-- Slight difference from the paper
+-- Rather than theorem 16, we use the following slightly weaker theorem to derive the finiteness theorem:
+-- Simply connected, stably almost finite types have finitely presented homotopy groups 
+Theorem-16' : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ) → isFP (πAb n X)
+Theorem-16' = saf→isFPπ
+
+-- Definition 19 (Finite CW Complexes)
+-- Universe polymorphic
+Definition-19 : (ℓ : Level) → Type (ℓ-suc ℓ)
+Definition-19 = FinCW
+
+-- Example 20 (FinCW is closed under Susp)
+Example-20 : (n : ℕ) (X : Type ℓ) → isFinCW X → isFinCW (Susp^ n X)
+Example-20 {ℓ} n  X = isFinCWSusp {ℓ} {n} X
+
+-- Definition 21 (n-Finite Types)
+-- Note that the Agda conventions for finiteness of types and dimensions of CW complexes are off by one from what appears in the paper
+-- To translate from Agda indices to paper indices, subtract one.
+Definition-21 : HLevel → Type ℓ → Type (ℓ-suc ℓ)
+Definition-21 = nFinite-nDim
+
+-- Proposition 22 (transferring finiteness along connected maps)
+-- Note also that conventions for connectedness are off by two
+-- So here, in the numbering conventions of the paper, our hypotheses are that Y is (n - 1)-finite, and f is (n - 1)-connected
+Proposition-22 : {X Y : Type ℓ} (f : X → Y)
+                 (n : HLevel) (hf : isConnectedFun (1 + n) f)
+                 → nFinite n Y → nFinite n X
+Proposition-22 = nFiniteApprox'
+
+-- Propossition 23 (nFinite types are closed under taking cofibers)
+Proposition-23 : {n : ℕ} {X Y Z : Pointed ℓ} → CofiberSeq X Y Z
+    → nFinite n (typ X)
+    → nFinite (1 + n) (typ Y)
+    → nFinite (1 + n) (typ Z)
+Proposition-23 = cofNFinite
+
+-- Definition 25 (Stably n-Finite Types)
+Definition-25 : HLevel → Pointed ℓ → Type (ℓ-suc ℓ)
+Definition-25 = stablyNFinite 
+
+-- Propositions 27 and 28 (join is stably k-finite for suitable k)
+Proposition-27 : (X₁ X₂ : Pointed ℓ) (m₁ m₂ n₂ : HLevel)
+  (hXm₁ : isConnected (m₁ + 2) (typ X₁)) (hX₁ : stablyNFinite 1 X₁)
+  (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
+  (k : HLevel) (hk₁ : k ≤ 1 + m₂) (hk₂ : k ≤ n₂ + (m₁ + 2))
+  → stablyNFinite k (join∙ X₁ X₂)
+Proposition-27 {ℓ} X₁ X₂ = stablyNFiniteJoin-alt {ℓ} {X₁} {X₂}
+
+Proposition-28 : (X₁ X₂ : Pointed ℓ) (m₁ n₁ m₂ n₂ : HLevel)
+  (hmn₁ : m₁ ≤ n₁)
+  (hXm₁ : isConnected m₁ (typ X₁)) (hXn₁ : stablyNFinite n₁ X₁)
+    (hXm₂ : isConnected m₂ (typ X₂)) (hXn₂ : stablyNFinite n₂ X₂)
+  (k : HLevel) (hk₁ : k ≤ n₁ + m₂) (hk₂ : k ≤ n₂ + m₁)
+  → stablyNFinite k (join∙ X₁ X₂)
+Proposition-28 {ℓ} X₁ X₂ = stablyNFiniteJoin {ℓ} {X₁} {X₂}
+
+-- Definition 29 (Stably Almost Finite Types)
+Definition-29 : Pointed ℓ → Type (ℓ-suc ℓ)
+Definition-29 = saf
+
+-- Proposition 30 (more closure properties for stably almost finite types)
+-- Closure under products
+Proposition-30-1 : {A B : Pointed ℓ} → saf A → saf B → saf (A ×∙ B)
+Proposition-30-1 {ℓ} {A} {B} = saf× {ℓ} {A} {B}
+-- Closure under V (wedge product)
+Proposition-30-2 : {A B : Pointed ℓ} → saf A → saf B → saf (A ⋁∙ₗ B)
+Proposition-30-2 {ℓ} {A} {B} = saf⋁ {ℓ} {A} {B} 
+-- Closure under /\ (smash product)
+Proposition-30-3 : {A B : Pointed ℓ} → saf A → saf B → saf (A ⋀∙ B)
+Proposition-30-3 = saf⋀
+
+-- Note that the file SAF.agda contains proofs of many more closure properties for all these concepts, we have only highlighted a few in the paper.
+
+-- Corollary 32 (iterating Ganea)
+module _ {A : Pointed ℓ} {B : Pointed ℓ} (f : A →∙ B) where
+    open Ganea^ f
+    -- The ``elbow'' cofibre sequences, for instance
+    ElbowCofibreSeq : (n : ℕ) → CofiberSeq (join-F n) (E n) (E (1 + n))
+    ElbowCofibreSeq = GaneaCofiberSeq
+
+-- Proposition 33 (if B is connected and (Ω B) is SAF, so is B)
+-- Remember connectedness conventions are off-by-two
+Proposition-33 : {B : Pointed ℓ} (cB : isConnected 2 (typ B)) → saf (Ω B) → saf B
+Proposition-33 = safΩ→saf
+
+-- Proposition 34 (if B is simply connected and SAF, then so is (Ω B))
+Proposition-34 : {B : Pointed ℓ} (scB : isConnected 3 (typ B)) → saf B → saf (Ω B)
+Proposition-34 = saf→safΩ
+
+-- Proposition 35 (if F → E → B is a fibre sequence and B is simply connected, and B and F are SAF, then so is E)
+Proposition-35 : {F E B : Pointed ℓ} (S : FiberSeq F E B) (scB : isConnected 3 (typ B)) → saf B → saf F → saf E
+Proposition-35 = safTotal
+
+-- Proposition 38 (fiber of the map X<n + 1> → X<n> is an Eilenberg-MacLane space)
+Proposition-38 : (X : Pointed ℓ) (n : ℕ) → FiberSeq (EM∙ (πAb n X) (suc n)) (X < (2 + n) >) (X < (suc n) >)
+Proposition-38 = <->EMFibSeq
+
+-- Proposition 39 (if G is FP, then K(G, n) are all SAF)
+Proposition-39 : (A : AbGroup ℓ) (fpA : isFP A) (n : ℕ) → saf (EM∙ A (suc n))
+Proposition-39 = isFP→safEM'
+
+-- Notice theorem 40 appears in the where clause in proof of saf→isFPBottomπ (Master theorem B)
+
+-- Theorem 44 (The Serre Finiteness Theorem)
+-- Note that we introduce some special notation -- πSphere n m -- for the nth homotopy groups of the m-dimensional sphere
+Theorem-44 : (n m : ℕ) → isFP (πSphere n m)
+Theorem-44 = isFPπSphere
+
+-- Section 4: On the formalisation
+
+-- Proposition 45 (Induction for finitely presentable abelian groups)
+Proposition-45 : (P : AbGroup₀ → Type ℓ) → (∀ A → isProp (P A))
+   → (∀ n → P (ℤMod n))
+   → (∀ H K → P H → P K → P (AbDirProd H K))
+   → (∀ A → isFP A → (P A))
+Proposition-45 = indFP
