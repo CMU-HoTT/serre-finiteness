@@ -14,7 +14,7 @@ open import Cubical.Data.Int
 open import Cubical.Data.Bool
 
 open import Cubical.Data.Fin as FinAlt using (isContrFin1)
-open import Cubical.Data.Fin.Inductive renaming (Fin to FinInd)
+open import Cubical.Data.Fin renaming (Fin to FinInd)
 open import Cubical.Data.FinData
 open import Cubical.Data.List renaming (length to len)
 

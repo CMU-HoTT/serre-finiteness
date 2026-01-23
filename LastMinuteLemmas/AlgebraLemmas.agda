@@ -17,7 +17,7 @@ open import Cubical.Data.Sigma
 open import Cubical.Data.Int
 open import Cubical.Data.Empty as ⊥
 open import Cubical.Data.FinData
-open import Cubical.Data.Fin.Inductive renaming (Fin to FinInd)
+open import Cubical.Data.Fin renaming (Fin to FinInd)
 open import Cubical.Data.Fin.Arithmetic
 open import Cubical.Data.Nat.Order
 
@@ -77,15 +77,18 @@ snd (/ImElim {H = H} {R = R}  ϕ f p) =
 0mod zero = refl
 0mod (suc n) = refl
 
--ₘ< : ∀ {n : ℕ} (x : ℕ) (y : suc x < suc n)
-  → fst (-ₘ (suc x , y)) ≡ n ∸ x
+open import Cubical.Data.Nat.Order.Inductive
+
+-ₘ< : ∀ {n : ℕ} (x : ℕ) (y : suc x <ᵗ suc n)
+  → fst (-ₘ ((suc x) , y)) ≡ n ∸ x
 -ₘ< {n = n} x t =
   +inductionBase n (λ _ → ℕ) (λ x₁ _ → modInd n (suc n ∸ x₁))
-      (λ _ x → x) (suc x) t
+      (λ _ x → x) (suc x) (<ᵗ→< {suc x} t)
       ∙ modIndBase n (n ∸ x)
         (x , +-suc x (n ∸ x) ∙ cong (1 +ℕ_)
         (+-comm x _
-       ∙ ≤-∸-+-cancel {m = x} {n = n} (pred-≤-pred (<-weaken t))))
+       ∙ ≤-∸-+-cancel {m = x} {n = n} (pred-≤-pred (<-weaken (<ᵗ→< {suc x} t)))))
+
 
 --------------- Part 1: Equivalence of both definitions of ℤ/k ---------------
 -- Definition of ℤ/im(n·_)
@@ -94,7 +97,7 @@ snd (/ImElim {H = H} {R = R}  ϕ f p) =
 
 -- n mod k for n an integer
 _modℤ_ : (n : ℤ) (k : ℕ) → FinAlt.Fin (suc k)
-pos n modℤ k = n mod (suc k) , mod< k n
+pos n modℤ k = n mod (suc k) , <→<ᵗ (mod< k n)
 negsuc n modℤ k = -ₘ (pos (suc n) modℤ k)
 
 -- ℤ → ℤ/k
@@ -110,12 +113,11 @@ module ℤ→ℤAbGroup/Lemmas where
   ℤ→ℤAbGroup/Vanish-pos zero y = refl
   ℤ→ℤAbGroup/Vanish-pos (suc n) (pos k) =
     cong (_modℤ n) (sym (pos·pos (suc n) k) ∙ cong pos (·-comm (suc n) k))
-    ∙ Σ≡Prop (λ _ → isProp≤) (zero-charac-gen (suc n) k)
+    ∙ Σ≡Prop (λ _ → isProp<ᵗ) (zero-charac-gen (suc n) k)
   ℤ→ℤAbGroup/Vanish-pos (suc n) (negsuc r) =
     cong (_modℤ n) (pos·negsuc (suc n) r
                    ∙ sym (cong -_ (pos·pos (suc n) (suc r))))
-    ∙ cong (-ₘ_ {n = n})
-       (Σ≡Prop (λ _ → isProp≤)
+    ∙ cong (-ₘ_ {n = n}) (Σ≡Prop (λ _ → isProp<ᵗ)
          {u = pos (suc n ·ℕ suc r) modℤ n} {v = fzero*}
          (cong (_mod (suc n)) (·-comm (suc n) (suc r))
          ∙ zero-charac-gen (suc n) (suc r)))
@@ -133,13 +135,7 @@ module ℤ→ℤAbGroup/Lemmas where
 
   ℤ→ℤAbGroup/-ₘ : (k : ℕ) (x : ℤ)
     → ℤ→ℤAbGroup/ (suc k) (- x) ≡ -ₘ ℤ→ℤAbGroup/ (suc k) x
-  ℤ→ℤAbGroup/-ₘ k (pos zero) =
-    Σ≡Prop (λ _ → isProp≤) refl
-      ∙ sym (-ₘ-fzero k)
-      ∙ cong (-ₘ_ {n = k})
-      (Σ≡Prop (λ _ → isProp≤)
-        {u = fzero*} {v = ℤ→ℤAbGroup/ (suc k) (pos zero)}
-        refl)
+  ℤ→ℤAbGroup/-ₘ k (pos zero) = sym (-ₘ-fzero k)
   ℤ→ℤAbGroup/-ₘ k (pos (suc n)) = refl
   ℤ→ℤAbGroup/-ₘ k (negsuc n) =
     sym (GroupTheory.invInv (ℤGroup/ (suc k))
@@ -155,17 +151,14 @@ module ℤ→ℤAbGroup/Lemmas where
     → ℤ→ℤAbGroup/ (suc k) (sucℤ y)
      ≡ ℤ→ℤAbGroup/ (suc k) 1 +ₘ (ℤ→ℤAbGroup/ (suc k) y)
   ℤ→ℤAbGroup/sucℤ k (pos n) =
-    Σ≡Prop (λ _ → isProp≤)
+    Σ≡Prop (λ _ → isProp<ᵗ)
            (mod+mod≡mod (suc k) 1 n)
-  ℤ→ℤAbGroup/sucℤ k (negsuc zero) = Σ≡Prop (λ _ → isProp≤)
-    refl
-    ∙ sym (+ₘ-rCancel (modInd k 1 , mod< k 1))
-  ℤ→ℤAbGroup/sucℤ zero (negsuc (suc n)) =
+  ℤ→ℤAbGroup/sucℤ zero (negsuc n) =
     isContr→isProp
-      ((zero , zero , refl)
-      , uncurry λ { zero q
-        → Σ≡Prop (λ _ → isProp≤) refl
-                  ; (suc x) q → ⊥.rec (¬-<-zero (predℕ-≤-predℕ q))}) _ _
+      ((zero , tt)
+      , uncurry λ { zero q  → Σ≡Prop (λ _ → isProp<ᵗ) refl}) _ _
+  ℤ→ℤAbGroup/sucℤ (suc k) (negsuc zero) =
+    sym (+ₘ-rCancel (modInd (suc k) 1 , <→<ᵗ (mod< (suc k) 1)))
   ℤ→ℤAbGroup/sucℤ (suc k') (negsuc (suc n)) = lem
     where
     k = suc k'
@@ -175,7 +168,7 @@ module ℤ→ℤAbGroup/Lemmas where
     y = pos (suc (suc n)) modℤ k
 
     lem' : y ≡ one' +ₘ x
-    lem' = Σ≡Prop (λ _ → isProp≤)
+    lem' = Σ≡Prop (λ _ → isProp<ᵗ)
                   (mod+mod≡mod (suc k) (suc zero) (suc n))
 
     lem : -ₘ x ≡ one' +ₘ -ₘ y
@@ -194,21 +187,21 @@ module ℤ→ℤAbGroup/Lemmas where
     → ℤ→ℤAbGroup/ (suc k) (predℤ y)
      ≡ (-ₘ ℤ→ℤAbGroup/ (suc k) 1) +ₘ (ℤ→ℤAbGroup/ (suc k) y)
   ℤ→ℤAbGroup/predℤ k (pos zero) =
-    (sym (+ₘ-rUnit (-ₘ (modInd k 1 , mod< k 1))))
+    sym (+ₘ-rUnit (-ₘ (modInd k 1 , <→<ᵗ (mod< k 1))))
   ℤ→ℤAbGroup/predℤ k (pos (suc n)) =
-      Σ≡Prop (λ _ → isProp≤)
+      Σ≡Prop (λ _ → isProp<ᵗ)
         (lem k n)
-    ∙ cong (_+ₘ (modInd k 1 , mod< k 1)) (ℤ→ℤAbGroup/predℤ k (pos n))
+    ∙ cong (_+ₘ (modInd k 1 , <→<ᵗ (mod< k 1))) (ℤ→ℤAbGroup/predℤ k (pos n))
     ∙ +ₘ-assoc _ _ _
-    ∙ cong (λ x → -ₘ (modInd k 1 , mod< k 1) +ₘ x)
-           (Σ≡Prop (λ _ → isProp≤)
+    ∙ cong (λ x → -ₘ (modInd k 1 , <→<ᵗ (mod< k 1)) +ₘ x)
+           (Σ≡Prop (λ _ → isProp<ᵗ)
            (sym (mod+mod≡mod (suc k) n 1)
           ∙ cong (modInd k) (+-comm n 1)))
     where
     lem : (k n : ℕ)
       → n mod (suc k) ≡ (fst (predℤ (pos n) modℤ k) +ℕ modInd k 1)
                          mod (suc k)
-    lem k zero = cong fst (sym (+ₘ-lCancel (modInd k 1 , mod< k 1)))
+    lem k zero = cong fst (sym (+ₘ-lCancel (modInd k 1 , <→<ᵗ (mod< k 1))))
     lem k (suc n) =
       mod+mod≡mod (suc k) 1 n
       ∙ cong (modInd k) (+-comm (1 mod (suc k)) (n mod (suc k)))
@@ -271,13 +264,13 @@ snd (ℤ→ℤAbGroup/Hom (suc k)) = makeIsGroupHom (ℤ→ℤAbGroup/isHom k)
   main (pos zero) x = refl
   main (pos (suc n)) (pos k) =
       cong (_modℤ n) (sym (pos·pos (suc n) k))
-    ∙ Σ≡Prop (λ _ → isProp≤)
+    ∙ Σ≡Prop (λ _ → isProp<ᵗ)
              (cong (modInd n) (·-comm (suc n) k)
              ∙ zero-charac-gen (suc n) k)
   main (pos (suc n)) (negsuc k) =
       cong (_modℤ n) (pos·negsuc (suc n) k
                     ∙ cong -_ (sym (pos·pos (suc n) (suc k))))
-    ∙ cong -ₘ_ (Σ≡Prop (λ _ → isProp≤)
+    ∙ cong -ₘ_ (Σ≡Prop (λ _ → isProp<ᵗ)
                (cong (_mod (suc n)) (·-comm (suc n) (suc k))
                ∙ zero-charac-gen (suc n) (suc k)))
     ∙ -ₘ-fzero _
@@ -285,13 +278,14 @@ snd (ℤ→ℤAbGroup/Hom (suc k)) = makeIsGroupHom (ℤ→ℤAbGroup/isHom k)
     cong (_modℤ n) (negsuc·pos n k
                   ∙ cong -_ (sym (pos·pos (suc n) k)))
     ∙ ℤ→ℤAbGroup/- (suc n) (pos (suc n ·ℕ k))
-    ∙ cong -ₘ_ (Σ≡Prop (λ _ → isProp≤)
+    ∙ cong -ₘ_ (Σ≡Prop (λ _ → isProp<ᵗ)
                  (cong (_mod (suc n)) (·-comm (suc n) k)
                  ∙ zero-charac-gen (suc n) k))
     ∙ -ₘ-fzero _
   main (negsuc n) (negsuc k) =
     cong (_modℤ n) (negsuc·negsuc n k)
     ∙ main (pos (suc n)) (pos (suc k))
+
 
 -- ℤAbGroup/ → ℤAbGroup/'
 ℤAbGroup/→ℤAbGroup/'Fun : (k : ℤ)
@@ -307,7 +301,7 @@ snd (ℤ→ℤAbGroup/Hom (suc k)) = makeIsGroupHom (ℤ→ℤAbGroup/isHom k)
 ℤAbGroup/→ℤAbGroup/'Fun-inv (pos zero) = λ _ → refl
 ℤAbGroup/→ℤAbGroup/'Fun-inv (pos (suc n)) (zero , r) =
   cong [_]' (cong pos (cong fst (cong -ₘ_
-    (Σ≡Prop (λ _ → isProp≤) {u = (zero , r)} refl)
+    (Σ≡Prop (λ _ → isProp<ᵗ) {u = (zero , tt)} refl)
     ∙ -ₘ-fzero n)))
 ℤAbGroup/→ℤAbGroup/'Fun-inv (pos (suc n)) (suc x' , r) =
     sym (+IdL t)
@@ -324,20 +318,19 @@ snd (ℤ→ℤAbGroup/Hom (suc k)) = makeIsGroupHom (ℤ→ℤAbGroup/isHom k)
   t = [ pos (fst ((AbGroupStr.- snd (ℤAbGroup/ suc n)) (x , r))) ]'
 
   main : [ pos x ]' +* t ≡ [ 0 ]'
-  main = cong [_]'
-      (sym (pos+ _ _)
-    ∙ cong pos (cong (x +ℕ_)
-                     ((λ _ → fst (-ₘ (x , r))) ∙ -ₘ< {n = n} x' r)
-    ∙ cong (1 +ℕ_) (+-comm x' (n ∸ x')
-    ∙ ≤-∸-+-cancel (≤-trans (1 , refl) (pred-≤-pred r)))))
+  main = cong [_]' (sym (pos+ _ _)
+    ∙ cong pos ((cong (x +ℕ_)
+                     ((λ _ → fst (-ₘ (x , r))) ∙ -ₘ< {n = n} x' r))
+    ∙ cong (1 +ℕ_) (+-comm x' (n ∸ x') ∙ ≤-∸-+-cancel (≤-trans (1 , refl) (pred-≤-pred (<ᵗ→< {suc x'} r))))))
     ∙ eq/ _ _ ∣ 1 , sym (ℤ·≡· (pos (suc n)) 1)
                   ∙ ·Comm (pos (suc n)) 1 ∣₁
+
 ℤAbGroup/→ℤAbGroup/'Fun-inv (negsuc n) (zero , r) =
   cong [_]'
     (cong pos
       (cong fst
-        (cong -ₘ_ (Σ≡Prop (λ _ → isProp≤)
-                   {u = (zero , r)} refl) ∙ -ₘ-fzero n)))
+        (cong -ₘ_ (Σ≡Prop (λ _ → isProp<ᵗ)
+                   {u = (zero , tt)} refl) ∙ -ₘ-fzero n)))
 ℤAbGroup/→ℤAbGroup/'Fun-inv (negsuc n) (suc x' , r) =
     sym (+IdL t) -- sym (+IdL t)
   ∙ cong₂ _+*_ (sym (+InvL [ pos x ]')) refl
@@ -351,13 +344,16 @@ snd (ℤ→ℤAbGroup/Hom (suc k)) = makeIsGroupHom (ℤ→ℤAbGroup/isHom k)
   x = suc x'
   t = [ pos (fst ((AbGroupStr.- snd (ℤAbGroup/ suc n)) (x , r))) ]'
 
+  helper : x' +ℕ (n ∸ x') ≡ n
+  helper = +-comm x' (n ∸ x')
+   ∙ ≤-∸-+-cancel {m = x'} {n = n}
+      (≤-trans (1 , refl) (pred-≤-pred (<ᵗ→< {suc x'} r)))
+
   main : [ pos x ]' +* t ≡ [ 0 ]'
   main = cong [_]'
      (sym (pos+ _ _)
    ∙ cong pos (cong (x +ℕ_) ((λ _ → fst (-ₘ (x , r))) ∙ -ₘ< {n = n} x' r)
-   ∙ cong (1 +ℕ_) (+-comm x' (n ∸ x')
-   ∙ ≤-∸-+-cancel {m = x'} {n = n}
-      (≤-trans (1 , refl) (pred-≤-pred r)))))
+   ∙ λ i → suc (helper i)))
    ∙ eq/ _ _ ∣ -1
    , (sym (ℤ·≡· (negsuc n) -1)
    ∙ ·Comm (negsuc n) (negsuc 0)) ∣₁
@@ -369,11 +365,11 @@ fun (fst (ℤAbGroup/≅ℤAbGroup/' k)) = ℤAbGroup/'→ℤAbGroup/ k .fst
 inv (fst (ℤAbGroup/≅ℤAbGroup/' k)) = ℤAbGroup/→ℤAbGroup/'Fun k
 sec (fst (ℤAbGroup/≅ℤAbGroup/' (pos zero))) _ = refl
 sec (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) x =
-  Σ≡Prop (λ _ → isProp≤)
-    (modIndBase n (fst x) (snd x))
+  Σ≡Prop (λ _ → isProp<ᵗ)
+    (modIndBase n (fst x) (<ᵗ→< (snd x)))
 sec (fst (ℤAbGroup/≅ℤAbGroup/' (negsuc n))) x =
-  Σ≡Prop (λ _ → isProp≤)
-    (modIndBase n (fst x) (snd x))
+  Σ≡Prop (λ _ → isProp<ᵗ)
+    (modIndBase n (fst x) (<ᵗ→< (snd x)))
 ret (fst (ℤAbGroup/≅ℤAbGroup/' (pos zero))) =
   SQ.elimProp (λ _ → squash/ _ _) λ _ → refl
 ret (fst (ℤAbGroup/≅ℤAbGroup/' (pos (suc n)))) =
