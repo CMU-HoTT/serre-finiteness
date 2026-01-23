@@ -9,7 +9,7 @@ open import Cubical.Data.Nat renaming (_·_ to _·ℕ_ ; _+_ to _+ℕ_)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Int
 open import Cubical.Data.FinData
-open import Cubical.Data.Fin.Inductive renaming (Fin to FinInd)
+open import Cubical.Data.Fin renaming (Fin to FinInd)
 open import Cubical.Data.Nat.Order.Inductive
 open import Cubical.Data.Bool
 
@@ -81,7 +81,7 @@ FinInd→Fin→FinInd .(suc _) p (suc x) i =
   suc {n = n} ((cong (FinInd→Fin n)
     (Fin≡ {m = n}
       (Fin→FinInd n x .fst
-      , snd (fsuc {n = n} (Fin→FinInd n x)))
+      , snd (fsuc {k = n} (Fin→FinInd n x)))
           (Fin→FinInd n x) refl)
    ∙ FinInd→Fin→FinInd n refl x) i)
   where
@@ -101,7 +101,7 @@ Fin→FinInd-flast {n = suc n} = cong fsuc (Fin→FinInd-flast {n})
 
 -- Fin→FinInd commutes with injectSuc
 injectSuc-fsuc : {n : ℕ} (w : FinInd n)
-  → injectSuc (fsuc {n = n} w) ≡ fsuc {n = suc n} (injectSuc w)
+  → injectSuc (fsuc {k = n} w) ≡ fsuc {k = suc n} (injectSuc w)
 injectSuc-fsuc (zero , t) = refl
 injectSuc-fsuc {n = suc n} (suc s , t) = refl
 

@@ -18,7 +18,7 @@ open import Cubical.Algebra.AbGroup.Instances.Int renaming (ℤAbGroup to ℤ)
 
 open import Cubical.Data.Nat renaming (elim to elimℕ)
 open import Cubical.Data.Nat.Order
-open import Cubical.Data.Fin.Inductive
+open import Cubical.Data.Fin
 open import Cubical.Data.Sigma
 
 open import Cubical.Homotopy.Connected

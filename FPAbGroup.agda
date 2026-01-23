@@ -19,7 +19,7 @@ open import Cubical.Algebra.AbGroup.FinitePresentation
 open import Cubical.Algebra.AbGroup.Instances.IntMod
 
 open import Cubical.Data.List
-open import Cubical.Data.Fin.Inductive
+open import Cubical.Data.Fin
 open import Cubical.Data.Fin as FinAlt using (isContrFin1)
 open import Cubical.Data.Int
 open import Cubical.Data.Nat
@@ -38,7 +38,7 @@ private
 AbGroup₀ = AbGroup ℓ-zero
 
 ℤMod-finite : (n : ℕ) → fst (ℤMod (suc n)) ≃ (Fin (suc n))
-ℤMod-finite n = isoToEquiv (Iso-Fin-InductiveFin (suc n))
+ℤMod-finite n = idEquiv _
 
 -- finitely presented abelian groups
 isFP : AbGroup ℓ → Type ℓ
