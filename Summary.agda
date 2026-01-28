@@ -2,6 +2,9 @@
    This is a summary file to accompany the paper
 
    A computer formalisation of the Serre finiteness theorem
+
+   Checked against the Cubical Library (commit a795d50)
+
 -}
 
 {-# OPTIONS --safe #-}
@@ -104,7 +107,7 @@ Definition-5 = FiberSeq
 -- Long exact sequence of homotopy groups
 -- Where (fiberSequence F) is the sequence of groups:
 -- ..., π (n + 1) (Z), π n X, π n Y, π n Z, π (n - 1) X, ...
--- and (fiberSequenceEgges F) is the sequence of maps between them,
+-- and (fiberSequenceEdges F) is the sequence of maps between them,
 -- this is a proof that together these form a long exact sequence of groups.
 Long-exact-sequence : {X Y Z : Pointed ℓ} (F : FiberSeq X Y Z) → isLES (fiberSequence F) (fiberSequenceEdges F)
 Long-exact-sequence F = fiberSequenceIsLES F
@@ -119,14 +122,14 @@ Proposition-7 X Y Z = copuppe
 
 -- Corollary 8
 -- Susp n X → Susp n Y → Susp n Z is a cofiber sequence
-Corollary-8-1 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) X) (Susp∙^ (suc n) Y) (Susp∙^ (suc n) Z)
-Corollary-8-1 X Y Z S n = copuppe-Cof (suc n) S
+Corollary-8-1 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ n X) (Susp∙^ n Y) (Susp∙^ n Z)
+Corollary-8-1 X Y Z S n = copuppe-Cof n S
 -- Susp n Y → Susp n Z → Susp (1 + n) X is a cofiber sequence
-Corollary-8-2 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) Y) (Susp∙^ (suc n) Z) (Susp∙^ (suc (suc n)) X)
-Corollary-8-2 X Y Z S n = copuppe-Dom (suc n) S
+Corollary-8-2 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ n Y) (Susp∙^ n Z) (Susp∙^ (suc n) X)
+Corollary-8-2 X Y Z S n = copuppe-Dom n S
 -- Susp n Z → Susp (1 + n) X → Susp (1 + n) Y is a cofiber sequence
-Corollary-8-3 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ (suc n) Z) (Susp∙^ (suc (suc n)) X) (Susp∙^ (suc (suc n)) Y)
-Corollary-8-3 X Y Z S n = copuppe-Ext (suc n) S
+Corollary-8-3 : (X Y Z : Pointed₀) → CofiberSeq X Y Z → (n : ℕ) → CofiberSeq (Susp∙^ n Z) (Susp∙^ (suc n) X) (Susp∙^ (suc n) Y)
+Corollary-8-3 X Y Z S n = copuppe-Ext n S
 
 -- Proposition 9 (connectivity of maps between cofibers)
 Proposition-9 : (n : ℕ) {X Y Z X' Y' Z' : Pointed ℓ}
@@ -253,8 +256,8 @@ Proposition-26-3 = saf⋀
 -- Note that the file SAF.agda contains proofs of many more closure properties for all these concepts, we have only highlighted a few in the paper.
 
 -- Corollary 28 combined with Theorem 27 (iterating Ganea)
-module Corollary-28 {X : Pointed ℓ} {Y : Pointed ℓ} (f : X →∙ Y) where
-    open Ganea^ f
+module Corollary-28 {F : Pointed ℓ} {B : Pointed ℓ} (j : F →∙ B) where
+    open Ganea^ j
     -- The ``elbow'' cofibre sequences, for instance
     -- fiber * ...
     --  |
@@ -279,7 +282,9 @@ Proposition-31 = safTotal
 
 -- Proposition 32 (same as above, but for fibres) ... this lemma is
 -- meant to be expository and is never actually used explicitly in the
--- formalisation , so we omit it.
+-- formalisation , so we omit it. However, we remark that there is a
+-- small typo in the paper: like in Proposition 31, B has to be
+-- 1-connected.
 
 -- Proposition 33 (Eilenberg-MacLane spaces) ... Already in the library
 Proposition-33 = EM∙
@@ -299,7 +304,7 @@ Proposition-35 = isFP→safEM'
 -- appears in the where clause in proof of saf→isFPBottomπ (Master
 -- theorem B)
 
--- The remaining theorems up intil the Serre Finiteness Theorem are
+-- The remaining theorems up until the Serre Finiteness Theorem are
 -- omitted since they are not part of this formalisation.
 
 -- Theorem 40 (The Serre Finiteness Theorem)
