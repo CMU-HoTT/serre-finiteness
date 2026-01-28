@@ -169,12 +169,10 @@ Theorem-A = saf→saf<->
 Theorem-B : (X : Pointed ℓ) (hX : saf X) (n : ℕ) (cX : isConnected (3 + n) (typ X)) → isFP (πAb n X)
 Theorem-B = saf→isFPBottomπ
 
--- Minor difference between paper and formalisation: here we add Slight difference from the paper
--- Rather than theorem 13, we use the following slightly weaker theorem to derive the finiteness theorem:
--- Simply connected, stably almost finite types have finitely presented homotopy groups
+-- Note: there is a minor typo in the paper for Theorem 13 ∙ the type
+-- X should be 1-connected.
 Theorem-13 : (X : Pointed ℓ) (safX : saf X) (scX : isConnected 3 (typ X)) (n : ℕ) → isFP (πAb n X)
 Theorem-13 = saf→isFPπ
-
 
 -- Theorem 14 is expository only and not part of the formalisation
 
@@ -271,11 +269,11 @@ module Corollary-28 {X : Pointed ℓ} {Y : Pointed ℓ} (f : X →∙ Y) where
 Proposition-29 : {B : Pointed ℓ} (cB : isConnected 2 (typ B)) → saf (Ω B) → saf B
 Proposition-29 = safΩ→saf
 
--- Proposition 30 (if B is simply connected and SAF, then so is (Ω B))
+-- Proposition 30 (if B is 1-connected and SAF, then so is (Ω B))
 Proposition-30 : {B : Pointed ℓ} (scB : isConnected 3 (typ B)) → saf B → saf (Ω B)
 Proposition-30 = saf→safΩ
 
--- Proposition 31 (if F → E → B is a fibre sequence and B is simply connected, and B and F are SAF, then so is E)
+-- Proposition 31 (if F → E → B is a fibre sequence and B is 1-connected, and B and F are SAF, then so is E)
 Proposition-31 : {F E B : Pointed ℓ} (S : FiberSeq F E B) (scB : isConnected 3 (typ B)) → saf B → saf F → saf E
 Proposition-31 = safTotal
 
